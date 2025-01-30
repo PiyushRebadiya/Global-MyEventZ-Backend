@@ -37,6 +37,7 @@ const LiveStreamController = require('../controllers/Live_Stream');
 const IsTicketUserList = require('../controllers/IsTicketUserList');
 const ReactDeployController = require('../controllers/React_Deploy_IIS');
 const professionCategoryMaster = require('../controllers/professionCategory.js');
+const userCategoryMaster = require('../controllers/userCategory');
 // const carouselController = require('../controllers/carousel');
 
 const auth = require("../middleware/auth");
@@ -178,5 +179,9 @@ router.post('/testing', ReactDeployController.setupIISForSubdomain);
 router.get('/fetch_profession_category', auth, professionCategoryMaster.FetchprofessionCategoryMaster);
 router.post('/profession_category_master', auth, professionCategoryMaster.professionCategoryMaster);
 router.delete('/delete_profession_category', auth, professionCategoryMaster.RemoveprofessionCategory);
+
+router.get('/fetch_user_category_master', auth, userCategoryMaster.fetchUserCategory);
+router.post('/user_category_master', auth, userCategoryMaster.createUserCategory);
+router.delete('/delete_user_category_master', auth, userCategoryMaster.removeUserCategory);
 
 module.exports = router;
