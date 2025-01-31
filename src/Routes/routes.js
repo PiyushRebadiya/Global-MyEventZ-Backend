@@ -180,7 +180,7 @@ router.get('/fetch_profession_category', auth, professionCategoryMaster.Fetchpro
 router.post('/profession_category_master', auth, professionCategoryMaster.professionCategoryMaster);
 router.delete('/delete_profession_category', auth, professionCategoryMaster.RemoveprofessionCategory);
 
-router.get('/fetch_user_category_master', auth, userCategoryMaster.fetchUserCategory);
+router.get('/fetch_user_category_master', userCategoryMaster.fetchUserCategory);
 router.post('/user_category_master', auth, userCategoryMaster.createUserCategory);
 router.delete('/delete_user_category_master', auth, userCategoryMaster.removeUserCategory);
 
