@@ -1,14 +1,17 @@
-const { errorMessage, successMessage, checkKeysAndRequireValues, generateCODE, setSQLBooleanValue, getCommonKeys, generateJWTT, generateUUID, getCommonAPIResponse, deleteImage } = require("../common/main");
+const { errorMessage, successMessage, checkKeysAndRequireValues, generateCODE, setSQLBooleanValue, getCommonKeys, generateJWTT, generateUUID, getCommonAPIResponse, deleteImage, setSQLStringValue } = require("../common/main");
 const {pool} = require('../sql/connectToDatabase');
 
 const FetchSponsorMasterDetails = async (req, res)=>{
     try{
-        const { SponsorUkeyId, IsActive } = req.query;
+        const { SponsorUkeyId, IsActive, LinkType } = req.query;
         let whereConditions = [];
 
         // Build the WHERE clause based on the Status
         if (SponsorUkeyId) {
             whereConditions.push(`SponsorUkeyId = '${SponsorUkeyId}'`);
+        }
+        if (LinkType) {
+            whereConditions.push(`SponsorUkeyId = ${setSQLStringValue(LinkType)}`);
         }
         if(IsActive){
             whereConditions.push(`IsActive = ${setSQLBooleanValue(IsActive)}`);
@@ -29,8 +32,7 @@ const FetchSponsorMasterDetails = async (req, res)=>{
 
 const SponsorMaster = async (req, res) => {
     const { 
-        SponsorUkeyId = generateUUID(), SponsorCatUkeyId = generateUUID(), Name = '', Mobile = '', CompanyName = '', UsrName = '', UsrID = '', flag = '' , OrganizerUkeyId = '',EventUkeyId = '',
-        Description1 = '', Description2 = '', Description3 = '', Description4 = ''
+        SponsorUkeyId = generateUUID(), SponsorCatUkeyId = generateUUID(), Name = '', Mobile = '', CompanyName = '', UsrName = '', UsrID = '', flag = '' , OrganizerUkeyId = '',EventUkeyId = '', Description1 = '', Description2 = '', Description3 = '', Description4 = '', Link = '', LinkType = 'WEB'
     } = req.body;
     let {Img = ''} = req.body;
 
@@ -41,9 +43,9 @@ const SponsorMaster = async (req, res) => {
 
         const insertQuery = `
             INSERT INTO SponsorMaster (
-                SponsorUkeyId, SponsorCatUkeyId, Name, Mobile, CompanyName, Img, UsrName, UsrID, IpAddress, HostName, EntryDate, flag, OrganizerUkeyId, EventUkeyId,Description1, Description2, Description3, Description4
+                SponsorUkeyId, SponsorCatUkeyId, Name, Mobile, CompanyName, Img, UsrName, UsrID, IpAddress, HostName, EntryDate, flag, OrganizerUkeyId, EventUkeyId,Description1, Description2, Description3, Description4, Link, LinkType
             ) VALUES (
-                N'${SponsorUkeyId}', N'${SponsorCatUkeyId}', N'${Name}', N'${Mobile}', N'${CompanyName}', N'${Img}', N'${UsrName}', N'${UsrID}', N'${IPAddress}', N'${ServerName}', N'${EntryTime}', N'${flag}', N'${OrganizerUkeyId}', N'${EventUkeyId}', '${Description1}', '${Description2}', '${Description3}', '${Description4}'
+                N'${SponsorUkeyId}', N'${SponsorCatUkeyId}', N'${Name}', N'${Mobile}', N'${CompanyName}', N'${Img}', N'${UsrName}', N'${UsrID}', N'${IPAddress}', N'${ServerName}', N'${EntryTime}', N'${flag}', N'${OrganizerUkeyId}', N'${EventUkeyId}', '${Description1}', '${Description2}', '${Description3}', '${Description4}', ${setSQLStringValue(Link)}, ${setSQLStringValue(LinkType)}
             );
         `;
 
