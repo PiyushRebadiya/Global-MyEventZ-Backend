@@ -116,16 +116,26 @@ const OrginazerMaster = async (req, res)=>{
 
 const RemoveOrginazer = async (req, res) => {
     try{
-        const {OrganizerUkeyId} = req.query;
+        const {OrganizerId} = req.query;
 
-        const missingKeys = checkKeysAndRequireValues(['OrganizerUkeyId'], req.query);
+        const missingKeys = checkKeysAndRequireValues(['OrganizerId'], req.query);
 
         if(missingKeys.length > 0){
             return res.status(400).json(errorMessage(`${missingKeys.join(', ')} is Required`));
         }
 
+        const checkOrganizer = await pool.request().query(`SELECT * FROM OrganizerMaster WHERE OrganizerId = '${OrganizerId}'`);
+
+        if(checkOrganizer.rowsAffected[0] == 0){
+            return res.status(400).json({...errorMessage('No Orginizer Found.')})
+        }
+
+        if(checkOrganizer.recordset[0].Role == 'SuperAdmin' || checkOrganizer.recordset[0].Role == 'Admin'){
+            return res.status(400).json({...errorMessage('Admin cannot be deleted.')})
+        }
+
         const query = `
-            DELETE FROM OrganizerMaster WHERE OrganizerUkeyId = '${OrganizerUkeyId}'
+            DELETE FROM OrganizerMaster WHERE OrganizerId = '${OrganizerId}' AND Role != 'SuperAdmin' AND Role != 'Admin';
         `
     
         const result = await pool.request().query(query);
@@ -134,7 +144,7 @@ const RemoveOrginazer = async (req, res) => {
             return res.status(400).json({...errorMessage('No Orginizer Deleted.')})
         }
 
-        return res.status(200).json({...successMessage('Orginizer Deleted Successfully.'), OrganizerUkeyId});
+        return res.status(200).json({...successMessage('Orginizer Deleted Successfully.'), OrganizerId});
     }catch(error){
         console.log('Delete Event Error :', error);
         return res.status(500).json({...errorMessage(error.message)});
