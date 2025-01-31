@@ -11,7 +11,7 @@ const FetchSponsorMasterDetails = async (req, res)=>{
             whereConditions.push(`SponsorUkeyId = '${SponsorUkeyId}'`);
         }
         if (LinkType) {
-            whereConditions.push(`SponsorUkeyId = ${setSQLStringValue(LinkType)}`);
+            whereConditions.push(`LinkType = ${setSQLStringValue(LinkType)}`);
         }
         if(IsActive){
             whereConditions.push(`IsActive = ${setSQLBooleanValue(IsActive)}`);
