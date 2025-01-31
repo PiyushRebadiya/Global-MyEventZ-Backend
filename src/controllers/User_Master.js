@@ -5,30 +5,37 @@ const jwt = require('jsonwebtoken');
 
 const fetchUserMaster = async (req, res) => {
     try {
-        const { UserUkeyId, Mobile1, Role, IsActive, IsLogin } = req.query;
+        const { UserUkeyId, Mobile1, Role, IsActive, IsLogin, UserCatUkeyId } = req.query;
         let whereConditions = [];
 
         // Build the WHERE clause based on the Status
         if (UserUkeyId) {
-            whereConditions.push(`UserUkeyId = '${UserUkeyId}'`);
+            whereConditions.push(`UM.UserUkeyId = '${UserUkeyId}'`);
         }
         if(Mobile1){
-            whereConditions.push(`Mobile1 = '${Mobile1}'`);
+            whereConditions.push(`UM.Mobile1 = '${Mobile1}'`);
         }
         if(Role){
-            whereConditions.push(`Role = '${Role}'`);
+            whereConditions.push(`UM.Role = '${Role}'`);
         }
         if(IsActive){
-            whereConditions.push(`IsActive = ${setSQLBooleanValue(IsActive)}`);
+            whereConditions.push(`UM.IsActive = ${setSQLBooleanValue(IsActive)}`);
         }
         if(IsLogin){
-            whereConditions.push(`IsLogin = ${setSQLBooleanValue(IsLogin)}`);
+            whereConditions.push(`UM.IsLogin = ${setSQLBooleanValue(IsLogin)}`);
+        }
+        if(UserCatUkeyId){
+            whereConditions.push(`UM.UserCatUkeyId = ${setSQLStringValue(UserCatUkeyId)}`);
         }
         // Combine the WHERE conditions into a single string
         const whereString = whereConditions.length > 0 ? `WHERE ${whereConditions.join(' AND ')}` : '';
         const getUserList = {
-            getQuery: `SELECT * FROM UserMaster ${whereString} ORDER BY UserId DESC`,
-            countQuery: `SELECT COUNT(*) AS totalCount FROM UserMaster ${whereString}`,
+            getQuery: `SELECT UM.*, UCM.CategoryName FROM UserMaster UM
+            left join UserCategoryMaster UCM on UM.UserCatUkeyId = UCM.UserCatUkeyId
+             ${whereString} ORDER BY UserId DESC`,
+            countQuery: `SELECT COUNT(*) AS totalCount FROM UserMaster UM
+            left join UserCategoryMaster UCM on UM.UserCatUkeyId = UCM.UserCatUkeyId
+             ${whereString}`,
         };
         const result = await getCommonAPIResponse(req, res, getUserList);
         return res.json(result);
@@ -41,17 +48,17 @@ const fetchUserMaster = async (req, res) => {
 const addUserMaster = async (req, res) => {
     let {ProfiilePic = null} = req.body;
     try {
-        const { Mobile1, Role = 'User', IsActive = true, flag = 'A', Email = '', BusinessCategory = '', CompanyName = '', MemberType = '', FirstName = null, NotificationToken = '', MemberCategory = '' } = req.body;
+        const { Mobile1, Role = 'User', IsActive = true, flag = 'A', Email = '', BusinessCategory = '', CompanyName = '', MemberType = '', FirstName = null, NotificationToken = '', MemberCategory = '', UserCatUkeyId = '' } = req.body;
 
         ProfiilePic = req?.files?.ProfiilePic?.length ? `${req?.files?.ProfiilePic[0]?.filename}` : ProfiilePic;
-        const fieldCheck = checkKeysAndRequireValues(['Mobile1'], req.body);
+        const fieldCheck = checkKeysAndRequireValues(['Mobile1', 'UserCatUkeyId'], req.body);
         if (fieldCheck.length !== 0) {
             if (ProfiilePic) deleteImage(req?.files?.ProfiilePic?.[0]?.path); // Only delete if `Img` exists
             return res.status(400).send(errorMessage(`${fieldCheck} is required`));
         }
         const { IPAddress, ServerName, EntryTime  } = getCommonKeys(req);
         const UUID = generateUUID();
-        const insertQuery = `INSERT INTO UserMaster (FirstName, UserUkeyId, Mobile1, Role, IsActive, flag, Email, BusinessCategory, CompanyName, MemberType, NotificationToken, ProfiilePic, MemberCategory, IpAddress, HostName, EntryDate) VALUES ( ${setSQLStringValue(FirstName)}, N'${UUID}', '${Mobile1}', N'${Role}', ${setSQLBooleanValue(IsActive)}, N'${flag}', N'${Email}', N'${BusinessCategory}', N'${CompanyName}', N'${MemberType}', N'${NotificationToken}', ${setSQLStringValue(ProfiilePic)}, ${setSQLStringValue(MemberCategory)}, '${IPAddress}', '${ServerName}', '${EntryTime}')`;
+        const insertQuery = `INSERT INTO UserMaster (FirstName, UserUkeyId, UserCatUkeyId, Mobile1, Role, IsActive, flag, Email, BusinessCategory, CompanyName, MemberType, NotificationToken, ProfiilePic, MemberCategory, IpAddress, HostName, EntryDate) VALUES ( ${setSQLStringValue(FirstName)}, N'${UUID}', ${setSQLStringValue(UserCatUkeyId)}, '${Mobile1}', N'${Role}', ${setSQLBooleanValue(IsActive)}, N'${flag}', N'${Email}', N'${BusinessCategory}', N'${CompanyName}', N'${MemberType}', N'${NotificationToken}', ${setSQLStringValue(ProfiilePic)}, ${setSQLStringValue(MemberCategory)}, '${IPAddress}', '${ServerName}', '${EntryTime}')`;
         // const insertQuery = `INSERT INTO UserMaster (UserUkeyId, Mobile1, Role, IsActive, flag, Email,  IpAddress, HostName, EntryDate, ) VALUES (N'${generateUUID()}', '${Mobile1}', N'${Role}', ${setSQLBooleanValue(IsActive)}, N'${flag}', N'${Email}', N'${getServerIpAddress()}', N'${getServerName()}', '${EntryTime}')`;
         const result = await pool.query(insertQuery);
         
@@ -62,7 +69,7 @@ const addUserMaster = async (req, res) => {
         const options = { expiresIn: '365d' }; // Token expiration time
 
         const token = jwt.sign({ UserUkeyId: UUID, Mobile1, Role }, SECRET_KEY, options);
-        return res.status(200).send({...successMessage('Data inserted Successfully!'), verify: true, token, Mobile1, UserUkeyId: UUID, Role, NotificationToken});
+        return res.status(200).send({...successMessage('Data inserted Successfully!'), verify: true, token, Mobile1, UserUkeyId: UUID, Role, NotificationToken, UserCatUkeyId});
     } catch (error) {
         if (ProfiilePic) deleteImage(req?.files?.ProfiilePic?.[0]?.path); // Only delete if `Img` exists
         console.log('Add user master Error :', error);
@@ -74,9 +81,9 @@ const updateUserMaster = async (req, res) => {
     let {ProfiilePic = null} = req.body;
     ProfiilePic = req?.files?.ProfiilePic?.length ? `${req?.files?.ProfiilePic[0]?.filename}` : ProfiilePic;
     try {
-        const { Mobile1, Role = 'User', IsActive = true, flag = 'U', Email = '', UserUkeyId, BusinessCategory = '', CompanyName = '', MemberType = '', FirstName = null, NotificationToken = '', CityName = null, MemberCategory = '' } = req.body;
+        const { Mobile1, Role = 'User', IsActive = true, flag = 'U', Email = '', UserUkeyId, BusinessCategory = '', CompanyName = '', MemberType = '', FirstName = null, NotificationToken = '', CityName = null, MemberCategory = '', UserCatUkeyId = '' } = req.body;
 
-        const fieldCheck = checkKeysAndRequireValues(['Mobile1', 'UserUkeyId'], req.body);
+        const fieldCheck = checkKeysAndRequireValues(['Mobile1', 'UserUkeyId', 'UserCatUkeyId'], req.body);
         if (fieldCheck.length !== 0) {
             if (ProfiilePic) deleteImage(req?.files?.ProfiilePic?.[0]?.path); // Only delete if `Img` exists
             return res.status(400).send(errorMessage(`${fieldCheck} is required`));
@@ -87,7 +94,7 @@ const updateUserMaster = async (req, res) => {
         const oldImg = oldImgResult.recordset?.[0]?.ProfiilePic;
 
         const { IPAddress, ServerName, EntryTime  } = getCommonKeys(req);
-        const updateQuery = `UPDATE UserMaster SET Mobile1 = '${Mobile1}', Role = N'${Role}', IsActive = ${setSQLBooleanValue(IsActive)}, flag = N'${flag}', Email = N'${Email}', BusinessCategory = N'${BusinessCategory}', CompanyName = N'${CompanyName}', MemberType = N'${MemberType}', IpAddress = '${IPAddress}', HostName = '${ServerName}', EntryDate = '${EntryTime}', FirstName = ${setSQLStringValue(FirstName)}, NotificationToken = N'${NotificationToken}', ProfiilePic = ${setSQLStringValue(ProfiilePic)}, CityName = ${setSQLStringValue(CityName)}, MemberCategory = ${setSQLStringValue(MemberCategory)} WHERE UserUkeyId = '${UserUkeyId}'`;
+        const updateQuery = `UPDATE UserMaster SET Mobile1 = '${Mobile1}', Role = N'${Role}', IsActive = ${setSQLBooleanValue(IsActive)}, flag = N'${flag}', Email = N'${Email}', BusinessCategory = N'${BusinessCategory}', CompanyName = N'${CompanyName}', MemberType = N'${MemberType}', IpAddress = '${IPAddress}', HostName = '${ServerName}', EntryDate = '${EntryTime}', FirstName = ${setSQLStringValue(FirstName)}, NotificationToken = N'${NotificationToken}', ProfiilePic = ${setSQLStringValue(ProfiilePic)}, CityName = ${setSQLStringValue(CityName)}, MemberCategory = ${setSQLStringValue(MemberCategory)}, UserCatUkeyId = ${setSQLStringValue(UserCatUkeyId)} WHERE UserUkeyId = '${UserUkeyId}'`;
         const result = await pool.query(updateQuery);
         if (result?.rowsAffected[0] === 0) {
             if (ProfiilePic) deleteImage(req?.files?.ProfiilePic?.[0]?.path); // Only delete if `Img` exists
@@ -95,7 +102,7 @@ const updateUserMaster = async (req, res) => {
         }
         if (oldImg && req.files && req.files.ProfiilePic && req.files.ProfiilePic.length > 0) deleteImage('./media/User/' + oldImg); // Only delete old image if it exists
 
-        return res.status(200).send(successMessage('Data updated Successfully!'));
+        return res.status(200).send({...successMessage('Data updated Successfully!'), ...req.body});
     } catch (error) {
         if (ProfiilePic) deleteImage(req?.files?.ProfiilePic?.[0]?.path); // Only delete if `Img` exists
         console.log('Update user master Error :', error);
