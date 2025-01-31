@@ -90,12 +90,12 @@ const FetchVolunteerMasterDetails = async (req, res) => {
                     VM.[EntryDate],
                     VM.[flag],
                     COUNT(LT.[LogId]) AS LogCount
-                FROM [MyEventZ].[dbo].[VolunteerMaster] VM
+                FROM [VolunteerMaster] VM
                 LEFT JOIN (
                     SELECT 
                         [LogId],
                         [VolunteerUkeyId]
-                    FROM [MyEventZ].[dbo].[LogTable]
+                    FROM [LogTable]
                 ) LT ON VM.[VolunteerUkeyId] = LT.[VolunteerUkeyId]
                 ${whereString}
                 GROUP BY 
@@ -130,12 +130,12 @@ const FetchVolunteerMasterDetails = async (req, res) => {
                 FROM (
                     SELECT 
                         VM.[VolunteerId]
-                    FROM [MyEventZ].[dbo].[VolunteerMaster] VM
+                    FROM [VolunteerMaster] VM
                     LEFT JOIN (
                         SELECT 
                             [LogId],
                             [VolunteerUkeyId]
-                        FROM [MyEventZ].[dbo].[LogTable]
+                        FROM [LogTable]
                     ) LT ON VM.[VolunteerUkeyId] = LT.[VolunteerUkeyId]
                     ${whereString}
                     GROUP BY 
