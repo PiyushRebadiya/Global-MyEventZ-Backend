@@ -12,7 +12,7 @@ const FetchUser = async (req, res) =>{
 
 const AddUser = async (req, res) => {
     try{
-        const {OrganizerName, OrganizerMobile, OrganizerEmail, EventName, EventAddress, EventCity, UserName, Password = '', IsActive = true, flag = 'A', TypeofAddress, Address1 = '', Address2 = '', Pincode = '', IsPrimaryAddress, OrganizerParentUKeyId} = req.body;
+        const {OrganizerName, OrganizerMobile, OrganizerEmail, EventName, EventAddress, EventCity, UserName, Password = '', IsActive = true, flag = 'A', TypeofAddress, Address1 = '', Address2 = '', Pincode = '', IsPrimaryAddress, ParentOrganizerUkeyId} = req.body;
 
         const missingKeys = checkKeysAndRequireValues(['OrganizerName', 'OrganizerMobile', 'OrganizerEmail', 'EventName', 'EventAddress', 'EventCity', 'UserName', 'Password'], req.body);
 
@@ -41,9 +41,9 @@ const AddUser = async (req, res) => {
             
             const InsertOrgMst = `
                 INSERT INTO OrganizerMaster ( 
-                    OrganizerUkeyId, OrganizerParentUKeyId, OrganizerName, Mobile1, Email, EntryDate, flag, UserName, Password, IsActive
+                    OrganizerUkeyId, ParentOrganizerUkeyId, OrganizerName, Mobile1, Email, EntryDate, flag, UserName, Password, IsActive
                 ) VALUES (
-                    '${OrganizerUKeyId}', '${OrganizerParentUKeyId}', '${OrganizerName}', '${OrganizerMobile}', '${OrganizerEmail}', '${EntryTime}', 'A', '${UserName}', '${Password}', 1
+                    '${OrganizerUKeyId}', '${ParentOrganizerUkeyId}', '${OrganizerName}', '${OrganizerMobile}', '${OrganizerEmail}', '${EntryTime}', 'A', '${UserName}', '${Password}', 1
                 );    
             `
 
@@ -83,7 +83,7 @@ const AddUser = async (req, res) => {
                 , OrganizerMobile
                 , UserName
                 , OrganizerUKeyId
-                , OrganizerParentUKeyId
+                , ParentOrganizerUkeyId
             }),
             OrganizerUKeyId,
             ...req.body
@@ -124,11 +124,12 @@ const LoginUser = async (req, res) => {
         }
         return res.status(200).json({
             ...successMessage('User Verified Successfully.'), IsVerified : true, token : generateJWTT({
-                OrganizerName : result?.recordset?.[0]?.OrganizerName
-                , OrganizerMobile : result?.recordset?.[0]?.OrganizerMobile
-                , UserName : result?.recordset?.[0]?.UserName
-                , OrganizerUKeyId : result?.recordset?.[0]?.OrganizerUKeyId
-                , OrganizerParentUKeyId: result?.recordset?.[0]?.OrganizerParentUKeyId
+                OrganizerName : result?.recordset[0]?.OrganizerName
+                , OrganizerMobile : result?.recordset[0]?.Mobile1
+                , UserName : result?.recordset[0]?.UserName
+                , OrganizerUkeyId : result?.recordset[0]?.OrganizerUkeyId
+                , ParentOrganizerUkeyId: result?.recordset[0]?.ParentOrganizerUkeyId
+                , Role: result?.recordset[0]?.Role
             }),
             ...result?.recordset[0]
     });
