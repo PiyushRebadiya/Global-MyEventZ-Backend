@@ -12,7 +12,7 @@ const FetchUser = async (req, res) =>{
 
 const AddUser = async (req, res) => {
     try{
-        const {OrganizerName, OrganizerMobile, OrganizerEmail, EventName, EventAddress, EventCity, UserName, Password = '', IsActive = true, flag = 'A', TypeofAddress, Address1 = '', Address2 = '', Pincode = '', IsPrimaryAddress} = req.body;
+        const {OrganizerName, OrganizerMobile, OrganizerEmail, EventName, EventAddress, EventCity, UserName, Password = '', IsActive = true, flag = 'A', TypeofAddress, Address1 = '', Address2 = '', Pincode = '', IsPrimaryAddress, OrganizerParentUKeyId} = req.body;
 
         const missingKeys = checkKeysAndRequireValues(['OrganizerName', 'OrganizerMobile', 'OrganizerEmail', 'EventName', 'EventAddress', 'EventCity', 'UserName', 'Password'], req.body);
 
@@ -41,9 +41,9 @@ const AddUser = async (req, res) => {
             
             const InsertOrgMst = `
                 INSERT INTO OrganizerMaster ( 
-                    OrganizerUkeyId, OrganizerName, Mobile1, Email, EntryDate, flag, UserName, Password, IsActive
+                    OrganizerUkeyId, OrganizerParentUKeyId, OrganizerName, Mobile1, Email, EntryDate, flag, UserName, Password, IsActive
                 ) VALUES (
-                    '${OrganizerUKeyId}', '${OrganizerName}', '${OrganizerMobile}', '${OrganizerEmail}', '${EntryTime}', 'A', '${UserName}', '${Password}', 1
+                    '${OrganizerUKeyId}', '${OrganizerParentUKeyId}', '${OrganizerName}', '${OrganizerMobile}', '${OrganizerEmail}', '${EntryTime}', 'A', '${UserName}', '${Password}', 1
                 );    
             `
 
@@ -83,6 +83,7 @@ const AddUser = async (req, res) => {
                 , OrganizerMobile
                 , UserName
                 , OrganizerUKeyId
+                , OrganizerParentUKeyId
             }),
             OrganizerUKeyId,
             ...req.body
@@ -127,6 +128,7 @@ const LoginUser = async (req, res) => {
                 , OrganizerMobile : result?.recordset?.[0]?.OrganizerMobile
                 , UserName : result?.recordset?.[0]?.UserName
                 , OrganizerUKeyId : result?.recordset?.[0]?.OrganizerUKeyId
+                , OrganizerParentUKeyId: result?.recordset?.[0]?.OrganizerParentUKeyId
             }),
             ...result?.recordset[0]
     });
