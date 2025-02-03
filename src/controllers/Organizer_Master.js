@@ -7,9 +7,9 @@ const FetchOrganizerDetails = async (req, res)=>{
         let whereConditions = [];
 
         if(req.user.Role === 'Admin'){
-            whereConditions.push(`OrganizerUkeyId = '${req.user.OrganizerUkeyId}'`);
+            whereConditions.push(`OrganizerUkeyId = '${req.user.OrganizerUkeyId}' OR ParentOrganizerUkeyId = '${req.user.OrganizerUkeyId}'`);
         }else if(req.user.Role === 'SubAdmin'){
-            whereConditions.push(`OrganizerUkeyId = '${req.user.ParentOrganizerUkeyId}'`);
+            whereConditions.push(`OrganizerUkeyId = '${req.user.ParentOrganizerUkeyId}' OR ParentOrganizerUkeyId = '${req.user.ParentOrganizerUkeyId}'`);
         } else if(req.user.Role === 'SuperAdmin'){
         }
 
