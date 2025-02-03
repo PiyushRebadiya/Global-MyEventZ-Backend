@@ -1,4 +1,4 @@
-const { errorMessage, successMessage, checkKeysAndRequireValues, generateCODE, setSQLBooleanValue, getCommonKeys, generateJWTT, generateUUID } = require("../common/main");
+const { errorMessage, successMessage, checkKeysAndRequireValues, generateCODE, setSQLBooleanValue, getCommonKeys, generateJWTT, generateUUID, setSQLStringValue } = require("../common/main");
 const {pool} = require('../sql/connectToDatabase');
 
 const FetchUser = async (req, res) =>{
@@ -12,12 +12,17 @@ const FetchUser = async (req, res) =>{
 
 const AddUser = async (req, res) => {
     try{
-        const {OrganizerName, OrganizerMobile, OrganizerEmail, EventName, EventAddress, EventCity, UserName, Password = '', IsActive = true, flag = 'A', TypeofAddress, Address1 = '', Address2 = '', Pincode = '', IsPrimaryAddress, ParentOrganizerUkeyId} = req.body;
+        const {OrganizerName, OrganizerMobile, OrganizerEmail, EventName, EventAddress, EventCity, UserName, Password = '', IsActive = true, flag = 'A', TypeofAddress, Address1 = '', Address2 = '', Pincode = '', IsPrimaryAddress, ParentOrganizerUkeyId, Role} = req.body;
 
         const missingKeys = checkKeysAndRequireValues(['OrganizerName', 'OrganizerMobile', 'OrganizerEmail', 'EventName', 'EventAddress', 'EventCity', 'UserName', 'Password'], req.body);
 
         if(missingKeys.length > 0){
             return res.status(400).json(errorMessage(`${missingKeys.join(', ')} is Required`));
+        }
+        if(!Role) {
+            return res.status(400).json(errorMessage('Role Is required while creating new Organization.'));
+        }else if(Role !== 'Admin' && Role !== 'SubAdmin'){
+            return res.status(400).json(errorMessage("Role can only be 'Admin' or 'SubAdmin'."));
         }
 
         const OrganizerUKeyId = generateUUID();
@@ -33,7 +38,7 @@ const AddUser = async (req, res) => {
                 INSERT INTO OrganizerRegistration ( 
                     OrganizerUkeyId, OrganizerName, OrganizerMobile, OrganizerEmail, EventCode, EventName, EventAddress, EventCity, UserName, Password, ServerName, IsActive, IpAddress, EntryDate, flag
                 ) VALUES (
-                    '${OrganizerUKeyId}', '${OrganizerName}', '${OrganizerMobile}', '${OrganizerEmail}', '${EventCode}', '${EventName}', '${EventAddress}', '${EventCity}', '${UserName}', '${Password}', '${ServerName}', ${setSQLBooleanValue(IsActive)}, '${IPAddress}', '${EntryTime}', 'A'
+                    ${setSQLStringValue(OrganizerUKeyId)}, ${setSQLStringValue(OrganizerName)}, ${setSQLStringValue(OrganizerMobile)}, ${setSQLStringValue(OrganizerEmail)}, ${setSQLStringValue(EventCode)}, ${setSQLStringValue(EventName)}, ${setSQLStringValue(EventAddress)}, ${setSQLStringValue(EventCity)}, ${setSQLStringValue(UserName)}, ${setSQLStringValue(Password)}, ${setSQLStringValue(ServerName)}, ${setSQLBooleanValue(IsActive)}, ${setSQLStringValue(IPAddress)}, ${setSQLStringValue(EntryTime)}, 'A'
                 );
             `
 
@@ -41,9 +46,9 @@ const AddUser = async (req, res) => {
             
             const InsertOrgMst = `
                 INSERT INTO OrganizerMaster ( 
-                    OrganizerUkeyId, ParentOrganizerUkeyId, OrganizerName, Mobile1, Email, EntryDate, flag, UserName, Password, IsActive
+                    OrganizerUkeyId, ParentOrganizerUkeyId, OrganizerName, Mobile1, Email, EntryDate, flag, UserName, Password, IsActive, Role
                 ) VALUES (
-                    '${OrganizerUKeyId}', '${ParentOrganizerUkeyId}', '${OrganizerName}', '${OrganizerMobile}', '${OrganizerEmail}', '${EntryTime}', 'A', '${UserName}', '${Password}', 1
+                    ${setSQLStringValue(OrganizerUKeyId)}, ${setSQLStringValue(ParentOrganizerUkeyId)}, ${setSQLStringValue(OrganizerName)}, ${setSQLStringValue(OrganizerMobile)}, ${setSQLStringValue(OrganizerEmail)}, ${setSQLStringValue(EntryTime)}, 'A', ${setSQLStringValue(UserName)}, ${setSQLStringValue(Password)}, 1, ${setSQLStringValue(Role)}
                 );    
             `
 
@@ -53,7 +58,7 @@ const AddUser = async (req, res) => {
                 INSERT INTO EventMaster ( 
                     EventUKeyId, OrganizerUkeyId, EventName, EventCode, AddressUkeyID, EntryDate, IsActive
                 ) VALUES (
-                    '${EventUKeyId}', '${OrganizerUKeyId}', '${EventName}', '${EventCode}', '${AddressUkeyID}', '${EntryTime}', 1
+                    ${setSQLStringValue(EventUKeyId)}, ${setSQLStringValue(OrganizerUKeyId)}, ${setSQLStringValue(EventName)}, ${setSQLStringValue(EventCode)}, ${setSQLStringValue(AddressUkeyID)}, ${setSQLStringValue(EntryTime)}, 1
                 );    
             `
 
@@ -63,7 +68,7 @@ const AddUser = async (req, res) => {
                 INSERT INTO AddressMaster ( 
                     AddressUkeyID, EventUKeyId, OrganizerUkeyId, TypeofAddress, Address1, Pincode, CityName, IsPrimaryAddress, IsActive, EntryDate
                 ) VALUES (
-                    '${AddressUkeyID}', '${EventUKeyId}', '${OrganizerUKeyId}', '${TypeofAddress}', '${EventAddress}', '${Pincode}', '${EventCity}', ${setSQLBooleanValue(IsPrimaryAddress)}, 1, '${EntryTime}'
+                    ${setSQLStringValue(AddressUkeyID)}, ${setSQLStringValue(EventUKeyId)}, ${setSQLStringValue(OrganizerUKeyId)}, ${setSQLStringValue(TypeofAddress)}, ${setSQLStringValue(EventAddress)}, '${Pincode}', ${setSQLStringValue(EventCity)}, ${setSQLBooleanValue(IsPrimaryAddress)}, 1, ${setSQLStringValue(EntryTime)}
                 ); 
             `
 
