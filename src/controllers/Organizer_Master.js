@@ -43,7 +43,11 @@ const OrginazerMaster = async (req, res)=>{
     
     try{
         const {IPAddress, ServerName, EntryTime} = getCommonKeys();
-
+        if(!Role) {
+            return res.status(400).json(errorMessage('Role Is required while creating new Organization.'));
+        }else if(Role !== 'Admin' && Role !== 'SubAdmin'){
+            return res.status(400).json(errorMessage("Role can only be 'Admin' or 'SubAdmin'."));
+        }
         const insertQuery = `
             INSERT INTO OrganizerMaster (OrganizerUkeyId, ParentOrganizerUkeyId, OrganizerName, Mobile1, Mobile2, Email, AliasName, Description, Add1, Add2, City, StateCode, StateName, UPI, IsActive, UsrID, IpAddress, HostName, EntryDate, flag, UserName, Password, Role, RazorpayKeyId, RazorpaySecretKey, RazorpayBusinessName) VALUES (
             ${setSQLStringValue(OrganizerUkeyId)},
