@@ -75,7 +75,7 @@ router.put("/update_ticket_master", auth, TicketMasterController.updateTicketMas
 router.delete("/delete_ticket_master", auth, TicketMasterController.deleteTicketMaster)
 
 router.get('/fetch_orginizer_master', auth, OrginizerMasterController.FetchOrganizerDetails);
-router.post('/orginizer_master', auth, OrginizerMasterController.OrginazerMaster);
+router.post('/orginizer_master', OrginizerMasterController.OrginazerMaster);
 router.delete('/delete_orginizer_master', auth, OrginizerMasterController.RemoveOrginazer);
 
 router.get('/generate_qr_code', QRCodeMasterController.generateQRCode);
