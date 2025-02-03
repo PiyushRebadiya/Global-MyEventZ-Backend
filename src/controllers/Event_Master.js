@@ -6,12 +6,12 @@ const EventList = async (req, res) => {
         const { EventUkeyId, IsActive } = req.query;
         let whereConditions = [];
 
-        if(req.user.Role === 'Admin'){
+        if(req.user.Role === 'SuperAdmin' || req.user.OrganizerUkeyId === '12418E7E-4AA6-4ADB-A27D-34BBF9AF653A' || req.user.ParentOrganizerUkeyId === '12418E7E-4AA6-4ADB-A27D-34BBF9AF653A'){
+        } else if(req.user.Role === 'Admin'){
             whereConditions.push(`em.OrganizerUkeyId = '${req.user.OrganizerUkeyId}'`);
         }else if(req.user.Role === 'SubAdmin'){
             whereConditions.push(`em.OrganizerUkeyId = '${req.user.ParentOrganizerUkeyId}'`);
-        } else if(req.user.Role === 'SuperAdmin'){
-        }
+        } else {}
 
         // Build the WHERE clause based on the Status
         if (EventUkeyId) {
