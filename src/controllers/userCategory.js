@@ -39,7 +39,7 @@ const createUserCategory = async (req, res) => {
         const {IPAddress, ServerName, EntryTime} = getCommonKeys(req);
         
         const insertQuery = `
-            INSERT INTO UserCategoryMaster (UserCatUkeyId, CategoryName, IsActive, flag, IpAddress, HostName, EntryDate) VALUES (
+            INSERT INTO UserCategoryMaster (UserCatUkeyId, CategoryName, IsActive, flag, IpAddress, HostName, EntryDate, OrganizerId) VALUES (
                 ${setSQLStringValue(UKeyId)}
                 , ${setSQLStringValue(CategoryName)}
                 , ${setSQLBooleanValue(IsActive)}
@@ -47,6 +47,7 @@ const createUserCategory = async (req, res) => {
                 , ${setSQLStringValue(IPAddress)}
                 , ${setSQLStringValue(ServerName)}
                 , ${setSQLStringValue(EntryTime)}
+                , ${setSQLNumberValue(req?.user?.OrganizerId)}
             );
         `
 
