@@ -99,11 +99,10 @@ const setSQLOrderId = (value) => {
 }
 
 const setSQLStringValue = (value) => {
-    if (!value || value === null || value === undefined || value === '') {
-        return `''`
+    if (value === null || value === undefined || value === '') {
+        return `''`;  // Return an empty string if value is falsy
     }
-    return `N'${value.trim()}'`
-    // return escapeSQLString(value)
+    return `N'${String(value).trim()}'`;  // Ensure value is a string before trimming
 }
 
 const setSQLDateTime = (date) => {

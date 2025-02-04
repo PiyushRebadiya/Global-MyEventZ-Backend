@@ -72,9 +72,9 @@ const addEvent = async (req, res) => {
         // SQL Queries
         const insertQuery = `
             INSERT INTO EventMaster (
-                EventUkeyId, OrganizerUkeyId, EventName, Alias, EventDate, EventCode, EventDetails, AddressUkeyID, IsActive, Img1, Img2, Img3, IpAddress, HostName, EntryDate, flag, Location, IsRazorpay
+                EventUkeyId, OrganizerUkeyId, EventName, Alias, EventDate, EventCode, EventDetails, AddressUkeyID, IsActive, Img1, Img2, Img3, IpAddress, HostName, EntryDate, flag, Location, IsRazorpay, OrganizerId
             ) VALUES (
-                ${setSQLStringValue(EventUkeyId)}, ${setSQLStringValue(OrganizerUkeyId)}, ${setSQLStringValue(EventName)}, ${setSQLStringValue(EventAlias)}, ${setSQLDateTime(EventDate)}, ${setSQLStringValue(EventCode)}, ${setSQLStringValue(EventDetails)}, ${setSQLStringValue(AddressUkeyId)}, ${setSQLBooleanValue(IsActiveEvent)}, ${setSQLStringValue(Img1)}, ${ setSQLStringValue(Img2)}, ${setSQLStringValue(Img3)}, '${IPAddress}', '${ServerName}', '${EntryTime}', '${flag}', ${setSQLStringValue(Location)}, ${setSQLBooleanValue(IsRazorpay)}
+                ${setSQLStringValue(EventUkeyId)}, ${setSQLStringValue(OrganizerUkeyId)}, ${setSQLStringValue(EventName)}, ${setSQLStringValue(EventAlias)}, ${setSQLDateTime(EventDate)}, ${setSQLStringValue(EventCode)}, ${setSQLStringValue(EventDetails)}, ${setSQLStringValue(AddressUkeyId)}, ${setSQLBooleanValue(IsActiveEvent)}, ${setSQLStringValue(Img1)}, ${ setSQLStringValue(Img2)}, ${setSQLStringValue(Img3)}, '${IPAddress}', '${ServerName}', '${EntryTime}', '${flag}', ${setSQLStringValue(Location)}, ${setSQLBooleanValue(IsRazorpay)}, ${setSQLNumberValue(req?.user?.OrganizerId)}
             );
 
             INSERT INTO AddressMaster (
@@ -83,8 +83,6 @@ const addEvent = async (req, res) => {
                 ${setSQLStringValue(AddressUkeyId)}, ${setSQLStringValue(EventUkeyId)}, ${setSQLStringValue(OrganizerUkeyId)}, ${setSQLStringValue(AddressAlias)}, ${setSQLStringValue(TypeofAddress)}, ${setSQLStringValue(Address1)}, ${setSQLStringValue(Address2)}, ${setSQLNumberValue(Pincode)}, ${setSQLNumberValue(StateCode)}, ${setSQLStringValue(StateName)}, ${setSQLStringValue(CityName)}, ${setSQLStringValue(CountryName)}, ${setSQLBooleanValue(IsPrimaryAddress)}, ${setSQLStringValue(IsActiveAddress)}, ${setSQLStringValue(MobileNumber)}, ${setSQLStringValue(Email)}
             );
         `;
-
-        console.log(insertQuery);
 
         const deleteQuery = `
             DELETE FROM AddressMaster WHERE EventUkeyId = '${EventUkeyId}';

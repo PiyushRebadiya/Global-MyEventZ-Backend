@@ -135,6 +135,7 @@ const LoginUser = async (req, res) => {
                 , OrganizerUkeyId : result?.recordset[0]?.OrganizerUkeyId
                 , ParentOrganizerUkeyId: result?.recordset[0]?.ParentOrganizerUkeyId
                 , Role: result?.recordset[0]?.Role
+                , OrganizerId : result?.recordset[0]?.OrganizerId
             }),
             ...result?.recordset[0]
     });
