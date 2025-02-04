@@ -1,4 +1,4 @@
-const { errorMessage, successMessage, checkKeysAndRequireValues, generateCODE, setSQLBooleanValue, getCommonKeys, generateJWTT, generateUUID, getCommonAPIResponse, deleteImage } = require("../common/main");
+const { errorMessage, successMessage, checkKeysAndRequireValues, generateCODE, setSQLBooleanValue, getCommonKeys, generateJWTT, generateUUID, getCommonAPIResponse, deleteImage, setSQLNumberValue } = require("../common/main");
 const {pool} = require('../sql/connectToDatabase');
 
 const FetchSponsorCategoryMasterDetails = async (req, res)=>{
@@ -33,9 +33,9 @@ const SponsorCategoryMaster = async (req, res) => {
     try{
         const insertQuery = `
             INSERT INTO SponsorCatMaster (
-                UkeyId, Name, IsActive
+                UkeyId, Name, IsActive, OrganizerId
             ) VALUES (
-                '${UkeyId}', '${Name}', ${setSQLBooleanValue(IsActive)}
+                '${UkeyId}', '${Name}', ${setSQLBooleanValue(IsActive)}, ${setSQLNumberValue(req?.user?.OrganizerId)}
             );
         `
         const deleteQuery = `

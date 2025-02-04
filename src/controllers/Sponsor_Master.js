@@ -1,4 +1,4 @@
-const { errorMessage, successMessage, checkKeysAndRequireValues, generateCODE, setSQLBooleanValue, getCommonKeys, generateJWTT, generateUUID, getCommonAPIResponse, deleteImage, setSQLStringValue } = require("../common/main");
+const { errorMessage, successMessage, checkKeysAndRequireValues, generateCODE, setSQLBooleanValue, getCommonKeys, generateJWTT, generateUUID, getCommonAPIResponse, deleteImage, setSQLStringValue, setSQLNumberValue } = require("../common/main");
 const {pool} = require('../sql/connectToDatabase');
 
 const FetchSponsorMasterDetails = async (req, res)=>{
@@ -45,7 +45,7 @@ const SponsorMaster = async (req, res) => {
             INSERT INTO SponsorMaster (
                 SponsorUkeyId, SponsorCatUkeyId, Name, Mobile, CompanyName, Img, UsrName, UsrID, IpAddress, HostName, EntryDate, flag, OrganizerUkeyId, EventUkeyId,Description1, Description2, Description3, Description4, Link, LinkType, OrganizerId
             ) VALUES (
-                N'${SponsorUkeyId}', N'${SponsorCatUkeyId}', N'${Name}', N'${Mobile}', N'${CompanyName}', N'${Img}', N'${UsrName}', N'${UsrID}', N'${IPAddress}', N'${ServerName}', N'${EntryTime}', N'${flag}', N'${OrganizerUkeyId}', N'${EventUkeyId}', '${Description1}', '${Description2}', '${Description3}', '${Description4}', ${setSQLStringValue(Link)}, ${setSQLStringValue(LinkType)}, ${req?.user?.OrganizerId}
+                N'${SponsorUkeyId}', N'${SponsorCatUkeyId}', N'${Name}', N'${Mobile}', N'${CompanyName}', N'${Img}', N'${UsrName}', N'${UsrID}', N'${IPAddress}', N'${ServerName}', N'${EntryTime}', N'${flag}', N'${OrganizerUkeyId}', N'${EventUkeyId}', '${Description1}', '${Description2}', '${Description3}', '${Description4}', ${setSQLStringValue(Link)}, ${setSQLStringValue(LinkType)}, ${setSQLNumberValue(req?.user?.OrganizerId)}
             );
         `;
 
