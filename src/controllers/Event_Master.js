@@ -42,7 +42,7 @@ const EventList = async (req, res) => {
 				LEFT JOIN 
                     OrganizerMaster om 
                 ON 
-                    om.OrganizerUkeyId = om.OrganizerUkeyId  
+                    om.OrganizerUkeyId = em.OrganizerUkeyId  
                 ${whereString} 
                 ORDER BY em.EventId DESC
             `,
