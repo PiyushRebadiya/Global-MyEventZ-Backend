@@ -57,7 +57,7 @@ const EventList = async (req, res) => {
 
 const addEvent = async (req, res) => {
     const {
-        OrganizerUkeyId = null, EventName = null, EventAlias = null, EventDate = null, EventDetails = null, IsActiveEvent = true, AddressAlias = null, TypeofAddress = null, Address1 = null, Address2 = null, Pincode = null, StateCode = null, StateName = null, CityName = null, CountryName = null, IsPrimaryAddress = null, IsActiveAddress = true, MobileNumber = null, Email = null, flag = null, EventUkeyId =  generateUUID(), AddressUkeyId = generateUUID(), EventCode = generateCODE(EventName), Location = null, IsRazorpay = false
+        OrganizerUkeyId = null, EventName = null, EventAlias = null, EventDate = null, EventDetails = null, IsActiveEvent = true, AddressAlias = null, TypeofAddress = null, Address1 = null, Address2 = null, Pincode = null, StateCode = null, StateName = null, CityName = null, CountryName = null, IsPrimaryAddress = null, IsActiveAddress = true, MobileNumber = null, Email = null, flag = null, EventUkeyId =  generateUUID(), AddressUkeyId = generateUUID(), EventCode = generateCODE(EventName), Location = null, IsRazorpay = false, TicketLimit = null
     } = req.body;
 
     let {Img1 = null, Img2 = null, Img3 = null} = req.body
@@ -72,9 +72,9 @@ const addEvent = async (req, res) => {
         // SQL Queries
         const insertQuery = `
             INSERT INTO EventMaster (
-                EventUkeyId, OrganizerUkeyId, EventName, Alias, EventDate, EventCode, EventDetails, AddressUkeyID, IsActive, Img1, Img2, Img3, IpAddress, HostName, EntryDate, flag, Location, IsRazorpay, OrganizerId
+                EventUkeyId, OrganizerUkeyId, EventName, Alias, EventDate, EventCode, EventDetails, AddressUkeyID, IsActive, Img1, Img2, Img3, IpAddress, HostName, EntryDate, flag, Location, IsRazorpay, OrganizerId, TicketLimit
             ) VALUES (
-                ${setSQLStringValue(EventUkeyId)}, ${setSQLStringValue(OrganizerUkeyId)}, ${setSQLStringValue(EventName)}, ${setSQLStringValue(EventAlias)}, ${setSQLDateTime(EventDate)}, ${setSQLStringValue(EventCode)}, ${setSQLStringValue(EventDetails)}, ${setSQLStringValue(AddressUkeyId)}, ${setSQLBooleanValue(IsActiveEvent)}, ${setSQLStringValue(Img1)}, ${ setSQLStringValue(Img2)}, ${setSQLStringValue(Img3)}, '${IPAddress}', '${ServerName}', '${EntryTime}', '${flag}', ${setSQLStringValue(Location)}, ${setSQLBooleanValue(IsRazorpay)}, ${setSQLNumberValue(req?.user?.OrganizerId)}
+                ${setSQLStringValue(EventUkeyId)}, ${setSQLStringValue(OrganizerUkeyId)}, ${setSQLStringValue(EventName)}, ${setSQLStringValue(EventAlias)}, ${setSQLDateTime(EventDate)}, ${setSQLStringValue(EventCode)}, ${setSQLStringValue(EventDetails)}, ${setSQLStringValue(AddressUkeyId)}, ${setSQLBooleanValue(IsActiveEvent)}, ${setSQLStringValue(Img1)}, ${ setSQLStringValue(Img2)}, ${setSQLStringValue(Img3)}, '${IPAddress}', '${ServerName}', '${EntryTime}', '${flag}', ${setSQLStringValue(Location)}, ${setSQLBooleanValue(IsRazorpay)}, ${setSQLNumberValue(req?.user?.OrganizerId)}, ${setSQLNumberValue(TicketLimit)}
             );
 
             INSERT INTO AddressMaster (
