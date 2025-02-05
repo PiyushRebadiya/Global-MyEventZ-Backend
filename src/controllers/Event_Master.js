@@ -32,13 +32,17 @@ const EventList = async (req, res) => {
                     em.*, 
                     am.Address1, am.Address2, am.Pincode, am.StateName, am.CityName, 
                     am.IsPrimaryAddress, am.IsActive AS IsActiveAddress, 
-                    am.MobileNumber, am.Email 
+                    am.MobileNumber, am.Email, om.OrganizerName 
                 FROM 
                     EventMaster em 
                 LEFT JOIN 
                     AddressMaster am 
                 ON 
                     am.AddressUkeyID = em.AddressUkeyID 
+				LEFT JOIN 
+                    OrganizerMaster om 
+                ON 
+                    om.OrganizerUkeyId = om.OrganizerUkeyId  
                 ${whereString} 
                 ORDER BY em.EventId DESC
             `,
