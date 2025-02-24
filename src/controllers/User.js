@@ -11,6 +11,12 @@ const AddOrginizer = async (req, res) => {
             return res.status(400).json(errorMessage(`${missingKeys.join(', ')} is Required`));
         }
 
+        const checkMobile = await pool.request().query(`select * from OrguserMaster where Mobile1 = ${setSQLStringValue(Mobile1)}`)
+
+        if(checkMobile.recordset.length > 0){
+            return res.status(400).json({...errorMessage('An account with this mobile number already exists. Please log in or use a different number to sign up.'), ErrorCode  : 2627})
+        }
+
         const OrganizerUKeyId = generateUUID();
         const EventUKeyId = generateUUID();
         const UserUkeyId = generateUUID();
@@ -82,19 +88,21 @@ const AddOrginizer = async (req, res) => {
 
 
 
-const LoginUser = async (req, res) => {
+const Loginorganizer = async (req, res) => {
     try{
-        const {OrganizerMobile, Password} = req.query;
+        const {Mobile1, Password} = req.body;
 
-        const missingKeys = checkKeysAndRequireValues(['OrganizerMobile', 'Password'], req.query);
+        const missingKeys = checkKeysAndRequireValues(['Mobile1', 'Password'], req.body);
 
         if(missingKeys.length > 0){
             return res.status(400).json(errorMessage(`${missingKeys.join(', ')} is required`))
         }
 
+        const {IPAddress, ServerName, EntryTime} = getCommonKeys(req); 
+
         const result = await pool.request().query(`
-            SELECT * FROM OrganizerMaster 
-            WHERE Mobile1 = '${OrganizerMobile}' AND Password = '${Password}' AND IsActive = 1
+            SELECT * FROM OrguserMaster 
+            WHERE Mobile1 = '${Mobile1}' AND Password = '${Password}' AND IsActive = 1
         `);
 
         if(result.rowsAffected[0] === 0){
@@ -102,15 +110,21 @@ const LoginUser = async (req, res) => {
         }
         return res.status(200).json({
             ...successMessage('User Verified Successfully.'), IsVerified : true, token : generateJWTT({
-                OrganizerName : result?.recordset[0]?.OrganizerName
-                , OrganizerMobile : result?.recordset[0]?.Mobile1
-                , UserName : result?.recordset[0]?.UserName
-                , OrganizerUkeyId : result?.recordset[0]?.OrganizerUkeyId
-                , ParentOrganizerUkeyId: result?.recordset[0]?.ParentOrganizerUkeyId
-                , Role: result?.recordset[0]?.Role
-                , OrganizerId : result?.recordset[0]?.OrganizerId
+                Role: result?.recordset[0]?.Role
+                , OrganizerUKeyId : result?.recordset[0]?.OrganizerUkeyId
+                , EventUKeyId : result?.recordset[0]?.EventUkeyId
+                , UserId : result?.recordset[0]?.UserId
             }),
-            ...result?.recordset[0]
+            UserId: result?.recordset[0]?.UserId,
+            UserUkeyId: result?.recordset[0]?.UserUkeyId,
+            EventUkeyId: result?.recordset[0]?.EventUkeyId,
+            OrganizerUkeyId: result?.recordset[0]?.OrganizerUkeyId,
+            FirstName: result?.recordset[0]?.FirstName,
+            Mobile1: result?.recordset[0]?.Mobile1,
+            Role: result?.recordset[0]?.Role,
+            IsActive: result?.recordset[0]?.IsActive,
+            IPAddress,
+            ServerName
     });
     }catch(error){
         console.log('Login User Error :', error);
@@ -120,5 +134,5 @@ const LoginUser = async (req, res) => {
 
 module.exports = {
     AddOrginizer,
-    LoginUser,
+    Loginorganizer,
 }

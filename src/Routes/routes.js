@@ -51,8 +51,8 @@ router.delete("/delete_user_master", auth, UserMasterController.deleteUserMaster
 
 router.post("/verify_user_master", UserMasterController.verifyHandler)
 
-router.get('/login', UserController.LoginUser);
-router.post('/orginizer_signup', UserController.AddOrginizer);
+router.post('/organizer_login', UserController.Loginorganizer);
+router.post('/organizer_signup', UserController.AddOrginizer);
 
 router.get('/fetch_event_list', auth, EventMasterController.EventList);
 router.post('/event_master', auth, EventUpload, EventController.addEvent);
