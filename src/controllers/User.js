@@ -33,9 +33,9 @@ const fetchOrganizer = async (req, res) => {
 
 const AddOrginizer = async (req, res) => {
     try{
-        const { OrganizerName, Mobile1, Mobile2, Email, AliasName, Description, Add1, Add2, City, StateCode, StateName, Password = '', Pincode = 0 } = req.body;
+        const { OrganizerName, Mobile1, Mobile2, Email, AliasName, Description, Add1, Add2, City, StateCode, StateName, Password = '', Pincode = 0, OrganizerUKeyId, EventUKeyId, UserUkeyId, AddressUkeyID } = req.body;
 
-        const missingKeys = checkKeysAndRequireValues(['OrganizerName', 'Mobile1', 'Add1', 'City', 'Password', 'Email'], req.body);
+        const missingKeys = checkKeysAndRequireValues(['OrganizerName', 'Mobile1', 'Add1', 'City', 'Password', 'Email', 'OrganizerUKeyId', 'EventUKeyId', 'UserUkeyId', 'AddressUkeyID'], req.body);
 
         if(missingKeys.length > 0){
             return res.status(400).json(errorMessage(`${missingKeys.join(', ')} is Required`));
@@ -47,10 +47,6 @@ const AddOrginizer = async (req, res) => {
             return res.status(400).json({...errorMessage('An account with this mobile number already exists. Please log in or use a different number to sign up.'), ErrorCode  : 2627})
         }
 
-        const OrganizerUKeyId = generateUUID();
-        const EventUKeyId = generateUUID();
-        const UserUkeyId = generateUUID();
-        const AddressUkeyID = generateUUID();
         const EventCode = generateCODE(OrganizerName);
         
         const {IPAddress, ServerName, EntryTime} = getCommonKeys(req); 
@@ -87,7 +83,7 @@ const AddOrginizer = async (req, res) => {
 
         const InsertEvent = `
         INSERT INTO EventMaster ( 
-            EventUKeyId, OrganizerUkeyId, EventName, EventCode, IsActive, IpAddress, HostName, EntryDate, EventDate, UsreID, AddressUkeyID
+            EventUKeyId, OrganizerUkeyId, EventName, EventCode, IsActive, IpAddress, HostName, EntryDate, EventDate, UserID, AddressUkeyID
         ) OUTPUT INSERTED.* VALUES (
             ${setSQLStringValue(EventUKeyId)}, ${setSQLStringValue(OrganizerUKeyId)}, 'Default Event', ${setSQLStringValue(EventCode)}, 1, ${setSQLStringValue(IPAddress)}, ${setSQLStringValue(ServerName)}, ${setSQLStringValue(EntryTime)}, GETDATE(), ${resultOrgUserMst.recordset[0].UserId}, ${setSQLStringValue(AddressUkeyID)}
             );
