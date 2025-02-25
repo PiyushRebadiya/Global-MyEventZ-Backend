@@ -38,6 +38,8 @@ const IsTicketUserList = require('../controllers/IsTicketUserList');
 const ReactDeployController = require('../controllers/React_Deploy_IIS');
 const professionCategoryMaster = require('../controllers/professionCategory.js');
 const userCategoryMaster = require('../controllers/userCategory');
+const StateController = require('../controllers/State');
+const CityController = require('../controllers/city');
 // const carouselController = require('../controllers/carousel');
 
 const auth = require("../middleware/auth");
@@ -53,6 +55,9 @@ router.post("/verify_user_master", UserMasterController.verifyHandler)
 
 router.post('/organizer_login', UserController.Loginorganizer);
 router.post('/organizer_signup', UserController.AddOrginizer);
+
+router.get('/fetch_state', StateController.fetchStateData);
+router.get('/fetch_city', CityController.fetchCityData);
 
 router.get('/fetch_event_list', auth, EventMasterController.EventList);
 router.post('/event_master', auth, EventUpload, EventController.addEvent);
