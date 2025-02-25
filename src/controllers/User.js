@@ -1,5 +1,33 @@
-const { errorMessage, successMessage, checkKeysAndRequireValues, generateCODE, setSQLBooleanValue, getCommonKeys, generateJWTT, generateUUID, setSQLStringValue, setSQLNumberValue, setSQLDateTime, deleteImage } = require("../common/main");
+const { errorMessage, successMessage, checkKeysAndRequireValues, generateCODE, setSQLBooleanValue, getCommonKeys, generateJWTT, generateUUID, setSQLStringValue, setSQLNumberValue, setSQLDateTime, deleteImage, getCommonAPIResponse } = require("../common/main");
 const {pool} = require('../sql/connectToDatabase');
+
+//#region fetch Orginizer
+const fetchOrganizer = async (req, res) => {
+    try{
+        const { UserUkeyId, EventUkeyId, OrganizerUkeyId } = req.query;
+        const whereConditions = [];
+
+        if (UserUkeyId) {
+            whereConditions.push(`OM.UserUkeyId = ${setSQLStringValue(UserUkeyId)}`);
+        }
+        if(EventUkeyId){
+            whereConditions.push(`OM.EventUkeyId = ${setSQLStringValue(EventUkeyId)}`);
+        }
+        if(OrganizerUkeyId){
+            whereConditions.push(`OM.OrganizerUkeyId = ${setSQLStringValue(OrganizerUkeyId)}`);
+        }
+        const whereString = whereConditions.length > 0 ? `WHERE ${whereConditions.join(' AND ')}` : '';
+        const getUserList = {
+            getQuery: `SELECT * FROM OrgUserMaster AS OM ${whereString} ORDER BY UserId DESC`,
+            countQuery: `SELECT COUNT(*) AS totalCount FROM OrgUserMaster OM ${whereString}`,
+        };
+        const result = await getCommonAPIResponse(req, res, getUserList);
+        return res.json(result);
+    }catch(error){
+        return res.status(500).json({ ...errorMessage(error.message)});
+    }
+}
+//#endregion
 
 //#region Signup API
 
@@ -220,4 +248,5 @@ module.exports = {
     AddOrginizer,
     Loginorganizer,
     updateOrginizer,
+    fetchOrganizer
 }

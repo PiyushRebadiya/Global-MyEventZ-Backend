@@ -53,6 +53,7 @@ router.delete("/delete_user_master", auth, UserMasterController.deleteUserMaster
 
 router.post("/verify_user_master", UserMasterController.verifyHandler)
 
+router.get('/list_organizer', auth, UserController.fetchOrganizer);
 router.post('/organizer_login', UserController.Loginorganizer);
 router.post('/organizer_signup', UserController.AddOrginizer);
 router.put('/update_organizer', auth, OrginizerUpload, UserController.updateOrginizer);
