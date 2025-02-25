@@ -136,6 +136,18 @@ const UserUpload = multer({ storage: UserStorage }).fields([
     { name: 'ProfiilePic', maxCount: 1 },
 ]);
 
+const OrginezerStorage = multer.diskStorage({
+    destination: function (req, file, cb) {
+        cb(null, `./media/Organizer`);
+    },
+    filename: function (req, file, cb) {
+        cb(null, Date.now() + '_' + file.originalname);
+    }
+});
+const OrginizerUpload = multer({ storage: OrginezerStorage }).fields([
+    { name: 'Image', maxCount: 1 },
+]);
+
 const complaintStorage = multer.diskStorage({
     destination: function (req, file, cb) {
         cb(null, `./media/Complaint`);
@@ -157,5 +169,6 @@ module.exports = {
     EventUpload,
     ticketViewUpload,
     UserUpload,
-    complaintUpload
+    complaintUpload,
+    OrginizerUpload,
 }

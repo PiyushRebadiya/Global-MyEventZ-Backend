@@ -1,11 +1,13 @@
-const { errorMessage, successMessage, checkKeysAndRequireValues, generateCODE, setSQLBooleanValue, getCommonKeys, generateJWTT, generateUUID, setSQLStringValue, setSQLNumberValue } = require("../common/main");
+const { errorMessage, successMessage, checkKeysAndRequireValues, generateCODE, setSQLBooleanValue, getCommonKeys, generateJWTT, generateUUID, setSQLStringValue, setSQLNumberValue, setSQLDateTime, deleteImage } = require("../common/main");
 const {pool} = require('../sql/connectToDatabase');
+
+//#region Signup API
 
 const AddOrginizer = async (req, res) => {
     try{
         const { OrganizerName, Mobile1, Mobile2, Email, AliasName, Description, Add1, Add2, City, StateCode, StateName, Password = '', Pincode = 0 } = req.body;
 
-        const missingKeys = checkKeysAndRequireValues(['OrganizerName', 'Mobile1', 'Add1', 'City', 'UserName', 'Password', 'Email'], req.body);
+        const missingKeys = checkKeysAndRequireValues(['OrganizerName', 'Mobile1', 'Add1', 'City', 'Password', 'Email'], req.body);
 
         if(missingKeys.length > 0){
             return res.status(400).json(errorMessage(`${missingKeys.join(', ')} is Required`));
@@ -37,9 +39,9 @@ const AddOrginizer = async (req, res) => {
 
         const InsertOrgUserMst = `
             INSERT INTO OrguserMaster ( 
-                UserUkeyId, EventUKeyId, OrganizerUkeyId, Password, IsActive, IpAddress, HostName, EntryDate, FirstName, Mobile1, Mobile2, StateCode, StateName, CityName, Role, flag
+                UserUkeyId, EventUKeyId, OrganizerUkeyId, Password, IsActive, IpAddress, HostName, EntryDate, FirstName, Mobile1, Mobile2, StateCode, StateName, CityName, Role, flag, Add1
             ) OUTPUT INSERTED.* VALUES (
-                ${setSQLStringValue(UserUkeyId)}, ${setSQLStringValue(EventUKeyId)}, ${setSQLStringValue(OrganizerUKeyId)}, ${setSQLStringValue(Password)}  , 1, ${setSQLStringValue(IPAddress)}, ${setSQLStringValue(ServerName)}, ${setSQLStringValue(EntryTime)}, ${setSQLStringValue(OrganizerName)}, ${setSQLStringValue(Mobile1)}, ${setSQLStringValue(Mobile2)}, ${setSQLNumberValue(StateCode)}, ${setSQLStringValue(StateName)}, ${setSQLStringValue(City)}, 'Admin', 'A'
+                ${setSQLStringValue(UserUkeyId)}, ${setSQLStringValue(EventUKeyId)}, ${setSQLStringValue(OrganizerUKeyId)}, ${setSQLStringValue(Password)}  , 1, ${setSQLStringValue(IPAddress)}, ${setSQLStringValue(ServerName)}, ${setSQLStringValue(EntryTime)}, ${setSQLStringValue(OrganizerName)}, ${setSQLStringValue(Mobile1)}, ${setSQLStringValue(Mobile2)}, ${setSQLNumberValue(StateCode)}, ${setSQLStringValue(StateName)}, ${setSQLStringValue(City)}, 'Admin', 'A', ${setSQLStringValue(Add1)}
             );
         `;
 
@@ -86,7 +88,9 @@ const AddOrginizer = async (req, res) => {
     }
 }
 
+//#endregion
 
+//#region login API
 
 const Loginorganizer = async (req, res) => {
     try{
@@ -128,11 +132,92 @@ const Loginorganizer = async (req, res) => {
     });
     }catch(error){
         console.log('Login User Error :', error);
-        return res.status(500).json({...successMessage()})
+        return res.status(500).json({...errorMessage(error)})
     }
 }
+
+//#endregion
+
+//#region update orginizer
+const updateOrginizer = async (req, res) => {
+    try {
+        const { UserUkeyId, EventUkeyId, OrganizerUkeyId, FirstName, Mobile1, Mobile2, Add1, Add2, StateCode, StateName, CityName, Pincode, DOB, Email, Gender, Role, IsActive, Password } = req.body;
+
+        let Image = req?.files?.Image?.length ? req.files.Image[0].filename : '';
+
+        const missingKeys = checkKeysAndRequireValues(
+            ['UserUkeyId', 'EventUkeyId', 'OrganizerUkeyId', 'FirstName', 'Image', 'Mobile1', 'Mobile2', 'Add1', 'StateCode', 'StateName', 'CityName', 'Pincode', 'DOB', 'Email', 'Gender', 'Role', 'IsActive'], 
+            {...req.body, ...req.files}
+        );
+
+        if (missingKeys.length > 0) {
+            if (req.files?.Image?.length) {
+                deleteImage(req.files.Image[0].path);
+            }
+            return res.status(400).json(errorMessage(`${missingKeys.join(', ')} is Required`));
+        }
+
+        const oldImgResult = await pool.request().query(`
+            SELECT Image FROM OrgUserMaster WHERE UserUkeyId = '${UserUkeyId}'
+        `);
+        const oldImg = oldImgResult.recordset?.[0]?.Image;
+
+        const { IPAddress, ServerName, EntryTime } = getCommonKeys(req);
+
+        const updateQuery = `
+        UPDATE OrgUserMaster 
+        SET 
+            EventUkeyId = ${setSQLStringValue(EventUkeyId)},
+            OrganizerUkeyId = ${setSQLStringValue(OrganizerUkeyId)},
+            Password = ${setSQLStringValue(Password)},
+            FirstName = ${setSQLStringValue(FirstName)},
+            Image = ${setSQLStringValue(Image)},
+            Mobile1 = ${setSQLStringValue(Mobile1)},
+            Mobile2 = ${setSQLStringValue(Mobile2)},
+            Add1 = ${setSQLStringValue(Add1)},
+            Add2 = ${setSQLStringValue(Add2)},
+            StateCode = ${setSQLStringValue(StateCode)},
+            StateName = ${setSQLStringValue(StateName)},
+            CityName = ${setSQLStringValue(CityName)},
+            Pincode = ${setSQLStringValue(Pincode)},
+            DOB = ${setSQLDateTime(DOB)},
+            Email = ${setSQLStringValue(Email)},
+            Gender = ${setSQLStringValue(Gender)},
+            Role = ${setSQLStringValue(Role)},
+            IsActive = ${setSQLBooleanValue(IsActive)},
+            IpAddress = ${setSQLStringValue(IPAddress)},
+            HostName = ${setSQLStringValue(ServerName)},
+            EntryDate = ${setSQLStringValue(EntryTime)},
+            flag = 'U'
+        WHERE UserUkeyId = ${setSQLStringValue(UserUkeyId)};
+        `;
+
+        const result = await pool.request().query(updateQuery);
+
+        if (result.rowsAffected[0] === 0) {
+            if (req.files?.Image?.length) {
+                deleteImage(req.files.Image[0].path);
+            }
+            return res.status(400).json({ ...errorMessage('Invalid Mobile Number Or Password'), IsVerified: false });
+        }
+
+
+        if (oldImg && req.files?.Image?.length) {
+            deleteImage('./media/Organizer/' + oldImg);
+        }
+
+        return res.status(200).json({ ...successMessage('User updated successfully') });
+    } catch (error) {
+        if (req.files?.Image?.length) {
+            deleteImage(req.files.Image[0].path);
+        }
+        return res.status(500).json({ ...errorMessage(error.message) });
+    }
+};
+//#endregion
 
 module.exports = {
     AddOrginizer,
     Loginorganizer,
+    updateOrginizer,
 }

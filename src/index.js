@@ -43,6 +43,7 @@ app.use('/', express.static(`./media/Event`));
 app.use('/', express.static(`./media/TicketView`));
 app.use('/', express.static(`./media/User`));
 app.use('/', express.static(`./media/Complaint`));
+app.use('/', express.static(`./media/Organizer`));
 
 app.use("/", routes);
 
