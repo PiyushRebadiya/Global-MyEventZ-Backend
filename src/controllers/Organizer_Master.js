@@ -6,15 +6,6 @@ const FetchOrganizerDetails = async (req, res)=>{
         const { OrganizerUkeyId, IsActive, Role } = req.query;
         let whereConditions = [];
 
-        if(req.user.Role === 'SuperAdmin'){
-        } else if(req.user.Role === 'Admin'){
-            whereConditions.push(`OrganizerUkeyId = '${req.user.OrganizerUkeyId}' OR ParentOrganizerUkeyId = '${req.user.OrganizerUkeyId}'`);
-        }else if(req.user.Role === 'SubAdmin'){
-            whereConditions.push(`OrganizerUkeyId = '${req.user.ParentOrganizerUkeyId}' OR ParentOrganizerUkeyId = '${req.user.ParentOrganizerUkeyId}'`);
-        } else {
-            whereConditions.push(`OrganizerUkeyId = '123'`);
-        }
-
         // Build the WHERE clause based on the Status
         if (OrganizerUkeyId) {
             whereConditions.push(`OrganizerUkeyId = '${OrganizerUkeyId}'`);

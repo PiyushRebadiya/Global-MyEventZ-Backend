@@ -106,6 +106,7 @@ const AddOrginizer = async (req, res) => {
                 , EventUKeyId
                 , Role : 'Admin'
                 , UserId : resultOrgUserMst.recordset[0].UserId
+                , FirstName : OrganizerName
             }),
             ...req.body
         })
@@ -145,6 +146,7 @@ const Loginorganizer = async (req, res) => {
                 , OrganizerUKeyId : result?.recordset[0]?.OrganizerUkeyId
                 , EventUKeyId : result?.recordset[0]?.EventUkeyId
                 , UserId : result?.recordset[0]?.UserId
+                , FirstName : result?.recordset[0]?.FirstName
             }),
             UserId: result?.recordset[0]?.UserId,
             UserUkeyId: result?.recordset[0]?.UserUkeyId,

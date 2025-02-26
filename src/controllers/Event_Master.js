@@ -65,66 +65,86 @@ const EventList = async (req, res) => {
 };
 
 const addEvent = async (req, res) => {
+    const { flag, Event, Addresses } = req.body;
     const {
-        OrganizerUkeyId = null, EventName = null, EventAlias = null, EventDate = null, EventDetails = null, IsActiveEvent = true, AddressAlias = null, Address1 = null, Address2 = null, Pincode = null, StateCode = null, StateName = null, CityName = null, CountryName = null, IsPrimaryAddress = null, IsActiveAddress = true, MobileNumber = null, Email = null, flag = null, EventUkeyId , AddressUkeyId , EventCode = generateCODE(EventName), Location = null, TicketLimit = null
-    } = req.body;
+        EventUkeyId, OrganizerUkeyId, EventName, Alias, EventDate, EventDetails, IsActive, TicketLimit,
+        EventCode = generateCODE(EventName), Location, PaymentGateway
+    } = Event;
+
+    let transaction;
 
     try {
+        if (!['A', 'U'].includes(flag)) {
+            return res.status(400).json(errorMessage("Invalid flag. Use 'A' for Add or 'U' for Update."));
+        }
+
         const { IPAddress, ServerName, EntryTime } = getCommonKeys(req);
 
-        const missingKeys = checkKeysAndRequireValues(['EventUkeyId', 'OrganizerUkeyId', 'AddressUkeyId', 'EventName', 'EventDate'], req.body);
-
-        if(missingKeys.length > 0){
+        // Ensure required fields exist
+        const missingKeys = checkKeysAndRequireValues(
+            ['EventUkeyId', 'OrganizerUkeyId', 'EventName', 'EventDate'], { ...Event }
+        );
+        if (missingKeys.length > 0) {
             return res.status(400).json(errorMessage(`${missingKeys.join(', ')} is Required`));
         }
+        const primaryAddress = Addresses.find(i => i.IsPrimaryAddress === true);
+        
+        // Start SQL transaction
+        transaction = pool.transaction();
+        await transaction.begin();
 
-        // SQL Queries
-        const insertQuery = `
-            INSERT INTO EventMaster (
-                EventUkeyId, OrganizerUkeyId, EventName, Alias, EventDate, EventCode, EventDetails, AddressUkeyID, IsActive, IpAddress, HostName, EntryDate, flag, Location, TicketLimit
-            ) VALUES (
-                ${setSQLStringValue(EventUkeyId)}, ${setSQLStringValue(OrganizerUkeyId)}, ${setSQLStringValue(EventName)}, ${setSQLStringValue(EventAlias)}, ${setSQLDateTime(EventDate)}, ${setSQLStringValue(EventCode)}, ${setSQLStringValue(EventDetails)}, ${setSQLStringValue(AddressUkeyId)}, ${setSQLBooleanValue(IsActiveEvent)}, '${IPAddress}', '${ServerName}', '${EntryTime}', '${flag}', ${setSQLStringValue(Location)}, ${setSQLNumberValue(TicketLimit)}
-            );
-
-            INSERT INTO AddressMaster (
-                AddressUkeyID, EventUkeyId, OrganizerUkeyId, Alias, Address1, Address2, Pincode, StateCode, StateName, CityName, CountryName, IsPrimaryAddress, IsActive, MobileNumber, Email, flag, IpAddress, HostName, EntryDate
-            ) VALUES (
-                ${setSQLStringValue(AddressUkeyId)}, ${setSQLStringValue(EventUkeyId)}, ${setSQLStringValue(OrganizerUkeyId)}, ${setSQLStringValue(AddressAlias)}, ${setSQLStringValue(Address1)}, ${setSQLStringValue(Address2)}, ${setSQLNumberValue(Pincode)}, ${setSQLNumberValue(StateCode)}, ${setSQLStringValue(StateName)}, ${setSQLStringValue(CityName)}, ${setSQLStringValue(CountryName)}, ${setSQLBooleanValue(IsPrimaryAddress)}, ${setSQLStringValue(IsActiveAddress)}, ${setSQLStringValue(MobileNumber)}, ${setSQLStringValue(Email)}, ${setSQLStringValue(flag)}, ${setSQLStringValue(IPAddress)}, ${setSQLStringValue(ServerName)}, ${setSQLStringValue(EntryTime)}
-            );
-        `;
-
-        const deleteQuery = `
-            DELETE FROM AddressMaster WHERE EventUkeyId = '${EventUkeyId}';
-            DELETE FROM EventMaster WHERE EventUkeyId = '${EventUkeyId}';
-        `;
-
-        // Handle Add or Update
-        if (flag === 'A') {
-            const result = await pool.request().query(insertQuery);
-
-            if (result.rowsAffected[0] === 0) {
-                return res.status(400).json({ ...errorMessage('No Event Created.') });
-            }
-
-            return res.status(200).json({ ...successMessage('New Event Created Successfully.'), ...req.body, EventUkeyId, AddressUkeyId, EventCode });
-        } else if (flag === 'U') {
-            const deleteResult = await pool.request().query(deleteQuery);
-
-            // INSERT new records
-            const insertResult = await pool.request().query(insertQuery);
-
-            // Ensure both operations succeed
-            if (deleteResult.rowsAffected[0] === 0 && insertResult.rowsAffected[0] === 0) {
-                return res.status(400).json({ ...errorMessage('No Event Updated.') });
-            }
-
-            return res.status(200).json({ ...successMessage('Event Updated Successfully.'), ...req.body, EventUkeyId, AddressUkeyId, EventCode });
-        } else {
-            return res.status(400).json({ ...errorMessage("Use 'A' flag to Add and 'U' flag to update. It is compulsory to send the flag.") });
+        if (flag === 'U') {
+            await transaction.request().query(`
+                DELETE FROM AddressMaster WHERE EventUkeyId = '${EventUkeyId}';
+                DELETE FROM EventMaster WHERE EventUkeyId = '${EventUkeyId}';
+            `);
         }
+
+        // INSERT into EventMaster
+        await transaction.request().query(`
+            INSERT INTO EventMaster (
+                EventUkeyId, OrganizerUkeyId, EventName, Alias, EventDate, EventCode, EventDetails, IsActive, IpAddress, HostName, EntryDate, flag, TicketLimit, Location, PaymentGateway, UserName, UserID, AddressUkeyId
+            ) VALUES (
+                ${setSQLStringValue(EventUkeyId)}, ${setSQLStringValue(OrganizerUkeyId)}, ${setSQLStringValue(EventName)}, ${setSQLStringValue(Alias)}, ${setSQLDateTime(EventDate)}, ${setSQLStringValue(EventCode)}, ${setSQLStringValue(EventDetails)}, ${setSQLBooleanValue(IsActive)}, '${IPAddress}', '${ServerName}', '${EntryTime}', '${flag}', ${setSQLNumberValue(TicketLimit)}, ${setSQLStringValue(Location)}, ${setSQLStringValue(PaymentGateway)}, ${setSQLStringValue(req.user.FirstName)}, ${setSQLNumberValue(req.user.UserId)}, ${setSQLStringValue(primaryAddress.Address1)}
+            );
+        `);
+
+        // INSERT multiple addresses
+        if (Addresses && Addresses.length > 0) {
+            for (const address of Addresses) {
+                if (!address || typeof address !== "object") continue; // Skip invalid entries
+
+                const {
+                    AddressUkeyId, Alias, Address1, Address2, Pincode, StateCode, StateName, CityName, CountryName, IsPrimaryAddress, IsActive
+                } = address;
+
+                await transaction.request().query(`
+                    INSERT INTO AddressMaster (
+                        AddressUkeyID, EventUkeyId, OrganizerUkeyId, Alias, Address1, Address2, Pincode, StateCode, 
+                        StateName, CityName, CountryName, IsPrimaryAddress, IsActive, flag, 
+                        IpAddress, HostName, EntryDate, UsrName, UsreID
+                    ) VALUES (
+                        ${setSQLStringValue(AddressUkeyId)}, ${setSQLStringValue(EventUkeyId)}, ${setSQLStringValue(OrganizerUkeyId)}, ${setSQLStringValue(Alias)}, ${setSQLStringValue(Address1)}, ${setSQLStringValue(Address2)}, ${setSQLNumberValue(Pincode)}, ${setSQLNumberValue(StateCode)}, ${setSQLStringValue(StateName)}, 
+                        ${setSQLStringValue(CityName)}, ${setSQLStringValue(CountryName)}, ${setSQLBooleanValue(IsPrimaryAddress)}, ${setSQLBooleanValue(IsActive)}, ${setSQLStringValue(flag)}, ${setSQLStringValue(IPAddress)}, ${setSQLStringValue(ServerName)}, ${setSQLStringValue(EntryTime)}, ${setSQLStringValue(req.user.FirstName)}, ${setSQLNumberValue(req.user.UserId)}
+                    );
+                `);
+            }
+        }
+
+        // Commit transaction
+        await transaction.commit();
+
+        return res.status(200).json({
+            ...successMessage(flag === 'A' ? 'New Event Created Successfully.' : 'Event Updated Successfully.'),
+            ...req.body,
+            EventUkeyId,
+            EventCode
+        });
+
     } catch (error) {
-        console.log('Event Error:', error);
-        return res.status(500).send(errorMessage(error?.message));
+        console.error('Event Transaction Error:', error);
+        if (transaction) await transaction.rollback(); // Rollback transaction on failure
+        return res.status(500).send(errorMessage(error?.message || "Internal Server Error"));
     }
 };
 
