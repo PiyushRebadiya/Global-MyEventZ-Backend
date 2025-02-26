@@ -39,94 +39,53 @@ const FetchOrganizerDetails = async (req, res)=>{
     }
 }
 
-const OrginazerMaster = async (req, res)=>{
-    const { OrganizerName = '', OrganizerUkeyId = generateUUID(), ParentOrganizerUkeyId = '', StateCode = '', StateName = null, Email = null, Mobile1 = null, Mobile2 = null, AliasName = null, Description = null, Add1 = null, Add2 = null, City = null, IsActive = true, UsrID = null, UPI = null, flag = null, UserName = null,
-    Password = null, Role = 'Admin', RazorpayKeyId = null, RazorpaySecretKey = null, RazorpayBusinessName = null } = req.body;
-    
-    try{
-        const {IPAddress, ServerName, EntryTime} = getCommonKeys();
-        if(!Role) {
-            return res.status(400).json(errorMessage('Role Is required while creating new Organization.'));
-        }else if(Role !== 'Admin' && Role !== 'SubAdmin'){
-            return res.status(400).json(errorMessage("Role can only be 'Admin' or 'SubAdmin'."));
-        }
+const OrginazerMaster = async (req, res) => {
+    try {
+        const { 
+            OrganizerUkeyId, OrganizerName, Mobile1, Mobile2 = null, Email = null, AliasName = null, 
+            Description = null, Add1 = null, Add2 = null, City = null, StateCode, StateName = null, 
+            IsActive = true, UserName = null, flag = null 
+        } = req.body;
+
+        if (!flag) return res.status(400).json(errorMessage("Flag is required. Use 'A' for Add or 'U' for Update."));
+
+        const missingKeys = checkKeysAndRequireValues([
+            "OrganizerUkeyId", "OrganizerName", "Mobile1", "StateCode", "IsActive", "UserName"
+        ], req.body);
+
+        if (missingKeys.length) return res.status(400).json(errorMessage(`${missingKeys.join(", ")} is required.`));
+
+        const { IPAddress, ServerName, EntryTime } = getCommonKeys();
+
         const insertQuery = `
-            INSERT INTO OrganizerMaster (OrganizerUkeyId, ParentOrganizerUkeyId, OrganizerName, Mobile1, Mobile2, Email, AliasName, Description, Add1, Add2, City, StateCode, StateName, UPI, IsActive, UsrID, IpAddress, HostName, EntryDate, flag, UserName, Password, Role, RazorpayKeyId, RazorpaySecretKey, RazorpayBusinessName) VALUES (
-            ${setSQLStringValue(OrganizerUkeyId)},
-            ${setSQLStringValue(ParentOrganizerUkeyId)}, 
-            ${setSQLStringValue(OrganizerName)}, 
-            ${setSQLStringValue(Mobile1)}, 
-            ${setSQLStringValue(Mobile2)}, 
-            ${setSQLStringValue(Email)}, 
-            ${setSQLStringValue(AliasName)}, 
-            ${setSQLStringValue(Description)}, 
-            ${setSQLStringValue(Add1)}, 
-            ${setSQLStringValue(Add2)}, 
-            ${setSQLStringValue(City)}, ${StateCode}, 
-            ${setSQLStringValue(StateName)}, 
-            ${setSQLStringValue(UPI)}, 
-            ${setSQLBooleanValue(IsActive)}, 
-            ${setSQLStringValue(UsrID)}, 
-            ${setSQLStringValue(IPAddress)}, 
-            ${setSQLStringValue(ServerName)}, 
-            ${setSQLStringValue(EntryTime)}, 
-            ${setSQLStringValue(flag)}, 
-            ${setSQLStringValue(UserName)}, 
-            ${setSQLStringValue(Password)}, 
-            ${setSQLStringValue(Role)},
-            ${setSQLStringValue(RazorpayKeyId)}, 
-            ${setSQLStringValue(RazorpaySecretKey)}, 
-            ${setSQLStringValue(RazorpayBusinessName)});
-        `
+            INSERT INTO OrganizerMaster (
+                OrganizerUkeyId, OrganizerName, Mobile1, Mobile2, Email, AliasName, Description, Add1, Add2, City, StateCode, StateName, IsActive, UserName, IpAddress, HostName, EntryDate, flag
+            ) VALUES (
+                ${setSQLStringValue(OrganizerUkeyId)}, ${setSQLStringValue(OrganizerName)}, ${setSQLStringValue(Mobile1)}, ${setSQLStringValue(Mobile2)}, ${setSQLStringValue(Email)}, ${setSQLStringValue(AliasName)}, ${setSQLStringValue(Description)}, ${setSQLStringValue(Add1)}, ${setSQLStringValue(Add2)}, ${setSQLStringValue(City)}, ${setSQLStringValue(StateCode)}, ${setSQLStringValue(StateName)}, ${setSQLBooleanValue(IsActive)}, ${setSQLStringValue(UserName)}, ${setSQLStringValue(IPAddress)}, ${setSQLStringValue(ServerName)}, ${setSQLStringValue(EntryTime)}, ${setSQLStringValue(flag)}
+            );
+        `;
 
-        const deleteQuery = `
-            DELETE FROM OrganizerMaster WHERE OrganizerUkeyId = '${OrganizerUkeyId}';
-        `
+        const deleteQuery = `DELETE FROM OrganizerMaster WHERE OrganizerUkeyId = ${setSQLStringValue(OrganizerUkeyId)};`;
 
-        if(flag == 'A'){
-            // const missingKeys = checkKeysAndRequireValues(['OrganizerUkeyId', 'EventName', 'AddressAlias', 'EventDate', 'EventDetails', 'flag'], req.body);
-    
-            // if(missingKeys.length > 0){
-            //     return res.status(400).json(errorMessage(`${missingKeys.join(', ')} is Required`));
-            // }
-
+        if (flag === "A") {
             const result = await pool.request().query(insertQuery);
-                
-            if(result.rowsAffected[0] === 0){
-                return res.status(400).json({...errorMessage('No Event Created.'),})
-            }
-    
-            return res.status(200).json({...successMessage('New Event Created Successfully.'), ...req.body, OrganizerUkeyId});
+            if (!result.rowsAffected[0]) return res.status(400).json(errorMessage("No Organizer Created."));
+            return res.status(200).json({ ...successMessage("New Organizer Created Successfully."), OrganizerUkeyId });
+        }
 
-        }else if(flag === 'U'){
-
-            // const missingKeys = checkKeysAndRequireValues(['OrganizerUkeyId', 'EventName', 'Alias', 'EventDate', 'EventCode', 'EventDetails', 'AddressUkeyID', 'Img1', 'Img2', 'Img3', 'IsActive', 'UsrName', 'UsrID', 'IpAddress', 'flag', 'EventId'], req.body);
-
-            // if(missingKeys.length > 0){
-            //     return res.status(400).json(errorMessage(`${missingKeys.join(', ')} is Required`));
-            // }
-
-            const deleteResult = await pool.request().query(deleteQuery);
+        if (flag === "U") {
+            await pool.request().query(deleteQuery);
             const insertResult = await pool.request().query(insertQuery);
+            if (!insertResult.rowsAffected[0]) return res.status(400).json(errorMessage("No Organizer Updated."));
+            return res.status(200).json({ ...successMessage("Organizer Updated Successfully."), OrganizerUkeyId });
+        }
 
-            if(deleteResult.rowsAffected[0] === 0 && insertResult.rowsAffected[0] === 0){
-                return res.status(400).json({...errorMessage('No Event Updated.')})
-            }
-    
-            return res.status(200).json({...successMessage('New Event Updated Successfully.'), ...req.body, OrganizerUkeyId});
-        }else{
-            return res.status(400).json({...errorMessage("Use 'A' flag to Add and 'U' flag to update, it is compulsary to send flag.")});
-        }
-    }catch(error){
-        if(flag === 'A'){
-            console.log('Add Event Error :', error);
-        }
-        if(flag === 'U'){
-            console.log('Update Event Error :', error);
-        }
-        return res.status(500).send(errorMessage(error?.message));
+        return res.status(400).json(errorMessage("Invalid flag. Use 'A' for Add or 'U' for Update."));
+    } catch (error) {
+        console.error('orginizer master API error : ', error);
+        return res.status(500).json(errorMessage(error?.message));
     }
-}
+};
 
 const RemoveOrginazer = async (req, res) => {
     try{
