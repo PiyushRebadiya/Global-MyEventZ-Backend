@@ -3,7 +3,7 @@ const {pool} = require('../sql/connectToDatabase');
 
 const EventList = async (req, res) => {
     try {
-        const { EventUkeyId, IsActive } = req.query;
+        const { EventUkeyId, IsActive, OrganizerUkeyId } = req.query;
         let whereConditions = [];
 
         if(req.user.Role === 'SuperAdmin'){
@@ -18,6 +18,9 @@ const EventList = async (req, res) => {
         // Build the WHERE clause based on the Status
         if (EventUkeyId) {
             whereConditions.push(`em.EventUkeyId = '${EventUkeyId}'`); // Specify alias 'em' for EventMaster
+        }
+        if (OrganizerUkeyId) {
+            whereConditions.push(`em.OrganizerUkeyId = '${OrganizerUkeyId}'`); // Specify alias 'em' for EventMaster
         }
         if (IsActive) {
             whereConditions.push(`em.IsActive = ${setSQLBooleanValue(IsActive)}`); // Specify alias 'em' for EventMaster
@@ -44,7 +47,7 @@ const EventList = async (req, res) => {
                 ON 
                     om.OrganizerUkeyId = em.OrganizerUkeyId  
                 ${whereString} 
-                ORDER BY em.EventId DESC
+                ORDER BY em.EntryDate DESC
             `,
             countQuery: `
                 SELECT COUNT(*) AS totalCount 
@@ -63,30 +66,30 @@ const EventList = async (req, res) => {
 
 const addEvent = async (req, res) => {
     const {
-        OrganizerUkeyId = null, EventName = null, EventAlias = null, EventDate = null, EventDetails = null, IsActiveEvent = true, AddressAlias = null, TypeofAddress = null, Address1 = null, Address2 = null, Pincode = null, StateCode = null, StateName = null, CityName = null, CountryName = null, IsPrimaryAddress = null, IsActiveAddress = true, MobileNumber = null, Email = null, flag = null, EventUkeyId =  generateUUID(), AddressUkeyId = generateUUID(), EventCode = generateCODE(EventName), Location = null, IsRazorpay = false, TicketLimit = null
+        OrganizerUkeyId = null, EventName = null, EventAlias = null, EventDate = null, EventDetails = null, IsActiveEvent = true, AddressAlias = null, Address1 = null, Address2 = null, Pincode = null, StateCode = null, StateName = null, CityName = null, CountryName = null, IsPrimaryAddress = null, IsActiveAddress = true, MobileNumber = null, Email = null, flag = null, EventUkeyId , AddressUkeyId , EventCode = generateCODE(EventName), Location = null, TicketLimit = null
     } = req.body;
 
-    let {Img1 = null, Img2 = null, Img3 = null} = req.body
-
-    Img1 = req?.files?.Img1?.length ? `${req?.files?.Img1[0]?.filename}` : Img1;
-    Img2 = req?.files?.Img2?.length ? `${req?.files?.Img2[0]?.filename}` : Img2;
-    Img3 = req?.files?.Img3?.length ? `${req?.files?.Img3[0]?.filename}` : Img3;
-
     try {
-        const { IPAddress, ServerName, EntryTime } = getCommonKeys();
+        const { IPAddress, ServerName, EntryTime } = getCommonKeys(req);
+
+        const missingKeys = checkKeysAndRequireValues(['EventUkeyId', 'OrganizerUkeyId', 'AddressUkeyId', 'EventName', 'EventDate'], req.body);
+
+        if(missingKeys.length > 0){
+            return res.status(400).json(errorMessage(`${missingKeys.join(', ')} is Required`));
+        }
 
         // SQL Queries
         const insertQuery = `
             INSERT INTO EventMaster (
-                EventUkeyId, OrganizerUkeyId, EventName, Alias, EventDate, EventCode, EventDetails, AddressUkeyID, IsActive, Img1, Img2, Img3, IpAddress, HostName, EntryDate, flag, Location, IsRazorpay, OrganizerId, TicketLimit
+                EventUkeyId, OrganizerUkeyId, EventName, Alias, EventDate, EventCode, EventDetails, AddressUkeyID, IsActive, IpAddress, HostName, EntryDate, flag, Location, TicketLimit
             ) VALUES (
-                ${setSQLStringValue(EventUkeyId)}, ${setSQLStringValue(OrganizerUkeyId)}, ${setSQLStringValue(EventName)}, ${setSQLStringValue(EventAlias)}, ${setSQLDateTime(EventDate)}, ${setSQLStringValue(EventCode)}, ${setSQLStringValue(EventDetails)}, ${setSQLStringValue(AddressUkeyId)}, ${setSQLBooleanValue(IsActiveEvent)}, ${setSQLStringValue(Img1)}, ${ setSQLStringValue(Img2)}, ${setSQLStringValue(Img3)}, '${IPAddress}', '${ServerName}', '${EntryTime}', '${flag}', ${setSQLStringValue(Location)}, ${setSQLBooleanValue(IsRazorpay)}, ${setSQLNumberValue(req?.user?.OrganizerId)}, ${setSQLNumberValue(TicketLimit)}
+                ${setSQLStringValue(EventUkeyId)}, ${setSQLStringValue(OrganizerUkeyId)}, ${setSQLStringValue(EventName)}, ${setSQLStringValue(EventAlias)}, ${setSQLDateTime(EventDate)}, ${setSQLStringValue(EventCode)}, ${setSQLStringValue(EventDetails)}, ${setSQLStringValue(AddressUkeyId)}, ${setSQLBooleanValue(IsActiveEvent)}, '${IPAddress}', '${ServerName}', '${EntryTime}', '${flag}', ${setSQLStringValue(Location)}, ${setSQLNumberValue(TicketLimit)}
             );
 
             INSERT INTO AddressMaster (
-                AddressUkeyID, EventUkeyId, OrganizerUkeyId, Alias, TypeofAddress, Address1, Address2, Pincode, StateCode, StateName, CityName, CountryName, IsPrimaryAddress, IsActive, MobileNumber, Email
+                AddressUkeyID, EventUkeyId, OrganizerUkeyId, Alias, Address1, Address2, Pincode, StateCode, StateName, CityName, CountryName, IsPrimaryAddress, IsActive, MobileNumber, Email, flag, IpAddress, HostName, EntryDate
             ) VALUES (
-                ${setSQLStringValue(AddressUkeyId)}, ${setSQLStringValue(EventUkeyId)}, ${setSQLStringValue(OrganizerUkeyId)}, ${setSQLStringValue(AddressAlias)}, ${setSQLStringValue(TypeofAddress)}, ${setSQLStringValue(Address1)}, ${setSQLStringValue(Address2)}, ${setSQLNumberValue(Pincode)}, ${setSQLNumberValue(StateCode)}, ${setSQLStringValue(StateName)}, ${setSQLStringValue(CityName)}, ${setSQLStringValue(CountryName)}, ${setSQLBooleanValue(IsPrimaryAddress)}, ${setSQLStringValue(IsActiveAddress)}, ${setSQLStringValue(MobileNumber)}, ${setSQLStringValue(Email)}
+                ${setSQLStringValue(AddressUkeyId)}, ${setSQLStringValue(EventUkeyId)}, ${setSQLStringValue(OrganizerUkeyId)}, ${setSQLStringValue(AddressAlias)}, ${setSQLStringValue(Address1)}, ${setSQLStringValue(Address2)}, ${setSQLNumberValue(Pincode)}, ${setSQLNumberValue(StateCode)}, ${setSQLStringValue(StateName)}, ${setSQLStringValue(CityName)}, ${setSQLStringValue(CountryName)}, ${setSQLBooleanValue(IsPrimaryAddress)}, ${setSQLStringValue(IsActiveAddress)}, ${setSQLStringValue(MobileNumber)}, ${setSQLStringValue(Email)}, ${setSQLStringValue(flag)}, ${setSQLStringValue(IPAddress)}, ${setSQLStringValue(ServerName)}, ${setSQLStringValue(EntryTime)}
             );
         `;
 
@@ -100,92 +103,44 @@ const addEvent = async (req, res) => {
             const result = await pool.request().query(insertQuery);
 
             if (result.rowsAffected[0] === 0) {
-                if (Img1) deleteImage(req?.files?.Img1?.[0]?.path); // Only delete if `Img` exists
-                if (Img2) deleteImage(req?.files?.Img2?.[0]?.path); // Only delete if `Img` exists
-                if (Img3) deleteImage(req?.files?.Img3?.[0]?.path); // Only delete if `Img` exists
                 return res.status(400).json({ ...errorMessage('No Event Created.') });
             }
 
-            return res.status(200).json({ ...successMessage('New Event Created Successfully.'), ...req.body, EventUkeyId, AddressUkeyId, EventCode, Img1, Img2, Img3 });
+            return res.status(200).json({ ...successMessage('New Event Created Successfully.'), ...req.body, EventUkeyId, AddressUkeyId, EventCode });
         } else if (flag === 'U') {
+            const deleteResult = await pool.request().query(deleteQuery);
 
-            try {
-                // DELETE existing records
-                const deleteResult = await pool.request().query(deleteQuery);
+            // INSERT new records
+            const insertResult = await pool.request().query(insertQuery);
 
-                // FETCH old image records
-                const oldImgsResult =await pool.request().query(`SELECT * FROM EventMaster WHERE EventUkeyId = '${EventUkeyId}'`);
-
-                // INSERT new records
-                const insertResult = await pool.request().query(insertQuery);
-
-                // Ensure both operations succeed
-                if (deleteResult.rowsAffected[0] === 0 && insertResult.rowsAffected[0] === 0) {
-                    if (Img1) deleteImage(req?.files?.Img1?.[0]?.path); 
-                    if (Img2) deleteImage(req?.files?.Img2?.[0]?.path); 
-                    if (Img3) deleteImage(req?.files?.Img3?.[0]?.path);     
-                    return res.status(400).json({ ...errorMessage('No Event Updated.') });
-                }
-
-                oldImg1 = oldImgsResult?.recordset?.[0]?.Img1;
-                oldImg2 = oldImgsResult?.recordset?.[0]?.Img2;
-                oldImg3 = oldImgsResult?.recordset?.[0]?.Img3;
-
-                if (oldImg1 && req.files && req.files.oldImg1 && req.files.oldImg1.length > 0) deleteImage('./media/Event/' + oldImg1); 
-
-                if (oldImg2 && req.files && req.files.oldImg2 && req.files.oldImg2.length > 0) deleteImage('./media/Event/' + oldImg2); 
-
-                if (oldImg3 && req.files && req.files.oldImg3 && req.files.oldImg3.length > 0) deleteImage('./media/Event/' + oldImg3); 
-
-                return res.status(200).json({ ...successMessage('Event Updated Successfully.'), ...req.body, EventUkeyId, AddressUkeyId, EventCode });
-            } catch (error) {
-                if (Img1) deleteImage(req?.files?.Img1?.[0]?.path); 
-                if (Img2) deleteImage(req?.files?.Img2?.[0]?.path); 
-                if (Img3) deleteImage(req?.files?.Img3?.[0]?.path); 
+            // Ensure both operations succeed
+            if (deleteResult.rowsAffected[0] === 0 && insertResult.rowsAffected[0] === 0) {
+                return res.status(400).json({ ...errorMessage('No Event Updated.') });
             }
+
+            return res.status(200).json({ ...successMessage('Event Updated Successfully.'), ...req.body, EventUkeyId, AddressUkeyId, EventCode });
         } else {
-            if (Img1) deleteImage(req?.files?.Img1?.[0]?.path); 
-            if (Img2) deleteImage(req?.files?.Img2?.[0]?.path); 
-            if (Img3) deleteImage(req?.files?.Img3?.[0]?.path); 
             return res.status(400).json({ ...errorMessage("Use 'A' flag to Add and 'U' flag to update. It is compulsory to send the flag.") });
         }
     } catch (error) {
-        if (Img1) deleteImage(req?.files?.Img1?.[0]?.path); 
-        if (Img2) deleteImage(req?.files?.Img2?.[0]?.path); 
-        if (Img3) deleteImage(req?.files?.Img3?.[0]?.path); 
-        if (flag === 'A') {
-            console.log('Add Event Error:', error);
-        }
-        if (flag === 'U') {
-            console.log('Update Event Error:', error);
-        }
+        console.log('Event Error:', error);
         return res.status(500).send(errorMessage(error?.message));
     }
 };
 
 const RemoveEvent = async (req, res) => {
     try{
-        const {EventUkeyId} = req.query;
+        const {EventUkeyId, OrganizerUkeyId} = req.query;
 
-        const missingKeys = checkKeysAndRequireValues(['EventUkeyId'], req.query);
+        const missingKeys = checkKeysAndRequireValues(['EventUkeyId', 'OrganizerUkeyId'], req.query);
 
         if(missingKeys.length > 0){
             return res.status(400).json(errorMessage(`${missingKeys.join(', ')} is Required`));
         }
 
-        const oldRecordQuery = `
-            SELECT * 
-            FROM EventMaster 
-            WHERE EventUkeyId = '${EventUkeyId}';
-        `;
-        const oldRecordResult = await pool.request().query(oldRecordQuery);
-        oldImg1 = oldRecordResult?.recordset?.[0]?.Img1
-        oldImg2 = oldRecordResult?.recordset?.[0]?.Img2
-        oldImg3 = oldRecordResult?.recordset?.[0]?.Img3
-
         const query = `
-            DELETE FROM EventMaster WHERE EventUkeyId = '${EventUkeyId}'
-            DELETE FROM AddressMaster WHERE EventUkeyId = '${EventUkeyId}'
+            DELETE FROM EventMaster WHERE EventUkeyId = ${setSQLStringValue(EventUkeyId)} and OrganizerUkeyId = ${setSQLStringValue(OrganizerUkeyId)}
+            DELETE FROM AddressMaster WHERE EventUkeyId = ${setSQLStringValue(EventUkeyId)} and OrganizerUkeyId = ${setSQLStringValue(OrganizerUkeyId)}
         `
     
         const result = await pool.request().query(query);
@@ -194,13 +149,7 @@ const RemoveEvent = async (req, res) => {
             return res.status(400).json({...errorMessage('No Event Deleted.')})
         }
 
-        if (oldImg1) deleteImage('./media/Event/' + oldImg1); 
-
-        if (oldImg2) deleteImage('./media/Event/' + oldImg2); 
-
-        if (oldImg3) deleteImage('./media/Event/' + oldImg3); 
-
-        return res.status(200).json({...successMessage('New Event Deleted Successfully.')});
+        return res.status(200).json({...successMessage('New Event Deleted Successfully.'), ...req.query});
     }catch(error){
         console.log('Delete Event Error :', error);
         return res.status(500).json({...errorMessage(error.message)});

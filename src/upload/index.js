@@ -105,25 +105,6 @@ const ticketViewStorage = multer.diskStorage({
 });
 const ticketViewUpload = multer({ storage: ticketViewStorage }).fields(ImageUploadFields);
 
-
-// Configure Multer storage
-const EventStorage = multer.diskStorage({
-    destination: function (req, file, cb) {
-        cb(null, `./media/Event`);
-    },
-    filename: function (req, file, cb) {
-        cb(null, Date.now() + '_' + file.originalname);
-    }
-});
-
-// Multer upload middleware
-const EventUpload = multer({storage: EventStorage}).fields([
-    { name: 'Img1', maxCount: 1 },
-    { name: 'Img2', maxCount: 1 },
-    { name: 'Img3', maxCount: 1 }
-]);
-
-
 const UserStorage = multer.diskStorage({
     destination: function (req, file, cb) {
         cb(null, `./media/User`);
@@ -166,7 +147,6 @@ module.exports = {
     VolunteerMasterUpload,
     carouselUpload,
     galleryMasterUpload,
-    EventUpload,
     ticketViewUpload,
     UserUpload,
     complaintUpload,

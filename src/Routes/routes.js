@@ -44,7 +44,7 @@ const CityController = require('../controllers/city');
 
 const auth = require("../middleware/auth");
 
-const {SpeakerUpload, SponsorUpload, PaymentUpload, VolunteerMasterUpload, carouselUpload, galleryMasterUpload, EventUpload, ticketViewUpload, UserUpload, complaintUpload, OrginizerUpload} = require('../upload/index');
+const {SpeakerUpload, SponsorUpload, PaymentUpload, VolunteerMasterUpload, carouselUpload, galleryMasterUpload, ticketViewUpload, UserUpload, complaintUpload, OrginizerUpload} = require('../upload/index');
 
 router.get("/fetchUserMaster", auth, UserMasterController.fetchUserMaster)
 router.post("/add_user_master", UserUpload, UserMasterController.addUserMaster)
@@ -62,7 +62,7 @@ router.get('/fetch_state', StateController.fetchStateData);
 router.get('/fetch_city', CityController.fetchCityData);
 
 router.get('/fetch_event_list', auth, EventMasterController.EventList);
-router.post('/event_master', auth, EventUpload, EventController.addEvent);
+router.post('/event_master', auth, EventController.addEvent);
 router.delete('/delete_event', auth, EventController.RemoveEvent);
 
 router.get("/fetch_payment_master", auth, PaymentMasterController.fetchPaymentMaster)

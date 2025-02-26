@@ -61,9 +61,9 @@ cron.schedule('15 0 * * *', () => {
 //     createAllTableInDB();
 // }, 5000);
 
-setInterval(() => {
-    sendNotificationOnSetTime()
-}, 300000);
+// setInterval(() => {
+//     sendNotificationOnSetTime()
+// }, 300000);
 
 // Start the server
 app.listen(PORT, () => {
