@@ -61,11 +61,11 @@ router.put('/update_organizer', auth, OrginizerUpload, UserController.updateOrgi
 
 router.get('/fetch_state', StateController.fetchStateData);
 router.get('/fetch_city', CityController.fetchCityData);
-
+//#region EVENTMASTER 
 router.get('/fetch_event_list', auth, EventMasterController.EventList);
 router.post('/event_master', auth, EventController.addEvent);
 router.delete('/delete_event', auth, EventController.RemoveEvent);
-
+//#endregion
 router.get('/fetch_org_user_master', auth, OrgUserController.FetchOrgUserMasterDetails);
 router.post('/org_user_master', auth, OrginizerUpload, OrgUserController.OrgUserMaster);
 router.delete('/delete_org_user_master', auth, OrgUserController.RemoveOrgUser);

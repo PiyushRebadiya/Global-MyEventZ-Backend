@@ -1,14 +1,20 @@
-const { errorMessage, successMessage, checkKeysAndRequireValues, generateCODE, setSQLBooleanValue, getCommonKeys, generateJWTT, generateUUID, getCommonAPIResponse, deleteImage, setSQLNumberValue } = require("../common/main");
+const { errorMessage, successMessage, checkKeysAndRequireValues, generateCODE, setSQLBooleanValue, getCommonKeys, generateJWTT, generateUUID, getCommonAPIResponse, deleteImage, setSQLNumberValue, setSQLStringValue } = require("../common/main");
 const {pool} = require('../sql/connectToDatabase');
 
 const FetchSponsorCategoryMasterDetails = async (req, res)=>{
     try{
-        const { UkeyId, IsActive } = req.query;
+        const { SpCatUkeyId, OrganizerUkeyId, EventUkeyId, IsActive } = req.query;
         let whereConditions = [];
 
         // Build the WHERE clause based on the Status
-        if (UkeyId) {
-            whereConditions.push(`UkeyId = '${UkeyId}'`);
+        if (SpCatUkeyId) {
+            whereConditions.push(`SpCatUkeyId = ${setSQLStringValue(SpCatUkeyId)}`);
+        }
+        if (OrganizerUkeyId) {
+            whereConditions.push(`OrganizerUkeyId = ${setSQLStringValue(OrganizerUkeyId)}`);
+        }
+        if (EventUkeyId) {
+            whereConditions.push(`EventUkeyId = ${setSQLStringValue(EventUkeyId)}`);
         }
         if(IsActive){
             whereConditions.push(`IsActive = ${setSQLBooleanValue(IsActive)}`);
@@ -16,7 +22,7 @@ const FetchSponsorCategoryMasterDetails = async (req, res)=>{
         // Combine the WHERE conditions into a single string
         const whereString = whereConditions.length > 0 ? `WHERE ${whereConditions.join(' AND ')}` : '';
         const getUserList = {
-            getQuery: `SELECT * FROM SponsorCatMaster ${whereString} ORDER BY SponsorCateId DESC`,
+            getQuery: `SELECT * FROM SponsorCatMaster ${whereString} ORDER BY EntryDate DESC`,
             countQuery: `SELECT COUNT(*) AS totalCount FROM SponsorCatMaster ${whereString}`,
         };
         const result = await getCommonAPIResponse(req, res, getUserList);
@@ -28,18 +34,20 @@ const FetchSponsorCategoryMasterDetails = async (req, res)=>{
 }
 
 const SponsorCategoryMaster = async (req, res) => {
-    const {  UkeyId = generateUUID(), Name = '', IsActive = true, flag = ''} = req.body;
+    const {  SpCatUkeyId, OrganizerUkeyId, EventUkeyId, Name, IsActive, flag} = req.body;
     
     try{
+        const { IPAddress, ServerName, EntryTime } = getCommonKeys(req);
+
         const insertQuery = `
             INSERT INTO SponsorCatMaster (
-                UkeyId, Name, IsActive, OrganizerId
+                SpCatUkeyId, OrganizerUkeyId, EventUkeyId, Name, IsActive, flag, IpAddress, HostName,EntryDate
             ) VALUES (
-                '${UkeyId}', '${Name}', ${setSQLBooleanValue(IsActive)}, ${setSQLNumberValue(req?.user?.OrganizerId)}
+                ${setSQLStringValue(SpCatUkeyId)}, ${setSQLStringValue(OrganizerUkeyId)}, ${setSQLStringValue(EventUkeyId)}, ${setSQLStringValue(Name)}, ${setSQLBooleanValue(IsActive)}, ${setSQLStringValue(flag)}, ${setSQLStringValue(IPAddress)}, ${setSQLStringValue(ServerName)},${setSQLStringValue(EntryTime)}
             );
         `
         const deleteQuery = `
-            DELETE FROM SponsorCatMaster WHERE UkeyId = '${UkeyId}';
+            DELETE FROM SponsorCatMaster WHERE SpCatUkeyId = '${SpCatUkeyId}';
         `
         if(flag == 'A'){
             const result = await pool.request().query(insertQuery);
@@ -48,7 +56,7 @@ const SponsorCategoryMaster = async (req, res) => {
                 return res.status(400).json({...errorMessage('No Sponsor Category Created.'),})
             }
     
-            return res.status(200).json({...successMessage('New Sponsor Category Created Successfully.'), ...req.body, UkeyId});
+            return res.status(200).json({...successMessage('New Sponsor Category Created Successfully.'), ...req.body});
 
         }else if(flag === 'U'){
 
@@ -59,7 +67,7 @@ const SponsorCategoryMaster = async (req, res) => {
                 return res.status(400).json({...errorMessage('No Sponsor Category Updated.')})
             }
     
-            return res.status(200).json({...successMessage('New Sponsor Category Updated Successfully.'), ...req.body, UkeyId});
+            return res.status(200).json({...successMessage('New Sponsor Category Updated Successfully.'), ...req.body});
         }else{
             return res.status(400).json({...errorMessage("Use 'A' flag to Add and 'U' flag to update, it is compulsary to send flag.")});
         }
@@ -76,16 +84,16 @@ const SponsorCategoryMaster = async (req, res) => {
 
 const RemoveSponsorCategory = async (req, res) => {
     try{
-        const {UkeyId} = req.query;
+        const {SpCatUkeyId, OrganizerUkeyId} = req.query;
 
-        const missingKeys = checkKeysAndRequireValues(['UkeyId'], req.query);
+        const missingKeys = checkKeysAndRequireValues(['SpCatUkeyId', 'OrganizerUkeyId'], req.query);
 
         if(missingKeys.length > 0){
             return res.status(400).json(errorMessage(`${missingKeys.join(', ')} is Required`));
         }
 
         const query = `
-            DELETE FROM SponsorCatMaster WHERE UkeyId = '${UkeyId}'
+            DELETE FROM SponsorCatMaster WHERE SpCatUkeyId = ${setSQLStringValue(SpCatUkeyId)} and OrganizerUkeyId = ${setSQLStringValue(OrganizerUkeyId)}
         `
     
         const result = await pool.request().query(query);
@@ -94,7 +102,7 @@ const RemoveSponsorCategory = async (req, res) => {
             return res.status(400).json({...errorMessage('No Sponsor Category Deleted.')})
         }
 
-        return res.status(200).json({...successMessage('Sponsor Category Deleted Successfully.'), UkeyId});
+        return res.status(200).json({...successMessage('Sponsor Category Deleted Successfully.')});
     }catch(error){
         console.log('Delete Sponsor Category Error :', error);
         return res.status(500).json({...errorMessage(error.message)});

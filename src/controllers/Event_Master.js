@@ -6,15 +6,6 @@ const EventList = async (req, res) => {
         const { EventUkeyId, IsActive, OrganizerUkeyId } = req.query;
         let whereConditions = [];
 
-        if(req.user.Role === 'SuperAdmin'){
-        } else if(req.user.Role === 'Admin'){
-            whereConditions.push(`em.OrganizerUkeyId = '${req.user.OrganizerUkeyId}'`);
-        }else if(req.user.Role === 'SubAdmin'){
-            whereConditions.push(`em.OrganizerUkeyId = '${req.user.ParentOrganizerUkeyId}'`);
-        } else {
-            whereConditions.push(`em.OrganizerUkeyId = '123'`);
-        }
-
         // Build the WHERE clause based on the Status
         if (EventUkeyId) {
             whereConditions.push(`em.EventUkeyId = '${EventUkeyId}'`); // Specify alias 'em' for EventMaster
@@ -34,8 +25,7 @@ const EventList = async (req, res) => {
                 SELECT 
                     em.*, 
                     am.Address1, am.Address2, am.Pincode, am.StateName, am.CityName, 
-                    am.IsPrimaryAddress, am.IsActive AS IsActiveAddress, 
-                    am.MobileNumber, am.Email, om.OrganizerName 
+                    am.IsPrimaryAddress, am.IsActive AS IsActiveAddress, om.OrganizerName 
                 FROM 
                     EventMaster em 
                 LEFT JOIN 
