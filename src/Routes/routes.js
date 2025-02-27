@@ -62,6 +62,7 @@ router.get('/fetch_state', StateController.fetchStateData);
 router.get('/fetch_city', CityController.fetchCityData);
 //#region EVENTMASTER 
 router.get('/fetch_event_list', auth, EventMasterController.EventList);
+router.get('/fetch_event_by_id', auth, EventMasterController.fetchEventById);
 router.post('/event_master', auth, EventController.addEvent);
 router.delete('/delete_event', auth, EventController.RemoveEvent);
 //#endregion
@@ -94,7 +95,7 @@ router.get('/generate_qr_code_image', QRCodeMasterController.generateQRCodeImage
 router.post('/verify_ticket', auth, VerifyTicketController.verifyTicket);
 
 router.get('/fetch_speaker_master', auth, SpeakerMasterController.FetchSpeakerMasterDetails);
-router.post('/speaker_master', auth, SpeakerUpload, SpeakerMasterController.SpeakerMaster);
+router.post('/speaker_master', auth, SpeakerMasterController.SpeakerMaster);
 router.delete('/delete_speaker_master', auth, SpeakerMasterController.RemoveSpeaker);
 
 router.get('/razorpay/credentials', RazorpayController.fetchRazorpayCredentials);

@@ -54,6 +54,62 @@ const EventList = async (req, res) => {
     }
 };
 
+const fetchEventById = async (req, res)=> {
+    try{
+        const {EventUkeyId, OrganizerUkeyId} = req.query
+
+        const missingKeys = checkKeysAndRequireValues(['EventUkeyId', 'OrganizerUkeyId'], req.query);
+
+        if(missingKeys.length > 0){
+            return res.status(400).json(errorMessage(`${missingKeys.join(', ')} is Required`));
+        }
+
+        let whereConditions = [];
+
+        // Build the WHERE clause based on the Status
+        if (EventUkeyId) {
+            whereConditions.push(`em.EventUkeyId = '${EventUkeyId}'`); // Specify alias 'em' for EventMaster
+        }
+        if (OrganizerUkeyId) {
+            whereConditions.push(`em.OrganizerUkeyId = '${OrganizerUkeyId}'`); // Specify alias 'em' for EventMaster
+        }
+
+        // Combine the WHERE conditions into a single string
+        const whereString = whereConditions.length > 0 ? `WHERE ${whereConditions.join(' AND ')}` : '';
+
+        const getUserList = {
+            getQuery: `
+                SELECT 
+                    em.*, 
+                    am.Address1, am.Address2, am.Pincode, am.StateName, am.CityName, 
+                    am.IsPrimaryAddress, am.IsActive AS IsActiveAddress, om.OrganizerName 
+                FROM EventMaster em 
+                LEFT JOIN 
+                    AddressMaster am 
+                ON 
+                    am.AddressUkeyID = em.AddressUkeyID 
+				LEFT JOIN 
+                    OrganizerMaster om 
+                ON 
+                    om.OrganizerUkeyId = em.OrganizerUkeyId  
+                ${whereString} 
+                ORDER BY em.EntryDate DESC
+            `,
+            countQuery: `
+                SELECT COUNT(*) AS totalCount 
+                FROM EventMaster em 
+                ${whereString}
+            `,
+        };
+
+        const result = await getCommonAPIResponse(req, res, getUserList);
+        return res.json(result);
+
+    }catch(error){
+        return res.status(500).json(errorMessage(error.message))
+    }
+}
+
 const addEvent = async (req, res) => {
     const { flag, Event, Addresses } = req.body;
     const {
@@ -95,7 +151,7 @@ const addEvent = async (req, res) => {
             INSERT INTO EventMaster (
                 EventUkeyId, OrganizerUkeyId, EventName, Alias, EventDate, EventCode, EventDetails, IsActive, IpAddress, HostName, EntryDate, flag, TicketLimit, Location, PaymentGateway, UserName, UserID, AddressUkeyId
             ) VALUES (
-                ${setSQLStringValue(EventUkeyId)}, ${setSQLStringValue(OrganizerUkeyId)}, ${setSQLStringValue(EventName)}, ${setSQLStringValue(Alias)}, ${setSQLDateTime(EventDate)}, ${setSQLStringValue(EventCode)}, ${setSQLStringValue(EventDetails)}, ${setSQLBooleanValue(IsActive)}, '${IPAddress}', '${ServerName}', '${EntryTime}', '${flag}', ${setSQLNumberValue(TicketLimit)}, ${setSQLStringValue(Location)}, ${setSQLStringValue(PaymentGateway)}, ${setSQLStringValue(req.user.FirstName)}, ${setSQLNumberValue(req.user.UserId)}, ${setSQLStringValue(primaryAddress.Address1)}
+                ${setSQLStringValue(EventUkeyId)}, ${setSQLStringValue(OrganizerUkeyId)}, ${setSQLStringValue(EventName)}, ${setSQLStringValue(Alias)}, ${setSQLDateTime(EventDate)}, ${setSQLStringValue(EventCode)}, ${setSQLStringValue(EventDetails)}, ${setSQLBooleanValue(IsActive)}, '${IPAddress}', '${ServerName}', '${EntryTime}', '${flag}', ${setSQLNumberValue(TicketLimit)}, ${setSQLStringValue(Location)}, ${setSQLStringValue(PaymentGateway)}, ${setSQLStringValue(req.user.FirstName)}, ${setSQLNumberValue(req.user.UserId)}, ${setSQLStringValue(primaryAddress.AddressUkeyId)}
             );
         `);
 
@@ -170,4 +226,5 @@ module.exports = {
     EventList,
     addEvent,
     RemoveEvent,
+    fetchEventById
 }
