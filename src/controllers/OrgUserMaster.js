@@ -1,0 +1,132 @@
+const { errorMessage, successMessage, checkKeysAndRequireValues, generateUUID, getCommonKeys, getCommonAPIResponse, deleteImage, setSQLStringValue, setSQLNumberValue, setSQLBooleanValue } = require("../common/main");
+const { pool } = require("../sql/connectToDatabase");
+
+const FetchOrgUserMasterDetails = async (req, res) => {
+    try {
+        const { UserUkeyId, IsActive, OrganizerUkeyId, Role } = req.query;
+        let whereConditions = [];
+
+        if (UserUkeyId) whereConditions.push(`UserUkeyId = ${setSQLStringValue(UserUkeyId)}`);
+        if (OrganizerUkeyId) whereConditions.push(`OrganizerUkeyId = ${setSQLStringValue(OrganizerUkeyId)}`);
+        if (Role) whereConditions.push(`Role = ${setSQLStringValue(Role)}`);
+        if (IsActive) whereConditions.push(`IsActive = ${setSQLBooleanValue(IsActive)}`);
+
+        const whereString = whereConditions.length > 0 ? `WHERE ${whereConditions.join(" AND ")}` : "";
+
+        const getUserList = {
+            getQuery: `SELECT * FROM OrgUserMaster ${whereString} ORDER BY EntryDate DESC`,
+            countQuery: `SELECT COUNT(*) AS totalCount FROM OrgUserMaster ${whereString}`,
+        };
+
+        const result = await getCommonAPIResponse(req, res, getUserList);
+        return res.json(result);
+    } catch (error) {
+        return res.status(400).send(errorMessage(error?.message));
+    }
+};
+
+const OrgUserMaster = async (req, res) => {
+    const {
+        UserUkeyId = '', EventUkeyId = '', OrganizerUkeyId = '', Password = '', FirstName = '',
+        Mobile1 = '', Mobile2 = '', Add1 = '', Add2 = '', StateCode = '', StateName = '', CityName = '', Pincode = '',
+        DOB = '', Email = '', Gender = '', Role = '', IsActive = true, flag = ''
+    } = req.body;
+
+    let { Image = '' } = req.body;
+    Image = req?.files?.Image?.length ? `${req?.files?.Image[0]?.filename}` : Image;
+
+    try {
+        const { IPAddress, ServerName, EntryTime } = getCommonKeys();
+
+        const insertQuery = `
+            INSERT INTO OrgUserMaster (
+                UserUkeyId, EventUkeyId, OrganizerUkeyId, Password, FirstName, Image, Mobile1, Mobile2, Add1, Add2,
+                StateCode, StateName, CityName, Pincode, DOB, Email, Gender, Role, IsActive, IpAddress, HostName, EntryDate
+            ) VALUES (
+                N'${UserUkeyId}', N'${EventUkeyId}', N'${OrganizerUkeyId}', N'${Password}', N'${FirstName}', N'${Image}', N'${Mobile1}', N'${Mobile2}',
+                N'${Add1}', N'${Add2}', N'${StateCode}', N'${StateName}', N'${CityName}', ${setSQLNumberValue(Pincode)}, ${setSQLStringValue(DOB)},
+                N'${Email}', N'${Gender}', N'${Role}', ${setSQLBooleanValue(IsActive)}, N'${IPAddress}', N'${ServerName}', N'${EntryTime}'
+            );
+        `;
+
+        const deleteQuery = `
+            DELETE FROM OrgUserMaster WHERE UserUkeyId = '${UserUkeyId}';
+        `;
+
+        if (flag === 'A') {
+            const missingKeys = checkKeysAndRequireValues(['FirstName', 'Email', 'Role'], req.body);
+            if (missingKeys.length > 0) {
+                if (Image) deleteImage(req?.files?.Image?.[0]?.path);
+                return res.status(400).json(errorMessage(`${missingKeys.join(', ')} is Required`));
+            }
+
+            const result = await pool.request().query(insertQuery);
+
+            if (result?.rowsAffected?.[0] === 0) {
+                if (Image) deleteImage(req?.files?.Image?.[0]?.path);
+                return res.status(400).json(errorMessage('No User Created.'));
+            }
+
+            return res.status(200).json({...successMessage('New User Created Successfully.'), Image, ...req.body });
+        } 
+        else if (flag === 'U') {
+            const oldImgResult = await pool.request().query(`
+                SELECT Image FROM OrgUserMaster WHERE UserUkeyId = '${UserUkeyId}';
+            `);
+            const oldImg = oldImgResult.recordset?.[0]?.Image;
+
+            const deleteResult = await pool.request().query(deleteQuery);
+            const insertResult = await pool.request().query(insertQuery);
+
+            if (deleteResult.rowsAffected[0] === 0 && insertResult.rowsAffected[0] === 0) {
+                if (Image) deleteImage(req?.files?.Image?.[0]?.path);
+                return res.status(400).json(errorMessage('No User Updated.'));
+            }
+
+            if (oldImg && req.files && req.files.Image && req.files.Image.length > 0){
+                deleteImage('./media/Organizer/' + oldImg);
+            }
+
+            return res.status(200).json({...successMessage('User Updated Successfully.'), Image, ...req.body });
+        } 
+        else {
+            if (Image) deleteImage(req?.files?.Image?.[0]?.path);
+            return res.status(400).json(errorMessage("Use 'A' flag to Add and 'U' flag to update."));
+        }
+    } catch (error) {
+        if (Image) deleteImage(req?.files?.Image?.[0]?.path);
+        console.error('OrgUserMaster API error:', error);
+        return res.status(500).send(errorMessage(error?.message));
+    }
+};
+
+const RemoveOrgUser = async (req, res) => {
+    try {
+        const { UserUkeyId, OrganizerUkeyId } = req.query;
+        const missingKeys = checkKeysAndRequireValues(['UserUkeyId', 'OrganizerUkeyId'], req.query);
+        if (missingKeys.length > 0) {
+            return res.status(400).json(errorMessage(`${missingKeys.join(', ')} is Required`));
+        }
+
+        // Fetch old image path before deletion
+        const oldImgResult = await pool.request().query(
+            `SELECT Image FROM OrgUserMaster WHERE UserUkeyId = ${setSQLStringValue(UserUkeyId)} and OrganizerUkeyId = ${setSQLStringValue(OrganizerUkeyId)};`
+        );
+        const oldImg = oldImgResult.recordset?.[0]?.Image;
+
+        // Delete user from OrgUserMaster
+        const deleteQuery = `DELETE FROM OrgUserMaster WHERE UserUkeyId = '${UserUkeyId}';`;
+        const deleteResult = await pool.request().query(deleteQuery);
+
+        if (deleteResult.rowsAffected[0] === 0) {
+            return res.status(400).json(errorMessage('No User Deleted.'));
+        }
+        if (oldImg) deleteImage('./media/Organizer/' + oldImg);; // Delete image only after successful DB deletion
+
+        return res.status(200).json({...successMessage('User Deleted Successfully.'), ...req.query });
+    } catch (error) {
+        console.error('RemoveOrgUser API error:', error);
+        return res.status(500).json(errorMessage(error.message));
+    }
+};
+module.exports = { FetchOrgUserMasterDetails, OrgUserMaster, RemoveOrgUser };

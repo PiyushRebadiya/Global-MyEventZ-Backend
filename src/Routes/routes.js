@@ -40,6 +40,7 @@ const professionCategoryMaster = require('../controllers/professionCategory.js')
 const userCategoryMaster = require('../controllers/userCategory');
 const StateController = require('../controllers/State');
 const CityController = require('../controllers/city');
+const OrgUserController = require('../controllers/OrgUserMaster')
 // const carouselController = require('../controllers/carousel');
 
 const auth = require("../middleware/auth");
@@ -64,6 +65,10 @@ router.get('/fetch_city', CityController.fetchCityData);
 router.get('/fetch_event_list', auth, EventMasterController.EventList);
 router.post('/event_master', auth, EventController.addEvent);
 router.delete('/delete_event', auth, EventController.RemoveEvent);
+
+router.get('/fetch_org_user_master', auth, OrgUserController.FetchOrgUserMasterDetails);
+router.post('/org_user_master', auth, OrginizerUpload, OrgUserController.OrgUserMaster);
+router.delete('/delete_org_user_master', auth, OrgUserController.RemoveOrgUser);
 
 router.get("/fetch_payment_master", auth, PaymentMasterController.fetchPaymentMaster)
 router.get("/set_payment_flag", PaymentMasterController.setPaymentFlag)
