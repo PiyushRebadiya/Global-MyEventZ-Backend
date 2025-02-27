@@ -40,7 +40,8 @@ const professionCategoryMaster = require('../controllers/professionCategory.js')
 const userCategoryMaster = require('../controllers/userCategory');
 const StateController = require('../controllers/State');
 const CityController = require('../controllers/city');
-const OrgUserController = require('../controllers/OrgUserMaster')
+const OrgUserController = require('../controllers/OrgUserMaster');
+const PaymentGatewayMaster = require('../controllers/PaymentGatewayMaster');
 // const carouselController = require('../controllers/carousel');
 
 const auth = require("../middleware/auth");
@@ -195,5 +196,9 @@ router.delete('/delete_profession_category', auth, professionCategoryMaster.Remo
 router.get('/fetch_user_category_master', userCategoryMaster.fetchUserCategory);
 router.post('/user_category_master', auth, userCategoryMaster.createUserCategory);
 router.delete('/delete_user_category_master', auth, userCategoryMaster.removeUserCategory);
+
+router.get('/fetch_payment_gateway', auth, PaymentGatewayMaster.FetchPaymentGatewayMasterDetails);
+router.post('/payment_gateway_master', auth, PaymentGatewayMaster.PaymentGatewayMaster);
+router.delete('/delete_payment_gateway', auth, PaymentGatewayMaster.RemovePaymentGateway);
 
 module.exports = router;
