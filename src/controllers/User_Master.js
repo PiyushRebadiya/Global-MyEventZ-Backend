@@ -5,7 +5,7 @@ const jwt = require('jsonwebtoken');
 
 const fetchUserMaster = async (req, res) => {
     try {
-        const { UserUkeyId, Mobile1, Role, IsActive, IsLogin, UserCatUkeyId } = req.query;
+        const { UserUkeyId, Mobile1, Role, IsActive, IsLogin } = req.query;
         let whereConditions = [];
 
         if (UserUkeyId) {
@@ -23,9 +23,6 @@ const fetchUserMaster = async (req, res) => {
         if(IsLogin){
             whereConditions.push(`UM.IsLogin = ${setSQLBooleanValue(IsLogin)}`);
         }
-        if(UserCatUkeyId){
-            whereConditions.push(`UM.UserCatUkeyId = ${setSQLStringValue(UserCatUkeyId)}`);
-        }
         
         const whereString = whereConditions.length > 0 ? `WHERE ${whereConditions.join(' AND ')}` : '';
         const getUserList = {
@@ -42,7 +39,7 @@ const fetchUserMaster = async (req, res) => {
 const addOrUpdateUserMaster = async (req, res) => {
     let { ProfiilePic = null } = req.body;
     try {
-        const { UserUkeyId, UserCatUkeyId, FullName, BusinessCategory, CompanyName, Mobile1, Mobile2, DOB, Email, Gender, Role, IsActive, flag, Password } = req.body;
+        const { UserUkeyId, FullName, Mobile1, Mobile2, DOB, Email, Gender, Role, IsActive, flag, Password } = req.body;
         
         ProfiilePic = req?.files?.ProfiilePic?.length ? `${req?.files?.ProfiilePic[0]?.filename}` : ProfiilePic;
         const fieldCheck = checkKeysAndRequireValues(['Mobile1', 'FullName', 'Password'], req.body);
@@ -56,7 +53,7 @@ const addOrUpdateUserMaster = async (req, res) => {
         
         if (flag === 'A') {
             const UUID = generateUUID();
-            const insertQuery = `INSERT INTO UserMaster (UserUkeyId, UserCatUkeyId, FullName, ProfiilePic, BusinessCategory, CompanyName, Mobile1, Mobile2, DOB, Email, Gender, Role, IsActive, IsLogin, flag, UserName, Password, IpAddress, HostName, EntryDate) VALUES (${setSQLStringValue(UUID)}, ${setSQLStringValue(UserCatUkeyId)}, ${setSQLStringValue(FullName)}, ${setSQLStringValue(ProfiilePic)}, ${setSQLStringValue(BusinessCategory)}, ${setSQLStringValue(CompanyName)}, ${setSQLNumberValue(Mobile1)}, ${setSQLNumberValue(Mobile2)}, ${setSQLDateTime(DOB)}, ${setSQLStringValue(Email)}, ${setSQLStringValue(Gender)}, ${setSQLStringValue(Role)}, ${setSQLBooleanValue(IsActive)}, 1, 'A', 'UserName', ${setSQLStringValue(Password)}, ${setSQLStringValue(IPAddress)}, ${setSQLStringValue(ServerName)}, ${setSQLDateTime(EntryTime)})`;
+            const insertQuery = `INSERT INTO UserMaster (UserUkeyId, FullName, ProfiilePic, Mobile1, Mobile2, DOB, Email, Gender, Role, IsActive, IsLogin, flag, UserName, Password, IpAddress, HostName, EntryDate) VALUES (${setSQLStringValue(UUID)}, ${setSQLStringValue(FullName)}, ${setSQLStringValue(ProfiilePic)}, ${setSQLNumberValue(Mobile1)}, ${setSQLNumberValue(Mobile2)}, ${setSQLDateTime(DOB)}, ${setSQLStringValue(Email)}, ${setSQLStringValue(Gender)}, ${setSQLStringValue(Role)}, ${setSQLBooleanValue(IsActive)}, 1, 'A', 'UserName', ${setSQLStringValue(Password)}, ${setSQLStringValue(IPAddress)}, ${setSQLStringValue(ServerName)}, ${setSQLDateTime(EntryTime)})`;
             const result = await pool.query(insertQuery);
 
             if (result?.rowsAffected[0] === 0) {
@@ -70,7 +67,7 @@ const addOrUpdateUserMaster = async (req, res) => {
             if (!UserUkeyId) return res.status(400).send(errorMessage("UserUkeyId is required"));
             const userMaster = await pool.query(`SELECT * FROM UserMaster WHERE UserUkeyId = '${UserUkeyId}'`);
             if (!userMaster?.recordset?.length) return res.status(400).send(errorMessage("User not found"));
-            const updateQuery = `UPDATE UserMaster SET UserCatUkeyId = ${setSQLStringValue(UserCatUkeyId)}, FullName = ${setSQLStringValue(FullName)}, BusinessCategory = ${setSQLStringValue(BusinessCategory)}, CompanyName = ${setSQLStringValue(CompanyName)}, ProfiilePic = ${setSQLStringValue(ProfiilePic)}, Mobile1 = ${setSQLNumberValue(Mobile1)}, Mobile2 = ${setSQLNumberValue(Mobile2)}, DOB = ${setSQLDateTime(DOB)}, Email = ${setSQLStringValue(Email)}, Gender = ${setSQLStringValue(Gender)}, Role = ${setSQLStringValue(Role)}, IsActive = ${setSQLBooleanValue(IsActive)}, IsLogin = 1, Password = ${setSQLStringValue(Password)}, IpAddress = ${setSQLStringValue(IPAddress)}, HostName = ${setSQLStringValue(ServerName)}, EntryDate = ${setSQLDateTime(EntryTime)},  flag = 'U' WHERE UserUkeyId = '${UserUkeyId}'`;
+            const updateQuery = `UPDATE UserMaster SET FullName = ${setSQLStringValue(FullName)}, ProfiilePic = ${setSQLStringValue(ProfiilePic)}, Mobile1 = ${setSQLNumberValue(Mobile1)}, Mobile2 = ${setSQLNumberValue(Mobile2)}, DOB = ${setSQLDateTime(DOB)}, Email = ${setSQLStringValue(Email)}, Gender = ${setSQLStringValue(Gender)}, Role = ${setSQLStringValue(Role)}, IsActive = ${setSQLBooleanValue(IsActive)}, IsLogin = 1, Password = ${setSQLStringValue(Password)}, IpAddress = ${setSQLStringValue(IPAddress)}, HostName = ${setSQLStringValue(ServerName)}, EntryDate = ${setSQLDateTime(EntryTime)},  flag = 'U' WHERE UserUkeyId = '${UserUkeyId}'`;
             await pool.query(updateQuery);
 
             try {
