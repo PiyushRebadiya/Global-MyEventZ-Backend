@@ -49,8 +49,7 @@ const auth = require("../middleware/auth");
 const {SpeakerUpload, SponsorUpload, PaymentUpload, VolunteerMasterUpload, carouselUpload, galleryMasterUpload, ticketViewUpload, UserUpload, complaintUpload, OrginizerUpload} = require('../upload/index');
 
 router.get("/fetchUserMaster", auth, UserMasterController.fetchUserMaster)
-router.post("/add_user_master", UserUpload, UserMasterController.addUserMaster)
-router.put("/update_user_master", UserUpload, UserMasterController.updateUserMaster)
+router.post("/user_master", UserUpload, UserMasterController.addOrUpdateUserMaster)
 router.delete("/delete_user_master", auth, UserMasterController.deleteUserMaster)
 
 router.post("/verify_user_master", UserMasterController.verifyHandler)
