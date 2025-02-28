@@ -91,6 +91,13 @@ const setSQLNumberValue = (value) => {
     return Number(value)
 }
 
+const setSQLNumberNullValue = (value) => {
+    if (!value || isNaN(value)) {
+        return null
+    }
+    return Number(value)
+}
+
 const setSQLOrderId = (value) => {
     if (Number(value) < 0 || Number(value) > 10000 || !value) {
         return null
@@ -334,6 +341,7 @@ module.exports = {
     setSQLDateTime,
     generateReferralCode,
     setSQLNumberValue,
+    setSQLNumberNullValue,
     base64Encode,
     base64Decode,
     generateUUID,
