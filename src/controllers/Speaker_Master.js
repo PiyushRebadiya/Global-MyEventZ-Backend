@@ -8,19 +8,24 @@ const FetchSpeakerMasterDetails = async (req, res)=>{
 
         // Build the WHERE clause based on the Status
         if (SpeakerUkeyId) {
-            whereConditions.push(`SpeakerUkeyId = ${setSQLStringValue(SpeakerUkeyId)}`);
+            whereConditions.push(`SM,SpeakerUkeyId = ${setSQLStringValue(SpeakerUkeyId)}`);
         }
         if (EventUkeyId) {
-            whereConditions.push(`EventUkeyId = ${setSQLStringValue(EventUkeyId)}`);
+            whereConditions.push(`SM.EventUkeyId = ${setSQLStringValue(EventUkeyId)}`);
         }
         if(OrganizerUkeyId){
-            whereConditions.push(`OrganizerUkeyId = ${setSQLStringValue(OrganizerUkeyId)}`);
+            whereConditions.push(`SM.OrganizerUkeyId = ${setSQLStringValue(OrganizerUkeyId)}`);
         }
         // Combine the WHERE conditions into a single string
         const whereString = whereConditions.length > 0 ? `WHERE ${whereConditions.join(' AND ')}` : '';
         const getUserList = {
-            getQuery: `SELECT * FROM SpeakerMaster ${whereString} ORDER BY EntryDate DESC`,
-            countQuery: `SELECT COUNT(*) AS totalCount FROM SpeakerMaster ${whereString}`,
+            getQuery: `
+            select SM.*, DU.FileName from SpeakerMaster SM
+            left join DocumentUpload DU on SM.SpeakerUkeyId = DU.UkeyId             
+            ${whereString} ORDER BY SM.EntryDate DESC`,
+            countQuery: `SELECT COUNT(*) AS totalCount from SpeakerMaster SM
+            left join DocumentUpload DU on SM.SpeakerUkeyId = DU.UkeyId 
+            ${whereString}`,
         };
         const result = await getCommonAPIResponse(req, res, getUserList);
         return res.json(result);
