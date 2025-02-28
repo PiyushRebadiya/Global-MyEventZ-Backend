@@ -115,7 +115,7 @@ const RemoveOrgUser = async (req, res) => {
         const oldImg = oldImgResult.recordset?.[0]?.Image;
 
         // Delete user from OrgUserMaster
-        const deleteQuery = `DELETE FROM OrgUserMaster WHERE UserUkeyId = '${UserUkeyId}';`;
+        const deleteQuery = `DELETE FROM OrgUserMaster WHERE UserUkeyId = ${setSQLStringValue(UserUkeyId)} and OrganizerUkeyId = ${setSQLStringValue(OrganizerUkeyId)};`;
         const deleteResult = await pool.request().query(deleteQuery);
 
         if (deleteResult.rowsAffected[0] === 0) {

@@ -44,6 +44,7 @@ app.use('/', express.static(`./media/TicketView`));
 app.use('/', express.static(`./media/User`));
 app.use('/', express.static(`./media/Complaint`));
 app.use('/', express.static(`./media/Organizer`));
+app.use('/', express.static(`./media/DocumentUpload`));
 
 app.use("/", routes);
 

@@ -42,11 +42,12 @@ const StateController = require('../controllers/State');
 const CityController = require('../controllers/city');
 const OrgUserController = require('../controllers/OrgUserMaster');
 const PaymentGatewayMaster = require('../controllers/PaymentGatewayMaster');
+const DocumentUploadController = require('../controllers/DocumentUpload');
 // const carouselController = require('../controllers/carousel');
 
 const auth = require("../middleware/auth");
 
-const {SpeakerUpload, SponsorUpload, PaymentUpload, VolunteerMasterUpload, carouselUpload, galleryMasterUpload, ticketViewUpload, UserUpload, complaintUpload, OrginizerUpload} = require('../upload/index');
+const {SpeakerUpload, SponsorUpload, PaymentUpload, VolunteerMasterUpload, carouselUpload, galleryMasterUpload, ticketViewUpload, UserUpload, complaintUpload, OrginizerUpload, DocumentUploadUpload} = require('../upload/index');
 
 router.get("/fetchUserMaster", auth, UserMasterController.fetchUserMaster)
 router.post("/user_master", UserUpload, UserMasterController.addOrUpdateUserMaster)
@@ -199,5 +200,13 @@ router.delete('/delete_user_category_master', auth, userCategoryMaster.removeUse
 router.get('/fetch_payment_gateway', auth, PaymentGatewayMaster.FetchPaymentGatewayMasterDetails);
 router.post('/payment_gateway_master', auth, PaymentGatewayMaster.PaymentGatewayMaster);
 router.delete('/delete_payment_gateway', auth, PaymentGatewayMaster.RemovePaymentGateway);
+
+//#region DOCUMENT UPLOAD MASTER
+
+router.get('/list_document', auth, DocumentUploadController.FetchDocumentUploadDetails);
+router.post('/document_upload_master', auth, DocumentUploadUpload, DocumentUploadController.DocumentUpload);
+router.delete('/delete_document', auth, DocumentUploadController.RemoveDocumnet);
+
+//#endregion
 
 module.exports = router;
