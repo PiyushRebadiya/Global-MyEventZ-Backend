@@ -35,7 +35,7 @@ const FetchDocumentUploadDetails = async (req, res)=>{
 }
 
 const DocumentUpload = async (req, res) => {
-    const { Category, EventUkeyId, OrganizerUkeyId, UkeyId, flag } = req.body;
+    const { Category, EventUkeyId, OrganizerUkeyId, UkeyId, flag, FileType, IsActive = true } = req.body;
     let FileNames = req?.files?.FileName?.length 
         ? req.files.FileName.map(file => file.filename) 
         : req.body.FileNames ? JSON.parse(req.body.FileNames) : [];
@@ -57,7 +57,7 @@ const DocumentUpload = async (req, res) => {
 
         let insertQuery = `
             INSERT INTO DocumentUpload (
-                DocUkeyId, FileName, Category, EventUkeyId, OrganizerUkeyId, UkeyId, UserId, UserName, IpAddress, HostName, EntryDate, flag
+                DocUkeyId, FileName, Category, EventUkeyId, OrganizerUkeyId, UkeyId, UserId, UserName, IpAddress, HostName, EntryDate, flag, FileType, IsActive
             ) VALUES `;
 
         const values = FileNames.map(file => `(
@@ -65,10 +65,11 @@ const DocumentUpload = async (req, res) => {
             ${setSQLStringValue(EventUkeyId)}, ${setSQLStringValue(OrganizerUkeyId)}, ${setSQLStringValue(UkeyId)}, 
             ${setSQLStringValue(req.user.UserId)}, ${setSQLStringValue(req.user.FirstName)}, 
             ${setSQLStringValue(IPAddress)}, ${setSQLStringValue(ServerName)}, ${setSQLStringValue(EntryTime)}, 
-            'A'
+            'A', ${setSQLStringValue(FileType)}, ${setSQLBooleanValue(IsActive)}
         )`).join(',');
 
         insertQuery += values;
+        console.log(insertQuery);
 
         const result = await pool.request().query(insertQuery);
 
@@ -85,6 +86,32 @@ const DocumentUpload = async (req, res) => {
         return res.status(500).send(errorMessage(error?.message));
     }
 };
+
+const updateIsActiveStatusOfDocument = async (req, res)=> {
+    try{
+        const { IsActive = true, OrganizerUkeyId, DocUkeyId } = req.body;
+        
+        const missingKeys = checkKeysAndRequireValues(
+            [ 'IsActive', 'OrganizerUkeyId', 'DocUkeyId'], 
+            { ...req.body }
+        );
+
+        if (missingKeys.length > 0 ) {
+            return res.status(400).json(errorMessage(`${missingKeys.join(', ')} is required.`));
+        }
+
+        const result = await pool.request().query(`update DocumentUpload set IsActive = ${setSQLBooleanValue(IsActive)} where OrganizerUkeyId = ${setSQLStringValue(OrganizerUkeyId)} and DocUkeyId = ${setSQLStringValue(DocUkeyId)}`);
+
+        if (result?.rowsAffected?.[0] === 0) {
+            return res.status(400).json(errorMessage('No Document updated.'));
+        }
+
+        return res.status(200).json(successMessage('Documents updated successfully.'));
+    }catch(error){
+        console.error('Document Upload Error:', error);
+        return res.status(500).send(errorMessage(error?.message));
+    }
+}
 
 const RemoveDocumnet = async (req, res) => {
     try {
@@ -122,4 +149,5 @@ module.exports = {
     FetchDocumentUploadDetails,
     DocumentUpload,
     RemoveDocumnet,
+    updateIsActiveStatusOfDocument
 }
