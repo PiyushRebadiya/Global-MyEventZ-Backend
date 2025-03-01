@@ -20,20 +20,14 @@ const FetchSpeakerMasterDetails = async (req, res)=>{
         const whereString = whereConditions.length > 0 ? `WHERE ${whereConditions.join(' AND ')}` : '';
         const getUserList = {
             getQuery: `
-            select SM.*, DU.FileName from SpeakerMaster SM
-            left join DocumentUpload DU on SM.SpeakerUkeyId = DU.UkeyId             
-            ${whereString} ORDER BY SM.EntryDate DESC`,
-    
-            getQuery: `
-           
 			SELECT SM.*, DU.FileName FROM SpeakerMaster SM OUTER APPLY (
                 SELECT TOP 1 FileName 
                 FROM DocumentUpload 
                 WHERE UkeyId = SM.SpeakerUkeyId 
                 ORDER BY EntryDate DESC  
             ) DU ${whereString}
-            ORDER BY SM.EntryDate DESC;`,
-            countQuery: `SELECT COUNT(*) AS totalCount from SpeakerMaster 
+            ORDER BY SM.EntryDate DESC`,
+            countQuery: `SELECT COUNT(*) AS totalCount from SpeakerMaster SM 
             ${whereString}`,
         };
         const result = await getCommonAPIResponse(req, res, getUserList);
