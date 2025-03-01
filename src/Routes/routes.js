@@ -208,6 +208,7 @@ router.delete('/delete_payment_gateway', auth, PaymentGatewayMaster.RemovePaymen
 
 router.get('/list_document', auth, DocumentUploadController.FetchDocumentUploadDetails);
 router.post('/document_upload_master', auth, DocumentUploadUpload, DocumentUploadController.DocumentUpload);
+router.put('/document_status_update', auth, DocumentUploadController.updateIsActiveStatusOfDocument);
 router.delete('/delete_document', auth, DocumentUploadController.RemoveDocumnet);
 
 //#endregion
