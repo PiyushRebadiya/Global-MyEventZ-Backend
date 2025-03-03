@@ -44,6 +44,7 @@ const OrgUserController = require('../controllers/OrgUserMaster');
 const PaymentGatewayMaster = require('../controllers/PaymentGatewayMaster');
 const DocumentUploadController = require('../controllers/DocumentUpload');
 const TicketCategoryController = require('../controllers/TicketCategoryMaster');
+const otpController = require('../controllers/otp.js');
 // const carouselController = require('../controllers/carousel');
 
 const auth = require("../middleware/auth");
@@ -56,6 +57,8 @@ router.post("/user_master", UserUpload, UserMasterController.addOrUpdateUserMast
 router.delete("/delete_user_master", auth, UserMasterController.deleteUserMaster)
 
 router.post("/verify_user_master", UserMasterController.verifyHandler)
+
+router.post("/sentOTP", otpController.otpVerificationHandler)
 
 router.get('/fetch_profession_category', auth, professionCategoryMaster.FetchprofessionCategoryMaster);
 router.post('/profession_category_master', auth, professionCategoryMaster.professionCategoryMaster);
