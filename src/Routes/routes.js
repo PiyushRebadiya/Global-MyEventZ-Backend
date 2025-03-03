@@ -43,6 +43,7 @@ const CityController = require('../controllers/city');
 const OrgUserController = require('../controllers/OrgUserMaster');
 const PaymentGatewayMaster = require('../controllers/PaymentGatewayMaster');
 const DocumentUploadController = require('../controllers/DocumentUpload');
+const TicketCategoryController = require('../controllers/TicketCategoryMaster');
 // const carouselController = require('../controllers/carousel');
 
 const auth = require("../middleware/auth");
@@ -224,5 +225,11 @@ router.put('/document_status_update', auth, DocumentUploadController.updateIsAct
 router.delete('/delete_document', auth, DocumentUploadController.RemoveDocumnet);
 
 //#endregion
+
+//#endregion
+router.get('/fetch_ticket_category', auth, TicketCategoryController.FetchTicketCategory);
+router.post('/ticket_category_master', auth, TicketCategoryController.TicketCategoryMaster);
+router.delete('/delete_ticket_category', auth, TicketCategoryController.RemoveTicketCategory);
+//#region 
 
 module.exports = router;
