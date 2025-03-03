@@ -135,17 +135,11 @@ router.get('/fetch_ticket_user_list', auth, IsTicketUserList.Ticket_User_List);
 
 router.post('/verify_ticket', auth, VerifyTicketController.verifyTicket);
 //#endregion
-
-router.get('/generate_qr_code', QRCodeMasterController.generateQRCode);
-router.get('/generate_qr_code_image', QRCodeMasterController.generateQRCodeImageView);
-
+//#region SPEAKER APIs
 router.get('/fetch_speaker_master', auth, SpeakerMasterController.FetchSpeakerMasterDetails);
 router.post('/speaker_master', auth, SpeakerMasterController.SpeakerMaster);
 router.delete('/delete_speaker_master', auth, SpeakerMasterController.RemoveSpeaker);
-
-router.get('/razorpay/credentials', RazorpayController.fetchRazorpayCredentials);
-router.put('/razorpay/credentials', auth, RazorpayController.updateRazorpayCredentials);
-
+//#endregion
 //#region SPONSOR APIs
 router.get('/fetch_sponsor_master', SponsorMasterController.FetchSponsorMasterDetails);
 router.post('/sponsor_master', auth, SponsorUpload, SponsorMasterController.SponsorMaster);
@@ -155,13 +149,13 @@ router.get('/fetch_sponsor_category_master', auth, SponsorCategoryMasterControll
 router.post('/sponsor_category_master', auth, SponsorCategoryMasterController.SponsorCategoryMaster);
 router.delete('/delete_sponsor_category_master', auth, SponsorCategoryMasterController.RemoveSponsorCategory);
 //#endregion
-
+//#region VOLUNTEER APIs
 router.get('/fetch_volunteer_master', auth, VolunteerMasterController.FetchVolunteerMasterDetails);
 router.get('/fetch_volunteer_dashboard_view', auth, VolunteerMasterController.VolunteerDashboardView);
 router.get('/verify_volunteer', VolunteerMasterController.LoginVolunteer);
 router.post('/volunteer_master', auth, VolunteerMasterUpload, VolunteerMasterController.VolunteerMaster);
 router.delete('/delete_volunteer_master', auth, VolunteerMasterController.RemoveVolunteer);
-
+//#endregion
 //#region carousel
 router.get("/carousel_list", carouselController.fetchCarouselList)
 router.post("/carousel_master", auth, carouselUpload, carouselController.CarouserMaster)
@@ -218,6 +212,12 @@ router.post('/manage_live_stream', auth, LiveStreamController.ManageLiveStreamMa
 router.delete('/delete_live_stream', auth, LiveStreamController.RemoveLiveStreamMaster);
 
 router.post('/testing', ReactDeployController.setupIISForSubdomain);
+
+router.get('/generate_qr_code', QRCodeMasterController.generateQRCode);
+router.get('/generate_qr_code_image', QRCodeMasterController.generateQRCodeImageView);
+
+router.get('/razorpay/credentials', RazorpayController.fetchRazorpayCredentials);
+router.put('/razorpay/credentials', auth, RazorpayController.updateRazorpayCredentials);
 //#endregion
 
 //#region DOCUMENT UPLOAD MASTER
@@ -229,7 +229,7 @@ router.delete('/delete_document', auth, DocumentUploadController.RemoveDocumnet)
 
 //#endregion
 
-//#endregion
+//#endregion NEW TICKET APIs
 router.get('/fetch_ticket_category', auth, TicketCategoryController.FetchTicketCategory);
 router.post('/ticket_category_master', auth, TicketCategoryController.TicketCategoryMaster);
 router.delete('/delete_ticket_category', auth, TicketCategoryController.RemoveTicketCategory);
