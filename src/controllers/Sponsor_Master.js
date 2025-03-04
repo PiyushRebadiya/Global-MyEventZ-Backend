@@ -7,21 +7,22 @@ const FetchSponsorMasterDetails = async (req, res)=>{
         let whereConditions = [];
 
         if (SponsorUkeyId) {
-            whereConditions.push(`SponsorUkeyId = ${setSQLStringValue(SponsorUkeyId)}`);
+            whereConditions.push(`SM.SponsorUkeyId = ${setSQLStringValue(SponsorUkeyId)}`);
         }
         if (OrganizerUkeyId) {
-            whereConditions.push(`OrganizerUkeyId = ${setSQLStringValue(OrganizerUkeyId)}`);
+            whereConditions.push(`SM.OrganizerUkeyId = ${setSQLStringValue(OrganizerUkeyId)}`);
         }
         if (EventUkeyId) {
-            whereConditions.push(`EventUkeyId = ${setSQLStringValue(EventUkeyId)}`);
+            whereConditions.push(`SM.EventUkeyId = ${setSQLStringValue(EventUkeyId)}`);
         }
         if (SponsorCatUkeyId) {
-            whereConditions.push(`SponsorCatUkeyId = ${setSQLStringValue(SponsorCatUkeyId)}`);
+            whereConditions.push(`SM.SponsorCatUkeyId = ${setSQLStringValue(SponsorCatUkeyId)}`);
         }
         const whereString = whereConditions.length > 0 ? `WHERE ${whereConditions.join(' AND ')}` : '';
         const getUserList = {
-            getQuery: `SELECT * FROM SponsorMaster ${whereString} ORDER BY EntryDate DESC`,
-            countQuery: `SELECT COUNT(*) AS totalCount FROM SponsorMaster ${whereString}`,
+            getQuery: `SELECT SM.* FROM SponsorMaster SM
+            left join DocumentUpload DU on SM.SponsorUkeyId = DU.UkeyId ${whereString} ORDER BY EntryDate DESC`,
+            countQuery: `SELECT COUNT(*) AS totalCount FROM SponsorMaster SM ${whereString}`,
         };
         const result = await getCommonAPIResponse(req, res, getUserList);
         return res.json(result);
@@ -33,16 +34,16 @@ const FetchSponsorMasterDetails = async (req, res)=>{
 
 const SponsorMaster = async (req, res) => {
     const { 
-        SponsorUkeyId = '', SponsorCatUkeyId = '', Name = '', Mobile = '', CompanyName = '', flag = '' , OrganizerUkeyId = '',EventUkeyId = '', Description1 = '', Description2 = '', Description3 = '', Description4 = ''
+        SponsorUkeyId = '', SponsorCatUkeyId = '', Name = '', Mobile = '', CompanyName = '', flag = '' , OrganizerUkeyId = '',EventUkeyId = '', Description1 = '', Description2 = '', Description3 = '', Description4 = '', Link = '', LinkType = 's'
     } = req.body;
     try {
         const { IPAddress, ServerName, EntryTime } = getCommonKeys(req);
 
         const insertQuery = `
             INSERT INTO SponsorMaster (
-                SponsorUkeyId, SponsorCatUkeyId, Name, Mobile, CompanyName, UserName, UserID, IpAddress, HostName, EntryDate, flag, OrganizerUkeyId, EventUkeyId,Description1, Description2, Description3, Description4
+                SponsorUkeyId, SponsorCatUkeyId, Name, Mobile, CompanyName, UserName, UserID, IpAddress, HostName, EntryDate, flag, OrganizerUkeyId, EventUkeyId,Description1, Description2, Description3, Description4, Link, LinkType
             ) VALUES (
-                ${setSQLStringValue(SponsorUkeyId)}, ${setSQLStringValue(SponsorCatUkeyId)}, ${setSQLStringValue(Name)}, ${setSQLStringValue(Mobile)}, ${setSQLStringValue(CompanyName)}, ${setSQLStringValue(req.user.FirstName)}, ${setSQLStringValue(req.user.UserId)}, ${setSQLStringValue(IPAddress)}, ${setSQLStringValue(ServerName)}, ${setSQLStringValue(EntryTime)}, ${setSQLStringValue(flag)}, ${setSQLStringValue(OrganizerUkeyId)}, ${setSQLStringValue(EventUkeyId)}, ${setSQLStringValue(Description1)}, ${setSQLStringValue(Description2)}, ${setSQLStringValue(Description3)}, ${setSQLStringValue(Description4)}
+                ${setSQLStringValue(SponsorUkeyId)}, ${setSQLStringValue(SponsorCatUkeyId)}, ${setSQLStringValue(Name)}, ${setSQLStringValue(Mobile)}, ${setSQLStringValue(CompanyName)}, ${setSQLStringValue(req.user.FirstName)}, ${setSQLStringValue(req.user.UserId)}, ${setSQLStringValue(IPAddress)}, ${setSQLStringValue(ServerName)}, ${setSQLStringValue(EntryTime)}, ${setSQLStringValue(flag)}, ${setSQLStringValue(OrganizerUkeyId)}, ${setSQLStringValue(EventUkeyId)}, ${setSQLStringValue(Description1)}, ${setSQLStringValue(Description2)}, ${setSQLStringValue(Description3)}, ${setSQLStringValue(Description4)}, ${setSQLStringValue(Link)}, ${setSQLStringValue(LinkType)}
             );
         `;
 
