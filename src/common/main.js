@@ -91,6 +91,13 @@ const setSQLNumberValue = (value) => {
     return Number(value)
 }
 
+const setSQLDecimalValue = (value, decimalPlaces = 2) => {
+    if (!value || isNaN(value)) {
+        return 0.0;
+    }
+    return parseFloat(parseFloat(value).toFixed(decimalPlaces));
+};
+
 const setSQLNumberNullValue = (value) => {
     if (!value || isNaN(value)) {
         return null
@@ -351,4 +358,5 @@ module.exports = {
     generateCODE,
     generateSixDigitCode,
     toFloat,
+    setSQLDecimalValue,
 }

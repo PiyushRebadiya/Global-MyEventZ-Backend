@@ -45,6 +45,7 @@ const PaymentGatewayMaster = require('../controllers/PaymentGatewayMaster');
 const DocumentUploadController = require('../controllers/DocumentUpload');
 const TicketCategoryController = require('../controllers/TicketCategoryMaster');
 const otpController = require('../controllers/otp.js');
+const BookingController = require('../controllers/BookingMaster');
 // const carouselController = require('../controllers/carousel');
 
 const auth = require("../middleware/auth");
@@ -233,6 +234,11 @@ router.delete('/delete_document', auth, DocumentUploadController.RemoveDocumnet)
 router.get('/fetch_ticket_category', auth, TicketCategoryController.FetchTicketCategory);
 router.post('/ticket_category_master', auth, TicketCategoryController.TicketCategoryMaster);
 router.delete('/delete_ticket_category', auth, TicketCategoryController.RemoveTicketCategory);
+
+router.get('/fetch_booking_master', auth, BookingController.fetchBookings);
+router.get('/fetch_booking_master_by_id', auth, BookingController.fetchBookingInfoById);
+router.post('/booking_master', auth, BookingController.BookingMaster);
+router.delete('/delete_bookings', auth, BookingController.RemoveBookings);
 //#region 
 
 module.exports = router;
