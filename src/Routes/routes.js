@@ -230,7 +230,7 @@ router.delete('/delete_document', auth, DocumentUploadController.RemoveDocumnet)
 
 //#endregion
 
-//#endregion NEW TICKET APIs
+//#region NEW TICKET APIs
 router.get('/fetch_ticket_category', auth, TicketCategoryController.FetchTicketCategory);
 router.post('/ticket_category_master', auth, TicketCategoryController.TicketCategoryMaster);
 router.delete('/delete_ticket_category', auth, TicketCategoryController.RemoveTicketCategory);
@@ -239,6 +239,6 @@ router.get('/fetch_booking_master', auth, BookingController.fetchBookings);
 router.get('/fetch_booking_master_by_id', auth, BookingController.fetchBookingInfoById);
 router.post('/booking_master', auth, BookingController.BookingMaster);
 router.delete('/delete_bookings', auth, BookingController.RemoveBookings);
-//#region 
+//#endregion
 
 module.exports = router;

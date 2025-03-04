@@ -20,8 +20,17 @@ const FetchSponsorMasterDetails = async (req, res)=>{
         }
         const whereString = whereConditions.length > 0 ? `WHERE ${whereConditions.join(' AND ')}` : '';
         const getUserList = {
-            getQuery: `SELECT SM.*, DU.FileName FROM SponsorMaster SM
-            left join DocumentUpload DU on SM.SponsorUkeyId = DU.UkeyId ${whereString} ORDER BY EntryDate DESC`,
+            getQuery: `SELECT SM.*, DU.FileName 
+            FROM SponsorMaster SM
+            OUTER APPLY (
+                SELECT TOP 1 FileName 
+                FROM DocumentUpload 
+                WHERE UkeyId = SM.SponsorUkeyId 
+                ORDER BY EntryDate DESC  
+            ) DU 
+            ${whereString}
+            ORDER BY SM.EntryDate DESC
+            `,
             countQuery: `SELECT COUNT(*) AS totalCount FROM SponsorMaster SM ${whereString}`,
         };
         const result = await getCommonAPIResponse(req, res, getUserList);
