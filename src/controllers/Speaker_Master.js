@@ -8,7 +8,7 @@ const FetchSpeakerMasterDetails = async (req, res)=>{
 
         // Build the WHERE clause based on the Status
         if (SpeakerUkeyId) {
-            whereConditions.push(`SM,SpeakerUkeyId = ${setSQLStringValue(SpeakerUkeyId)}`);
+            whereConditions.push(`SM.SpeakerUkeyId = ${setSQLStringValue(SpeakerUkeyId)}`);
         }
         if (EventUkeyId) {
             whereConditions.push(`SM.EventUkeyId = ${setSQLStringValue(EventUkeyId)}`);
@@ -39,17 +39,17 @@ const FetchSpeakerMasterDetails = async (req, res)=>{
 }
 
 const SpeakerMaster = async (req, res) => {
-    const { SpeakerUkeyId, OrganizerUkeyId, EventUkeyId, Name, Alias, Description, Email, Mobile, FB, Instagram, Youtube, Other, flag} = req.body;
+    const { SpeakerUkeyId, OrganizerUkeyId, EventUkeyId, Name, Alias, Description, Email, Mobile, FB, Instagram, Youtube, Other, flag, DiscriptionHindi, DiscriptionGujarati} = req.body;
     try {
         const { IPAddress, ServerName, EntryTime } = getCommonKeys(req);
         
         const insertQuery = `
             INSERT INTO SpeakerMaster (
                 SpeakerUkeyId, Name, Alias, Description, Email, Mobile, FB, Instagram, Youtube, Other, 
-                UserName, UserID, IpAddress, HostName, EntryDate, flag, OrganizerUkeyId, EventUkeyId
+                UserName, UserID, IpAddress, HostName, EntryDate, flag, OrganizerUkeyId, EventUkeyId, DiscriptionHindi, DiscriptionGujarati
             ) VALUES (
                 ${setSQLStringValue(SpeakerUkeyId)}, ${setSQLStringValue(Name)}, ${setSQLStringValue(Alias)}, ${setSQLStringValue(Description)}, ${setSQLStringValue(Email)}, ${setSQLStringValue(Mobile)}, ${setSQLStringValue(FB)}, 
-                ${setSQLStringValue(Instagram)}, ${setSQLStringValue(Youtube)}, ${setSQLStringValue(Other)}, ${setSQLStringValue(req.user.FirstName)}, ${setSQLNumberValue(req.user.UserId)}, ${setSQLStringValue(IPAddress)}, ${setSQLStringValue(ServerName)}, ${setSQLStringValue(EntryTime)}, ${setSQLStringValue(flag)}, ${setSQLStringValue(OrganizerUkeyId)}, ${setSQLStringValue(EventUkeyId)}
+                ${setSQLStringValue(Instagram)}, ${setSQLStringValue(Youtube)}, ${setSQLStringValue(Other)}, ${setSQLStringValue(req.user.FirstName)}, ${setSQLNumberValue(req.user.UserId)}, ${setSQLStringValue(IPAddress)}, ${setSQLStringValue(ServerName)}, ${setSQLStringValue(EntryTime)}, ${setSQLStringValue(flag)}, ${setSQLStringValue(OrganizerUkeyId)}, ${setSQLStringValue(EventUkeyId)}, ${setSQLStringValue(DiscriptionHindi)}, ${setSQLStringValue(DiscriptionGujarati)}
             );
         `;
 
