@@ -20,7 +20,7 @@ const FetchSponsorMasterDetails = async (req, res)=>{
         }
         const whereString = whereConditions.length > 0 ? `WHERE ${whereConditions.join(' AND ')}` : '';
         const getUserList = {
-            getQuery: `SELECT SM.* FROM SponsorMaster SM
+            getQuery: `SELECT SM.*, DU.FileName FROM SponsorMaster SM
             left join DocumentUpload DU on SM.SponsorUkeyId = DU.UkeyId ${whereString} ORDER BY EntryDate DESC`,
             countQuery: `SELECT COUNT(*) AS totalCount FROM SponsorMaster SM ${whereString}`,
         };
