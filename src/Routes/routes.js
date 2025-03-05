@@ -94,65 +94,65 @@ router.delete('/delete_event', auth, EventController.RemoveEvent);
 //#endregion
 
 //#region old TICKET APIS
-router.get("/fetch_payment_master", auth, PaymentMasterController.fetchPaymentMaster)
-router.get("/set_payment_flag", PaymentMasterController.setPaymentFlag)
-router.get("/fetch_payment_and_tickets", auth, PaymentMasterController.fetchPaymentAndTickets)
-router.post("/add_payment_master", auth, PaymentUpload, PaymentMasterController.addPaymentMaster)
-router.put("/update_payment_master", auth, PaymentUpload, PaymentMasterController.updatePaymentMaster)
-router.put("/update_payment_statusr", auth, PaymentMasterController.updatePaymentStatus)
-router.delete("/delete_payment_master", auth, PaymentMasterController.deletePaymentMaster)
+// router.get("/fetch_payment_master", auth, PaymentMasterController.fetchPaymentMaster)
+// router.get("/set_payment_flag", PaymentMasterController.setPaymentFlag)
+// router.get("/fetch_payment_and_tickets", auth, PaymentMasterController.fetchPaymentAndTickets)
+// router.post("/add_payment_master", auth, PaymentUpload, PaymentMasterController.addPaymentMaster)
+// router.put("/update_payment_master", auth, PaymentUpload, PaymentMasterController.updatePaymentMaster)
+// router.put("/update_payment_statusr", auth, PaymentMasterController.updatePaymentStatus)
+// router.delete("/delete_payment_master", auth, PaymentMasterController.deletePaymentMaster)
 
-router.get("/fetch_ticket_master", auth, TicketMasterController.fetchTicketMaster)
-router.get("/fetch_ticket_list_by_usercode", auth, TicketMasterController.fetchTicketListOnUserCode)
-router.get("/fetch_ticket_gate_no", auth, TicketMasterController.fetchTicketGateNo)
-router.post("/add_ticket_master", auth, TicketMasterController.addTicketMaster)
-router.put("/update_ticket_master", auth, TicketMasterController.updateTicketMaster)
-router.delete("/delete_ticket_master", auth, TicketMasterController.deleteTicketMaster)
+// router.get("/fetch_ticket_master", auth, TicketMasterController.fetchTicketMaster)
+// router.get("/fetch_ticket_list_by_usercode", auth, TicketMasterController.fetchTicketListOnUserCode)
+// router.get("/fetch_ticket_gate_no", auth, TicketMasterController.fetchTicketGateNo)
+// router.post("/add_ticket_master", auth, TicketMasterController.addTicketMaster)
+// router.put("/update_ticket_master", auth, TicketMasterController.updateTicketMaster)
+// router.delete("/delete_ticket_master", auth, TicketMasterController.deleteTicketMaster)
 
-router.get('/payment', auth, PaymentController.getPaymentDetails);
-router.post('/payment/create', PaymentController.createPayment);
-router.post('/payment/capture', PaymentController.capturePayment);
-router.get('/payment/all', auth, PaymentController.getAllPayments);
+// router.get('/payment', auth, PaymentController.getPaymentDetails);
+// router.post('/payment/create', PaymentController.createPayment);
+// router.post('/payment/capture', PaymentController.capturePayment);
+// router.get('/payment/all', auth, PaymentController.getAllPayments);
 
-router.get('/fetch_ticket_price_master', auth, TicketPriceMasterController.TicketPriceMasterList);
-router.post('/ticket_price_master', auth, TicketPriceMasterController.addTicketPriceMaster);
-router.delete('/delete_ticket_price_master', auth, TicketPriceMasterController.RemoveTicketPriceMaster);
+// router.get('/fetch_ticket_price_master', auth, TicketPriceMasterController.TicketPriceMasterList);
+// router.post('/ticket_price_master', auth, TicketPriceMasterController.addTicketPriceMaster);
+// router.delete('/delete_ticket_price_master', auth, TicketPriceMasterController.RemoveTicketPriceMaster);
 
-router.get('/fetch_volunteer_master', auth, VolunteerMasterController.FetchVolunteerMasterDetails);
-router.get('/fetch_volunteer_dashboard_view', auth, VolunteerMasterController.VolunteerDashboardView);
-router.get('/verify_volunteer', VolunteerMasterController.LoginVolunteer);
-router.post('/volunteer_master', auth, VolunteerMasterUpload, VolunteerMasterController.VolunteerMaster);
-router.delete('/delete_volunteer_master', auth, VolunteerMasterController.RemoveVolunteer);
+// router.get('/fetch_volunteer_master', auth, VolunteerMasterController.FetchVolunteerMasterDetails);
+// router.get('/fetch_volunteer_dashboard_view', auth, VolunteerMasterController.VolunteerDashboardView);
+// router.get('/verify_volunteer', VolunteerMasterController.LoginVolunteer);
+// router.post('/volunteer_master', auth, VolunteerMasterUpload, VolunteerMasterController.VolunteerMaster);
+// router.delete('/delete_volunteer_master', auth, VolunteerMasterController.RemoveVolunteer);
 
-router.get('/fetch_sponsor_category_master', auth, SponsorCategoryMasterController.FetchSponsorCategoryMasterDetails);
-router.post('/sponsor_category_master', auth, SponsorCategoryMasterController.SponsorCategoryMaster);
-router.delete('/delete_sponsor_category_master', auth, SponsorCategoryMasterController.RemoveSponsorCategory);
+// router.get('/fetch_sponsor_category_master', auth, SponsorCategoryMasterController.FetchSponsorCategoryMasterDetails);
+// router.post('/sponsor_category_master', auth, SponsorCategoryMasterController.SponsorCategoryMaster);
+// router.delete('/delete_sponsor_category_master', auth, SponsorCategoryMasterController.RemoveSponsorCategory);
 
-router.get("/carousel_list", carouselController.fetchCarouselList)
-router.post("/carousel_master", auth, DocumentUploadUpload, carouselController.CarouserMaster)
-router.delete('/delete_carousel_master', auth, carouselController.RemoveCarousel);
+// router.get("/carousel_list", carouselController.fetchCarouselList)
+// router.post("/carousel_master", auth, DocumentUploadUpload, carouselController.CarouserMaster)
+// router.delete('/delete_carousel_master', auth, carouselController.RemoveCarousel);
 
-router.get("/gallery_list", auth, galleryMasterController.FetchGalleryMasterDetails);
-router.post("/gallery_master", auth, galleryMasterUpload, galleryMasterController.GalleryMaster);
-router.delete('/delete_gallery_master', auth, galleryMasterController.RemoveGalleryMaster);
+// router.get("/gallery_list", auth, galleryMasterController.FetchGalleryMasterDetails);
+// router.post("/gallery_master", auth, galleryMasterUpload, galleryMasterController.GalleryMaster);
+// router.delete('/delete_gallery_master', auth, galleryMasterController.RemoveGalleryMaster);
 
-router.get("/ticketview_list", auth, TicketViewController.fetchTicketViewList)
-router.post("/ticketview_master", auth, ticketViewUpload, TicketViewController.TicketViewMaster)
-router.delete('/delete_ticketview_master', auth, TicketViewController.RemoveTicketView);
+// router.get("/ticketview_list", auth, TicketViewController.fetchTicketViewList)
+// router.post("/ticketview_master", auth, ticketViewUpload, TicketViewController.TicketViewMaster)
+// router.delete('/delete_ticketview_master', auth, TicketViewController.RemoveTicketView);
 
-router.get('/fetch_ticket_limit', auth, TicketLimitMasterController.FetchTicketLimitMasterDetails);
-router.post('/ticket_limit_master', auth, TicketLimitMasterController.TicketLimitMaster);
-router.delete('/delete_ticket_limit', auth, TicketLimitMasterController.RemoveTicketLimit);
+// router.get('/fetch_ticket_limit', auth, TicketLimitMasterController.FetchTicketLimitMasterDetails);
+// router.post('/ticket_limit_master', auth, TicketLimitMasterController.TicketLimitMaster);
+// router.delete('/delete_ticket_limit', auth, TicketLimitMasterController.RemoveTicketLimit);
 
-router.get('/fetch_payment_gateway', auth, PaymentGatewayMaster.FetchPaymentGatewayMasterDetails);
-router.post('/payment_gateway_master', auth, PaymentGatewayMaster.PaymentGatewayMaster);
-router.delete('/delete_payment_gateway', auth, PaymentGatewayMaster.RemovePaymentGateway);
+// router.get('/fetch_payment_gateway', auth, PaymentGatewayMaster.FetchPaymentGatewayMasterDetails);
+// router.post('/payment_gateway_master', auth, PaymentGatewayMaster.PaymentGatewayMaster);
+// router.delete('/delete_payment_gateway', auth, PaymentGatewayMaster.RemovePaymentGateway);
 
-router.get('/Fetch_verify_ticket_log', auth, LogTableController.fetchLogTable);
+// router.get('/Fetch_verify_ticket_log', auth, LogTableController.fetchLogTable);
 
-router.get('/fetch_ticket_user_list', auth, IsTicketUserList.Ticket_User_List);
+// router.get('/fetch_ticket_user_list', auth, IsTicketUserList.Ticket_User_List);
 
-router.post('/verify_ticket', auth, VerifyTicketController.verifyTicket);
+// router.post('/verify_ticket', auth, VerifyTicketController.verifyTicket);
 //#endregion
 //#region SPEAKER APIs
 router.get('/fetch_speaker_master', auth, SpeakerMasterController.FetchSpeakerMasterDetails);
@@ -169,11 +169,11 @@ router.post('/sponsor_category_master', auth, SponsorCategoryMasterController.Sp
 router.delete('/delete_sponsor_category_master', auth, SponsorCategoryMasterController.RemoveSponsorCategory);
 //#endregion
 //#region VOLUNTEER APIs
-router.get('/fetch_volunteer_master', auth, VolunteerMasterController.FetchVolunteerMasterDetails);
-router.get('/fetch_volunteer_dashboard_view', auth, VolunteerMasterController.VolunteerDashboardView);
-router.get('/verify_volunteer', VolunteerMasterController.LoginVolunteer);
-router.post('/volunteer_master', auth, VolunteerMasterUpload, VolunteerMasterController.VolunteerMaster);
-router.delete('/delete_volunteer_master', auth, VolunteerMasterController.RemoveVolunteer);
+// router.get('/fetch_volunteer_master', auth, VolunteerMasterController.FetchVolunteerMasterDetails);
+// router.get('/fetch_volunteer_dashboard_view', auth, VolunteerMasterController.VolunteerDashboardView);
+// router.get('/verify_volunteer', VolunteerMasterController.LoginVolunteer);
+// router.post('/volunteer_master', auth, VolunteerMasterUpload, VolunteerMasterController.VolunteerMaster);
+// router.delete('/delete_volunteer_master', auth, VolunteerMasterController.RemoveVolunteer);
 //#endregion
 //#region carousel
 router.get("/carousel_list", carouselController.fetchCarouselList)
