@@ -118,6 +118,24 @@ router.get('/fetch_ticket_price_master', auth, TicketPriceMasterController.Ticke
 router.post('/ticket_price_master', auth, TicketPriceMasterController.addTicketPriceMaster);
 router.delete('/delete_ticket_price_master', auth, TicketPriceMasterController.RemoveTicketPriceMaster);
 
+router.get('/fetch_volunteer_master', auth, VolunteerMasterController.FetchVolunteerMasterDetails);
+router.get('/fetch_volunteer_dashboard_view', auth, VolunteerMasterController.VolunteerDashboardView);
+router.get('/verify_volunteer', VolunteerMasterController.LoginVolunteer);
+router.post('/volunteer_master', auth, VolunteerMasterUpload, VolunteerMasterController.VolunteerMaster);
+router.delete('/delete_volunteer_master', auth, VolunteerMasterController.RemoveVolunteer);
+
+router.get('/fetch_sponsor_category_master', auth, SponsorCategoryMasterController.FetchSponsorCategoryMasterDetails);
+router.post('/sponsor_category_master', auth, SponsorCategoryMasterController.SponsorCategoryMaster);
+router.delete('/delete_sponsor_category_master', auth, SponsorCategoryMasterController.RemoveSponsorCategory);
+
+router.get("/carousel_list", carouselController.fetchCarouselList)
+router.post("/carousel_master", auth, DocumentUploadUpload, carouselController.CarouserMaster)
+router.delete('/delete_carousel_master', auth, carouselController.RemoveCarousel);
+
+router.get("/gallery_list", auth, galleryMasterController.FetchGalleryMasterDetails);
+router.post("/gallery_master", auth, galleryMasterUpload, galleryMasterController.GalleryMaster);
+router.delete('/delete_gallery_master', auth, galleryMasterController.RemoveGalleryMaster);
+
 router.get("/ticketview_list", auth, TicketViewController.fetchTicketViewList)
 router.post("/ticketview_master", auth, ticketViewUpload, TicketViewController.TicketViewMaster)
 router.delete('/delete_ticketview_master', auth, TicketViewController.RemoveTicketView);
