@@ -46,6 +46,7 @@ const DocumentUploadController = require('../controllers/DocumentUpload');
 const TicketCategoryController = require('../controllers/TicketCategoryMaster');
 const otpController = require('../controllers/otp.js');
 const BookingController = require('../controllers/BookingMaster');
+const ContectMasterController = require('../controllers/ContectMaster')
 // const carouselController = require('../controllers/carousel');
 
 const auth = require("../middleware/auth");
@@ -259,5 +260,9 @@ router.get('/fetch_booking_master_by_id', auth, BookingController.fetchBookingIn
 router.post('/booking_master', auth, BookingController.BookingMaster);
 router.delete('/delete_bookings', auth, BookingController.RemoveBookings);
 //#endregion
+
+router.get('/fetch_contect', auth, ContectMasterController.fetchContects);
+router.post('/contect_master', auth, ContectMasterController.ContectMaster);
+router.delete('/delete_contect', auth, ContectMasterController.RemoveContect);
 
 module.exports = router;

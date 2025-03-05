@@ -38,7 +38,7 @@ const fetchUserMaster = async (req, res) => {
 
 const VerifyUserMobileNumber = async (req, res) => {
     try{
-        const {Mobile1} = req.body
+        const {Mobile1} = req.query
 
         if(!Mobile1){
             return res.status(400).json(errorMessage('Mobile1 is required'))
