@@ -22,13 +22,13 @@ const otpVerificationHandler = async (req, res) => {
         const { Mobile } = req.body;
         const missingKeys = checkKeysAndRequireValues(['Mobile'], { ...req.body })
         if (missingKeys.length > 0) {
-            return res.status(400).send(errorMessage(`Missing required fields: ${missingKeys.join(', ')}`));
+            return res.status(200).send(errorMessage(`Missing required fields: ${missingKeys.join(', ')}`));
         }
-        if (Mobile.length !== 10) {
-            return res.status(400).send(errorMessage("Invalid Mobile Number!"));
+        if (Mobile.length !== 12 || Mobile.slice(0, 2) !== '91') {
+            return res.status(200).send(errorMessage("Invalid Mobile Number!"));
         }
         const otp = Math.random().toString().substr(2, 6);
-        const sentMail = await sentMobileOTPMsg(Mobile, otp);
+        const sentMail = await sentMobileOTPMsg(Mobile.slice(2), otp);
         if (sentMail) {
             res.json({ ...successMessage("Message sent successfully!"), verify: Buffer.from(otp).toString('base64') });
         } else {
