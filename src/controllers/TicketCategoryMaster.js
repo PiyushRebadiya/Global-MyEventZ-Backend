@@ -34,7 +34,7 @@ const FetchTicketCategory = async(req, res)=>{
 }
 
 const TicketCategoryMaster = async(req, res)=>{
-    const { TicketCateUkeyId, TicketLimits, Category, TicketPrice, IsActive = true, OrganizerUkeyId, EventUkeyId, flag} = req.body;
+    const { TicketCateUkeyId, TicketLimits, Category, TicketPrice, IsActive = true, OrganizerUkeyId, EventUkeyId, DiscPer, DiscAmt, flag} = req.body;
     const {IPAddress, ServerName, EntryTime} = getCommonKeys(req);
     try{
         const missingKeys = checkKeysAndRequireValues(['TicketCateUkeyId', 'TicketLimits', 'Category', 'TicketPrice', 'IsActive', 'OrganizerUkeyId', 'EventUkeyId'], req.body)
@@ -43,9 +43,9 @@ const TicketCategoryMaster = async(req, res)=>{
         }
         const insertQuery = `
             INSERT INTO TicketCategoryMaster (
-                TicketCateUkeyId, TicketLimits, Category, TicketPrice, IsActive, OrganizerUkeyId, EventUkeyId, flag, IpAddress, HostName, EntryDate
+                TicketCateUkeyId, TicketLimits, Category, TicketPrice, IsActive, OrganizerUkeyId, EventUkeyId, flag, IpAddress, HostName, EntryDate, DiscPer, DiscAmt
             ) VALUES (
-                ${setSQLStringValue(TicketCateUkeyId)}, ${setSQLStringValue(TicketLimits)}, ${setSQLStringValue(Category)}, ${setSQLStringValue(TicketPrice)}, ${setSQLStringValue(IsActive)}, ${setSQLStringValue(OrganizerUkeyId)}, ${setSQLStringValue(EventUkeyId)}, ${setSQLStringValue(flag)}, ${setSQLStringValue(IPAddress)}, ${setSQLStringValue(ServerName)}, ${setSQLStringValue(EntryTime)}
+                ${setSQLStringValue(TicketCateUkeyId)}, ${setSQLStringValue(TicketLimits)}, ${setSQLStringValue(Category)}, ${setSQLStringValue(TicketPrice)}, ${setSQLStringValue(IsActive)}, ${setSQLStringValue(OrganizerUkeyId)}, ${setSQLStringValue(EventUkeyId)}, ${setSQLStringValue(flag)}, ${setSQLStringValue(IPAddress)}, ${setSQLStringValue(ServerName)}, ${setSQLStringValue(EntryTime)}, ${setSQLStringValue(DiscPer)}, ${setSQLStringValue(DiscAmt)}
             );
         `
         const deleteQuery = `
