@@ -41,7 +41,7 @@ const VerifyUserMobileNumber = async (req, res) => {
         const {Mobile1} = req.query
 
         if(!Mobile1){
-            return res.status(400).json(errorMessage('Mobile1 is required'))
+            return res.status(200).json(errorMessage('Mobile1 is required'))
         }
 
         const result = await pool.request().query(`select * from UserMaster where Mobile1 = ${setSQLStringValue(Mobile1)}`)
@@ -67,32 +67,32 @@ const addOrUpdateUserMaster = async (req, res) => {
         const fieldCheck = checkKeysAndRequireValues(['Mobile1', 'FullName', 'Password', 'UserUkeyId'], req.body);
         if (fieldCheck.length !== 0) {
             if (ProfiilePic) deleteImage("./media/User/" + req?.files?.ProfiilePic?.[0]?.filename);
-            return res.status(400).send(errorMessage(`${fieldCheck} is required`));
+            return res.status(200).send(errorMessage(`${fieldCheck} is required`));
         }
         const { IPAddress, ServerName, EntryTime } = getCommonKeys(req);
 
-        if(['A', 'U'].indexOf(flag) === -1) return res.status(400).send(errorMessage("Invalid flag value"));
+        if(['A', 'U'].indexOf(flag) === -1) return res.status(200).send(errorMessage("Invalid flag value"));
         
         if (flag === 'A') {
             const userMobile = await pool.query(`SELECT * FROM UserMaster WHERE Mobile1 = '${Mobile1}'`);
-            if (userMobile?.recordset?.length) return res.status(400).send(errorMessage("Mobile number already exists"));
+            if (userMobile?.recordset?.length) return res.status(200).send(errorMessage("Mobile number already exists"));
             const insertQuery = `INSERT INTO UserMaster (UserUkeyId, FullName, ProfiilePic, Mobile1, Mobile2, DOB, Email, Gender, Role, IsActive, IsLogin, flag, UserName, Password, IpAddress, HostName, EntryDate) VALUES (${setSQLStringValue(UserUkeyId)}, ${setSQLStringValue(FullName)}, ${setSQLStringValue(ProfiilePic)}, ${setSQLNumberValue(Mobile1)}, ${setSQLNumberNullValue(Mobile2)}, ${setSQLDateTime(DOB)}, ${setSQLStringValue(Email)}, ${setSQLStringValue(Gender)}, ${setSQLStringValue(Role)}, ${setSQLBooleanValue(IsActive)}, 1, 'A', ${setSQLStringValue(UserName)}, ${setSQLStringValue(Password)}, ${setSQLStringValue(IPAddress)}, ${setSQLStringValue(ServerName)}, ${setSQLDateTime(EntryTime)})`;
             const result = await pool.query(insertQuery);
 
             if (result?.rowsAffected[0] === 0) {
                 if (ProfiilePic) deleteImage("./media/User/" + req?.files?.ProfiilePic?.[0]?.filename);
-                return res.status(400).send({...errorMessage('No rows inserted of User Master'), verify: false});
+                return res.status(200).send({...errorMessage('No rows inserted of User Master'), verify: false});
             }
             const options = { expiresIn: '365d' };
             const token = jwt.sign({ UserUkeyId: UserUkeyId, Mobile1, Role }, SECRET_KEY, options);
             return res.status(200).send({...successMessage('Data inserted Successfully!'), verify: true, token, ...req.body});
         } else if (flag === 'U') {
-            if (!UserUkeyId) return res.status(400).send(errorMessage("UserUkeyId is required"));
+            if (!UserUkeyId) return res.status(200).send(errorMessage("UserUkeyId is required"));
             const userMaster = await pool.query(`SELECT * FROM UserMaster WHERE UserUkeyId = '${UserUkeyId}'`);
-            if (!userMaster?.recordset?.length) return res.status(400).send(errorMessage("User not found"));
+            if (!userMaster?.recordset?.length) return res.status(200).send(errorMessage("User not found"));
             if(userMaster?.recordset?.[0]?.Mobile1 !== Mobile1){
                 const userMobile = await pool.query(`SELECT * FROM UserMaster WHERE Mobile1 = '${Mobile1}'`);
-                if (userMobile?.recordset?.length) return res.status(400).send(errorMessage("Mobile number already exists"));
+                if (userMobile?.recordset?.length) return res.status(200).send(errorMessage("Mobile number already exists"));
             }
             const updateQuery = `UPDATE UserMaster SET FullName = ${setSQLStringValue(FullName)}, ProfiilePic = ${setSQLStringValue(ProfiilePic)}, Mobile1 = ${setSQLNumberValue(Mobile1)}, Mobile2 = ${setSQLNumberNullValue(Mobile2)}, DOB = ${setSQLDateTime(DOB)}, Email = ${setSQLStringValue(Email)}, Gender = ${setSQLStringValue(Gender)}, Role = ${setSQLStringValue(Role)}, IsActive = ${setSQLBooleanValue(IsActive)}, IsLogin = 1, Password = ${setSQLStringValue(Password)}, UserName = ${setSQLStringValue(UserName)}, IpAddress = ${setSQLStringValue(IPAddress)}, HostName = ${setSQLStringValue(ServerName)}, EntryDate = ${setSQLDateTime(EntryTime)},  flag = 'U' WHERE UserUkeyId = '${UserUkeyId}'`;
             await pool.query(updateQuery);
@@ -115,9 +115,9 @@ const addOrUpdateUserMaster = async (req, res) => {
 const deleteUserMaster = async (req, res) => {
     try {
         const { UserUkeyId } = req.query;
-        if (!UserUkeyId) return res.status(400).send(errorMessage("UserUkeyId is required"));
+        if (!UserUkeyId) return res.status(200).send(errorMessage("UserUkeyId is required"));
         const userMaster = await pool.query(`SELECT * FROM UserMaster WHERE UserUkeyId = '${UserUkeyId}'`);
-        if (!userMaster?.recordset?.length) return res.status(400).send(errorMessage("User not found"));
+        if (!userMaster?.recordset?.length) return res.status(200).send(errorMessage("User not found"));
         const deleteQuery = `DELETE FROM UserMaster WHERE UserUkeyId = '${UserUkeyId}'`;
         try {
             const oldImg = userMaster?.recordset?.[0]?.ProfiilePic;
@@ -143,7 +143,7 @@ const verifyHandler = async (req, res) => {
 
         // user mobile and password check if manual login
         const userMaterPassword = userMaster?.recordset?.[0]?.Password;
-        if (Password && userMaterPassword !== Password) return res.status(400).send(errorMessage("Invalid Password"));
+        if (Password && userMaterPassword !== Password) return res.status(200).send(errorMessage("Invalid Password"));
 
         const options = { expiresIn: '365d' };
         const token = jwt.sign({ UserUkeyId: userMaster?.recordset?.[0]?.UserUkeyId, Mobile1, Role: userMaster?.recordset?.[0]?.Role }, SECRET_KEY, options);
