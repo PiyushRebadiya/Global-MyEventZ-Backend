@@ -64,7 +64,7 @@ const addOrUpdateUserMaster = async (req, res) => {
         const { UserUkeyId, FullName, Mobile1, Mobile2, DOB, Email, Gender, Role, IsActive, flag, Password } = req.body;
         
         ProfiilePic = req?.files?.ProfiilePic?.length ? `${req?.files?.ProfiilePic[0]?.filename}` : ProfiilePic;
-        const fieldCheck = checkKeysAndRequireValues(['Mobile1', 'FullName', 'Password', 'UserUkeyId'], req.body);
+        const fieldCheck = checkKeysAndRequireValues(['Mobile1', 'FullName', 'UserUkeyId'], req.body);
         if (fieldCheck.length !== 0) {
             if (ProfiilePic) deleteImage("./media/User/" + req?.files?.ProfiilePic?.[0]?.filename);
             return res.status(400).send(errorMessage(`${fieldCheck} is required`));
@@ -84,7 +84,7 @@ const addOrUpdateUserMaster = async (req, res) => {
                 return res.status(400).send({...errorMessage('No rows inserted of User Master'), verify: false});
             }
             const options = { expiresIn: '365d' };
-            const token = jwt.sign({ UserUkeyId: UserUkeyId, Mobile1, Role }, SECRET_KEY, options);
+            const token = jwt.sign({ UserUkeyId: UserUkeyId, Mobile1, FullName, Role }, SECRET_KEY, options);
             return res.status(200).send({...successMessage('Data inserted Successfully!'), verify: true, token, ...req.body});
         } else if (flag === 'U') {
             if (!UserUkeyId) return res.status(400).send(errorMessage("UserUkeyId is required"));
@@ -94,7 +94,7 @@ const addOrUpdateUserMaster = async (req, res) => {
                 const userMobile = await pool.query(`SELECT * FROM UserMaster WHERE Mobile1 = '${Mobile1}'`);
                 if (userMobile?.recordset?.length) return res.status(400).send(errorMessage("Mobile number already exists"));
             }
-            const updateQuery = `UPDATE UserMaster SET FullName = ${setSQLStringValue(FullName)}, ProfiilePic = ${setSQLStringValue(ProfiilePic)}, Mobile1 = ${setSQLNumberValue(Mobile1)}, Mobile2 = ${setSQLNumberNullValue(Mobile2)}, DOB = ${setSQLDateTime(DOB)}, Email = ${setSQLStringValue(Email)}, Gender = ${setSQLStringValue(Gender)}, Role = ${setSQLStringValue(Role)}, IsActive = ${setSQLBooleanValue(IsActive)}, IsLogin = 1, Password = ${setSQLStringValue(Password)}, UserName = ${setSQLStringValue(UserName)}, IpAddress = ${setSQLStringValue(IPAddress)}, HostName = ${setSQLStringValue(ServerName)}, EntryDate = ${setSQLDateTime(EntryTime)},  flag = 'U' WHERE UserUkeyId = '${UserUkeyId}'`;
+            const updateQuery = `UPDATE UserMaster SET FullName = ${setSQLStringValue(FullName)}, ProfiilePic = ${setSQLStringValue(ProfiilePic)}, Mobile1 = ${setSQLNumberValue(Mobile1)}, Mobile2 = ${setSQLNumberNullValue(Mobile2)}, DOB = ${setSQLDateTime(DOB)}, Email = ${setSQLStringValue(Email)}, Gender = ${setSQLStringValue(Gender)}, Role = ${setSQLStringValue(Role)}, IsActive = ${setSQLBooleanValue(IsActive)}, IsLogin = 1, Password = ${setSQLStringValue(Password)}, UserName = ${setSQLStringValue(req.user.FullName)}, IpAddress = ${setSQLStringValue(IPAddress)}, HostName = ${setSQLStringValue(ServerName)}, EntryDate = ${setSQLDateTime(EntryTime)},  flag = 'U' WHERE UserUkeyId = '${UserUkeyId}'`;
             await pool.query(updateQuery);
 
             try {
