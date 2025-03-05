@@ -47,10 +47,10 @@ const VerifyUserMobileNumber = async (req, res) => {
         const result = await pool.request().query(`select * from UserMaster where Mobile1 = ${setSQLStringValue(Mobile1)}`)
 
         if(!result.recordset[0]){
-            return res.status(400).json({...errorMessage("there is no mobile number of given mobile number"), verify : false})
+            return res.status(400).json({...errorMessage("there is no user register found with the given mobile number."), verify : false})
         }
 
-        return res.status(200).json({...successMessage("given mobile number is velid"), verify : true, ...result.recordset[0]})
+        return res.status(200).json({...successMessage("given mobile number is valid"), verify : true, FullName : result.recordset[0].FullName})
     }catch(error){
         return res.status(400).send(errorMessage(error?.message));
     }
