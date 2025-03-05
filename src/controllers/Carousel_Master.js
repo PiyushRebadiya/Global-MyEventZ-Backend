@@ -38,7 +38,7 @@ const fetchCarouselList = async (req, res) => {
 };
 
 const CarouserMaster = async (req, res) => {
-    const { Status = true, OrderId = null, Link = '', StartEventDate = null, EndEventDate = null, AlwaysShow, Title = '', LinkType = 'Web', CarouselUkeyId, flag, EventUkeyId = null, OrganizerUkeyId = null } = req.body;
+    const { Status = true, OrderId = null, Link = '', StartEventDate = null, EndEventDate = null, AlwaysShow, Title = '', LinkType = 'WEB', CarouselUkeyId, flag, EventUkeyId = null, OrganizerUkeyId = null } = req.body;
     
     let { FileName = '' } = req.body;
     let Img = req?.files?.FileName?.length ? req.files.FileName[0].filename : FileName;
@@ -48,7 +48,7 @@ const CarouserMaster = async (req, res) => {
         return res.status(400).json(errorMessage('Only one FileName is allowed.'));
     }
 
-    const missingKeys = checkKeysAndRequireValues(['Img'], { ...req.body, Img });
+    const missingKeys = checkKeysAndRequireValues(['Img','CarouselUkeyId'], { ...req.body, Img });
     if (missingKeys.length > 0) {
         if (Array.isArray(req?.files?.FileName)) deleteImage(`${req?.files?.FileName[0]?.path}`);
         return res.status(400).send(`${missingKeys.join(', ')} parameters are required and must not be null or undefined`);
@@ -56,7 +56,6 @@ const CarouserMaster = async (req, res) => {
 
     if (!['A', 'U'].includes(flag)) return res.status(400).send(errorMessage("Invalid flag value"));
 
-    const UUID = flag === 'A' ? generateUUID() : CarouselUkeyId;
     if (flag === 'U' && !CarouselUkeyId) {
         if (Array.isArray(req?.files?.FileName)) deleteImage(`${req?.files?.FileName[0]?.path}`);
         return res.status(400).send(errorMessage("CarouselUkeyId is required"));
@@ -71,12 +70,12 @@ const CarouserMaster = async (req, res) => {
 
         const insertQuery = `
             INSERT INTO Carousel (CarouselUkeyId, Title, Status, OrderId, Link, StartEventDate, EndEventDate, AlwaysShow, LinkType, flag, EntryDate, HostName, IPAddress) 
-            VALUES ('${UUID}', N'${Title}', ${setSQLBooleanValue(Status)}, ${setSQLOrderId(OrderId)}, ${setSQLStringValue(Link)}, '${StartEventDate}', '${EndEventDate}', ${setSQLBooleanValue(AlwaysShow)}, '${LinkType}', N'${flag}', '${EntryTime}', '${ServerName}', '${IPAddress}')
+            VALUES ('${CarouselUkeyId}', N'${Title}', ${setSQLBooleanValue(Status)}, ${setSQLOrderId(OrderId)}, ${setSQLStringValue(Link)}, '${StartEventDate}', '${EndEventDate}', ${setSQLBooleanValue(AlwaysShow)}, '${LinkType}', N'${flag}', '${EntryTime}', '${ServerName}', '${IPAddress}')
         `;
 
         const documentInsertQuery = `
             INSERT INTO DocumentUpload (DocUkeyId, FileName, Category, EventUkeyId, OrganizerUkeyId, UkeyId, FileType, IsActive, UserId, UserName, IpAddress, HostName, EntryDate, flag) 
-            VALUES ('${generateUUID()}', N'${Img}', 'Carousel', ${setSQLStringValue(EventUkeyId)}, ${setSQLStringValue(OrganizerUkeyId)}, '${UUID}', 'Image', ${setSQLBooleanValue(Status)}, ${setSQLNumberNullValue(req?.user?.UserId)}, ${setSQLStringValue(req?.user?.FirstName)}, '${IPAddress}', '${ServerName}', '${EntryTime}', N'${flag}')
+            VALUES ('${generateUUID()}', N'${Img}', 'Carousel', ${setSQLStringValue(EventUkeyId)}, ${setSQLStringValue(OrganizerUkeyId)}, '${CarouselUkeyId}', 'Image', ${setSQLBooleanValue(Status)}, ${setSQLNumberNullValue(req?.user?.UserId)}, ${setSQLStringValue(req?.user?.FirstName)}, '${IPAddress}', '${ServerName}', '${EntryTime}', N'${flag}')
         `;
 
         if (flag === 'A') {
@@ -90,7 +89,7 @@ const CarouserMaster = async (req, res) => {
 
             await transaction.commit(); // ✅ Commit transaction
             autoVerifyCarousel();
-            return res.status(200).json(successMessage('New Carousel Created Successfully.', { ...req.body, CarouselUkeyId: UUID, Img }));
+            return res.status(200).json(successMessage('New Carousel Created Successfully.', { ...req.body, CarouselUkeyId: CarouselUkeyId, Img }));
         } 
         else if (flag === 'U') {
             const oldImgResult = await transaction.request().query(`SELECT CarouselUkeyId FROM Carousel WHERE CarouselUkeyId = '${CarouselUkeyId}'`);

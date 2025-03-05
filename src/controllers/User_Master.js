@@ -64,7 +64,7 @@ const addOrUpdateUserMaster = async (req, res) => {
         const { UserUkeyId, FullName, Mobile1, Mobile2, DOB, Email, Gender, Role, IsActive, flag, Password } = req.body;
         
         ProfiilePic = req?.files?.ProfiilePic?.length ? `${req?.files?.ProfiilePic[0]?.filename}` : ProfiilePic;
-        const fieldCheck = checkKeysAndRequireValues(['Mobile1', 'FullName', 'Password'], req.body);
+        const fieldCheck = checkKeysAndRequireValues(['Mobile1', 'FullName', 'Password', 'UserUkeyId'], req.body);
         if (fieldCheck.length !== 0) {
             if (ProfiilePic) deleteImage("./media/User/" + req?.files?.ProfiilePic?.[0]?.filename);
             return res.status(400).send(errorMessage(`${fieldCheck} is required`));
@@ -74,8 +74,9 @@ const addOrUpdateUserMaster = async (req, res) => {
         if(['A', 'U'].indexOf(flag) === -1) return res.status(400).send(errorMessage("Invalid flag value"));
         
         if (flag === 'A') {
-            const UUID = generateUUID();
-            const insertQuery = `INSERT INTO UserMaster (UserUkeyId, FullName, ProfiilePic, Mobile1, Mobile2, DOB, Email, Gender, Role, IsActive, IsLogin, flag, UserName, Password, IpAddress, HostName, EntryDate) VALUES (${setSQLStringValue(UUID)}, ${setSQLStringValue(FullName)}, ${setSQLStringValue(ProfiilePic)}, ${setSQLNumberValue(Mobile1)}, ${setSQLNumberNullValue(Mobile2)}, ${setSQLDateTime(DOB)}, ${setSQLStringValue(Email)}, ${setSQLStringValue(Gender)}, ${setSQLStringValue(Role)}, ${setSQLBooleanValue(IsActive)}, 1, 'A', ${setSQLStringValue(UserName)}, ${setSQLStringValue(Password)}, ${setSQLStringValue(IPAddress)}, ${setSQLStringValue(ServerName)}, ${setSQLDateTime(EntryTime)})`;
+            const userMobile = await pool.query(`SELECT * FROM UserMaster WHERE Mobile1 = '${Mobile1}'`);
+            if (userMobile?.recordset?.length) return res.status(400).send(errorMessage("Mobile number already exists"));
+            const insertQuery = `INSERT INTO UserMaster (UserUkeyId, FullName, ProfiilePic, Mobile1, Mobile2, DOB, Email, Gender, Role, IsActive, IsLogin, flag, UserName, Password, IpAddress, HostName, EntryDate) VALUES (${setSQLStringValue(UserUkeyId)}, ${setSQLStringValue(FullName)}, ${setSQLStringValue(ProfiilePic)}, ${setSQLNumberValue(Mobile1)}, ${setSQLNumberNullValue(Mobile2)}, ${setSQLDateTime(DOB)}, ${setSQLStringValue(Email)}, ${setSQLStringValue(Gender)}, ${setSQLStringValue(Role)}, ${setSQLBooleanValue(IsActive)}, 1, 'A', ${setSQLStringValue(UserName)}, ${setSQLStringValue(Password)}, ${setSQLStringValue(IPAddress)}, ${setSQLStringValue(ServerName)}, ${setSQLDateTime(EntryTime)})`;
             const result = await pool.query(insertQuery);
 
             if (result?.rowsAffected[0] === 0) {
@@ -83,12 +84,16 @@ const addOrUpdateUserMaster = async (req, res) => {
                 return res.status(400).send({...errorMessage('No rows inserted of User Master'), verify: false});
             }
             const options = { expiresIn: '365d' };
-            const token = jwt.sign({ UserUkeyId: UUID, Mobile1, Role }, SECRET_KEY, options);
-            return res.status(200).send({...successMessage('Data inserted Successfully!'), verify: true, token, Mobile1, UserUkeyId: UUID, Role});
+            const token = jwt.sign({ UserUkeyId: UserUkeyId, Mobile1, Role }, SECRET_KEY, options);
+            return res.status(200).send({...successMessage('Data inserted Successfully!'), verify: true, token, ...req.body});
         } else if (flag === 'U') {
             if (!UserUkeyId) return res.status(400).send(errorMessage("UserUkeyId is required"));
             const userMaster = await pool.query(`SELECT * FROM UserMaster WHERE UserUkeyId = '${UserUkeyId}'`);
             if (!userMaster?.recordset?.length) return res.status(400).send(errorMessage("User not found"));
+            if(userMaster?.recordset?.[0]?.Mobile1 !== Mobile1){
+                const userMobile = await pool.query(`SELECT * FROM UserMaster WHERE Mobile1 = '${Mobile1}'`);
+                if (userMobile?.recordset?.length) return res.status(400).send(errorMessage("Mobile number already exists"));
+            }
             const updateQuery = `UPDATE UserMaster SET FullName = ${setSQLStringValue(FullName)}, ProfiilePic = ${setSQLStringValue(ProfiilePic)}, Mobile1 = ${setSQLNumberValue(Mobile1)}, Mobile2 = ${setSQLNumberNullValue(Mobile2)}, DOB = ${setSQLDateTime(DOB)}, Email = ${setSQLStringValue(Email)}, Gender = ${setSQLStringValue(Gender)}, Role = ${setSQLStringValue(Role)}, IsActive = ${setSQLBooleanValue(IsActive)}, IsLogin = 1, Password = ${setSQLStringValue(Password)}, UserName = ${setSQLStringValue(UserName)}, IpAddress = ${setSQLStringValue(IPAddress)}, HostName = ${setSQLStringValue(ServerName)}, EntryDate = ${setSQLDateTime(EntryTime)},  flag = 'U' WHERE UserUkeyId = '${UserUkeyId}'`;
             await pool.query(updateQuery);
 
@@ -98,7 +103,7 @@ const addOrUpdateUserMaster = async (req, res) => {
             } catch (error) {
                 console.log('error :>> ', error);
             }
-            return res.status(200).send(successMessage("User updated successfully"));
+            return res.status(200).send({...successMessage('Data updated Successfully!'), verify: true, ...req.body});
         }
     } catch (error) {
         if (ProfiilePic) deleteImage("./media/User/" + req?.files?.ProfiilePic?.[0]?.filename);
@@ -143,7 +148,7 @@ const verifyHandler = async (req, res) => {
         const options = { expiresIn: '365d' };
         const token = jwt.sign({ UserUkeyId: userMaster?.recordset?.[0]?.UserUkeyId, Mobile1, Role: userMaster?.recordset?.[0]?.Role }, SECRET_KEY, options);
         const decoded = jwt.verify(token, SECRET_KEY);
-        return res.status(200).send({...successMessage('Data inserted Successfully!'), verify: true, token, Mobile1, UserUkeyId: decoded?.UserUkeyId, Role: decoded?.Role});
+        return res.status(200).send({...successMessage('Data inserted Successfully!'), verify: true, token, ...userMaster?.recordset?.[0]});
     } catch (error) {
         return res.status(400).send(errorMessage("Invalid or expired token"));
     }
