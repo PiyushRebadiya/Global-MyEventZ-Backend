@@ -38,7 +38,7 @@ const fetchCarouselList = async (req, res) => {
 };
 
 const CarouserMaster = async (req, res) => {
-    const { Status = true, OrderId = null, Link = '', StartEventDate = null, EndEventDate = null, AlwaysShow, Title = '', LinkType = 'Web', CarouselUkeyId, flag, EventUkeyId = null, OrganizerUkeyId = null } = req.body;
+    const { Status = true, OrderId = null, Link = '', StartEventDate = null, EndEventDate = null, AlwaysShow, Title = '', LinkType = 'WEB', CarouselUkeyId, flag, EventUkeyId = null, OrganizerUkeyId = null } = req.body;
     
     let { FileName = '' } = req.body;
     let Img = req?.files?.FileName?.length ? req.files.FileName[0].filename : FileName;
