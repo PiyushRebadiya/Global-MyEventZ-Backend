@@ -55,7 +55,7 @@ const {SpeakerUpload, SponsorUpload, PaymentUpload, VolunteerMasterUpload, carou
 
 //#region User Master
 router.get("/fetchUserMaster", auth, UserMasterController.fetchUserMaster)
-router.post("/verify_user_mobile_number", auth, UserMasterController.VerifyUserMobileNumber)
+router.get("/verify_user_mobile_number", auth, UserMasterController.VerifyUserMobileNumber)
 router.post("/user_master", UserUpload, UserMasterController.addOrUpdateUserMaster)
 router.delete("/delete_user_master", auth, UserMasterController.deleteUserMaster)
 
