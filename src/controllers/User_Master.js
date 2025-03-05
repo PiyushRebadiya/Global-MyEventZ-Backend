@@ -36,6 +36,26 @@ const fetchUserMaster = async (req, res) => {
     }
 }
 
+const VerifyUserMobileNumber = async (req, res) => {
+    try{
+        const {Mobile1} = req.body
+
+        if(!Mobile1){
+            return res.status(400).json(errorMessage('Mobile1 is required'))
+        }
+
+        const result = await pool.request().query(`select * from UserMaster where Mobile1 = ${setSQLStringValue(Mobile1)}`)
+
+        if(!result.recordset[0]){
+            return res.status(400).json({...errorMessage("there is no mobile number of given mobile number"), verify : false})
+        }
+
+        return res.status(200).json({...successMessage("given mobile number is velid"), verify : true, ...result.recordset[0]})
+    }catch(error){
+        return res.status(400).send(errorMessage(error?.message));
+    }
+}
+
 const addOrUpdateUserMaster = async (req, res) => {
     let { ProfiilePic = null } = req.body;
 
@@ -129,4 +149,4 @@ const verifyHandler = async (req, res) => {
     }
 }
 
-module.exports = { fetchUserMaster, addOrUpdateUserMaster, deleteUserMaster, verifyHandler };
+module.exports = { fetchUserMaster, VerifyUserMobileNumber, addOrUpdateUserMaster, deleteUserMaster, verifyHandler };
