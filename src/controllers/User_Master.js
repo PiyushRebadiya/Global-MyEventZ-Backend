@@ -115,11 +115,11 @@ const deleteUserMaster = async (req, res) => {
 const verifyHandler = async (req, res) => {
     try {
         const { Mobile1, Password } = req.body;
-        if (!Mobile1) return res.status(400).send(errorMessage("Mobile1 is required"));
+        if (!Mobile1) return res.status(200).send(errorMessage("Mobile1 is required"));
 
         // user mobile check if OTP implemented
         const userMaster = await pool.query(`SELECT * FROM UserMaster WHERE Mobile1 = '${Mobile1}'`);
-        if (!userMaster?.recordset?.length) return res.status(400).send(errorMessage("User not found"));
+        if (!userMaster?.recordset?.length) return res.status(200).send(errorMessage("User not found"));
 
         // user mobile and password check if manual login
         const userMaterPassword = userMaster?.recordset?.[0]?.Password;
