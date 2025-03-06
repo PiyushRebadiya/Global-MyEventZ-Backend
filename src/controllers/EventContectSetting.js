@@ -23,7 +23,7 @@ const fetchEventContectSetting = async(req, res)=>{
             countQuery: `SELECT COUNT(*) AS totalCount FROM EventContactSetting ${whereString}`,
         };
         const result = await getCommonAPIResponse(req, res, getUserList);
-        return res.json(result);
+        return res.json({...result.data[0]});
 
     }catch(error){
         return res.status(400).send(errorMessage(error?.message));
@@ -31,7 +31,7 @@ const fetchEventContectSetting = async(req, res)=>{
 }
 
 const EventContectSetting = async(req, res)=>{
-    const { EventContectSetUkeyId, EventUkeyId, OrganizerUkeyId, Mobile1, Mobile2, Description, ContactPerson, Email, flag = ''} = req.body;
+    const { EventContectSetUkeyId, EventUkeyId, OrganizerUkeyId, Mobile1, Mobile2, Description, ContactPerson1, ContactPerson2, Email, flag = ''} = req.body;
     const {IPAddress, ServerName, EntryTime} = getCommonKeys(req);
     try{
         const missingKeys = checkKeysAndRequireValues(['EventContectSetUkeyId'], req.body)
@@ -40,9 +40,9 @@ const EventContectSetting = async(req, res)=>{
         }
         const insertQuery = `
             INSERT INTO EventContactSetting (
-                EventContectSetUkeyId, EventUkeyId, OrganizerUkeyId, Mobile1, Mobile2, Description, Email, ContactPerson, UserName, UserID, IpAddress, HostName, EntryDate, flag
+                EventContectSetUkeyId, EventUkeyId, OrganizerUkeyId, Mobile1, Mobile2, Description, Email, ContactPerson1, ContactPerson2, UserName, UserID, IpAddress, HostName, EntryDate, flag
             ) VALUES (
-                ${setSQLStringValue(EventContectSetUkeyId)}, ${setSQLStringValue(EventUkeyId)}, ${setSQLStringValue(OrganizerUkeyId)}, ${setSQLStringValue(Mobile1)}, ${setSQLStringValue(Mobile2)}, ${setSQLStringValue(Description)}, ${setSQLStringValue(Email)}, ${setSQLStringValue(ContactPerson)}, ${setSQLStringValue(req.user.FirstName)}, ${setSQLStringValue(req.user.UserId)}, ${setSQLStringValue(IPAddress)}, ${setSQLStringValue(ServerName)}, ${setSQLStringValue(EntryTime)}, ${setSQLStringValue(flag)}
+                ${setSQLStringValue(EventContectSetUkeyId)}, ${setSQLStringValue(EventUkeyId)}, ${setSQLStringValue(OrganizerUkeyId)}, ${setSQLStringValue(Mobile1)}, ${setSQLStringValue(Mobile2)}, ${setSQLStringValue(Description)}, ${setSQLStringValue(Email)}, ${setSQLStringValue(ContactPerson1)}, ${setSQLStringValue(ContactPerson2)}, ${setSQLStringValue(req.user.FirstName)}, ${setSQLStringValue(req.user.UserId)}, ${setSQLStringValue(IPAddress)}, ${setSQLStringValue(ServerName)}, ${setSQLStringValue(EntryTime)}, ${setSQLStringValue(flag)}
             );
         `
         const deleteQuery = `
