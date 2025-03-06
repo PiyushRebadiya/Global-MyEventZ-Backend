@@ -35,7 +35,7 @@ const FetchDocumentUploadDetails = async (req, res)=>{
 }
 
 const DocumentUpload = async (req, res) => {
-    const { Category, EventUkeyId, OrganizerUkeyId, UkeyId, flag, FileType, IsActive = true } = req.body;
+    const { Category, EventUkeyId, OrganizerUkeyId, UkeyId, flag, FileType, IsActive = true, Label = '' } = req.body;
     let FileNames = req?.files?.FileName?.length 
         ? req.files.FileName.map(file => file.filename) 
         : req.body.FileNames ? JSON.parse(req.body.FileNames) : [];
@@ -57,7 +57,7 @@ const DocumentUpload = async (req, res) => {
 
         let insertQuery = `
             INSERT INTO DocumentUpload (
-                DocUkeyId, FileName, Category, EventUkeyId, OrganizerUkeyId, UkeyId, UserId, UserName, IpAddress, HostName, EntryDate, flag, FileType, IsActive
+                DocUkeyId, FileName, Category, EventUkeyId, OrganizerUkeyId, UkeyId, UserId, UserName, IpAddress, HostName, EntryDate, flag, FileType, IsActive, Label
             ) VALUES `;
 
         const values = FileNames.map(file => `(
@@ -65,7 +65,7 @@ const DocumentUpload = async (req, res) => {
             ${setSQLStringValue(EventUkeyId)}, ${setSQLStringValue(OrganizerUkeyId)}, ${setSQLStringValue(UkeyId)}, 
             ${setSQLStringValue(req.user.UserId)}, ${setSQLStringValue(req.user.FirstName)}, 
             ${setSQLStringValue(IPAddress)}, ${setSQLStringValue(ServerName)}, ${setSQLStringValue(EntryTime)}, 
-            'A', ${setSQLStringValue(FileType)}, ${setSQLBooleanValue(IsActive)}
+            'A', ${setSQLStringValue(FileType)}, ${setSQLBooleanValue(IsActive)}, ${setSQLStringValue(Label)}
         )`).join(',');
 
         insertQuery += values;

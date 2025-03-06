@@ -46,7 +46,8 @@ const DocumentUploadController = require('../controllers/DocumentUpload');
 const TicketCategoryController = require('../controllers/TicketCategoryMaster');
 const otpController = require('../controllers/otp.js');
 const BookingController = require('../controllers/BookingMaster');
-const ContectMasterController = require('../controllers/ContectMaster')
+const ContectMasterController = require('../controllers/ContectMaster');
+const EventContectSettingController = require('../controllers/EventContectSetting');
 // const carouselController = require('../controllers/carousel');
 
 const auth = require("../middleware/auth");
@@ -264,5 +265,9 @@ router.delete('/delete_bookings', auth, BookingController.RemoveBookings);
 router.get('/fetch_contect', auth, ContectMasterController.fetchContects);
 router.post('/contect_master', auth, ContectMasterController.ContectMaster);
 router.delete('/delete_contect', auth, ContectMasterController.RemoveContect);
+
+router.get('/fetch_event_contect_setting', auth, EventContectSettingController.fetchEventContectSetting);
+router.post('/event_contect_setting_master', auth, EventContectSettingController.EventContectSetting);
+router.delete('/delete_event_contect_setting', auth, EventContectSettingController.RemoveEventContectSetting);
 
 module.exports = router;
