@@ -69,7 +69,6 @@ const DocumentUpload = async (req, res) => {
         )`).join(',');
 
         insertQuery += values;
-        console.log(insertQuery);
 
         const result = await pool.request().query(insertQuery);
 
