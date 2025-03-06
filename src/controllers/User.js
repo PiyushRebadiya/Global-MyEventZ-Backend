@@ -98,7 +98,6 @@ const AddOrginizer = async (req, res) => {
         if(resultOrgUsrMst.rowsAffected[0] === 0 && resultEvent.rowsAffected[0] === 0 && resultOrgUserMst.rowsAffected[0] === 0 && resulAddress.rowsAffected[0] === 0){
             return res.status(400).json({...errorMessage('User Not Registerd Successfully.')})
         }
-        console.log(EventUKeyId);
         return res.status(200).json({
             ...successMessage('User Registerd Successfully.'), 
             token : generateJWTT({
