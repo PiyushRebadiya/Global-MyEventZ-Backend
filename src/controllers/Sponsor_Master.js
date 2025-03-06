@@ -43,7 +43,7 @@ const FetchSponsorMasterDetails = async (req, res)=>{
 
 const SponsorMaster = async (req, res) => {
     const { 
-        SponsorUkeyId = '', SponsorCatUkeyId = '', Name = '', Mobile = '', CompanyName = '', flag = '' , OrganizerUkeyId = '',EventUkeyId = '', Description1 = '', Description2 = '', Description3 = '', Description4 = '', Link = '', LinkType = 's'
+        SponsorUkeyId = '', SponsorCatUkeyId = '', Name = '', Mobile = '', CompanyName = '', flag = '' , OrganizerUkeyId = '',EventUkeyId = '', Description1 = '', Description2 = '', Description3 = '', Description4 = '', Link = '', LinkType = ''
     } = req.body;
     try {
         const { IPAddress, ServerName, EntryTime } = getCommonKeys(req);
