@@ -22,20 +22,24 @@ const EventList = async (req, res) => {
 
         const getUserList = {
             getQuery: `
-                SELECT 
-                    em.*, 
-                    am.Address1, am.Address2, am.Pincode, am.StateName, am.CityName, 
-                    am.IsPrimaryAddress, am.IsActive AS IsActiveAddress, om.OrganizerName 
-                FROM 
-                    EventMaster em 
-                LEFT JOIN 
-                    AddressMaster am 
-                ON 
-                    am.AddressUkeyID = em.AddressUkeyID 
-				LEFT JOIN 
-                    OrganizerMaster om 
-                ON 
-                    om.OrganizerUkeyId = em.OrganizerUkeyId  
+            SELECT 
+            em.*, 
+            am.Address1, 
+            am.Address2, 
+            am.Pincode, 
+            am.StateName, 
+            am.CityName, 
+            am.IsPrimaryAddress, 
+            am.IsActive AS IsActiveAddress, 
+            om.OrganizerName, 
+            (
+                SELECT STRING_AGG(du.FileName, ',') 
+                FROM DocumentUpload du 
+                WHERE du.UkeyId = em.EventUkeyId
+            ) AS FileNames
+        FROM EventMaster em 
+        LEFT JOIN AddressMaster am ON am.AddressUkeyID = em.AddressUkeyID 
+        LEFT JOIN OrganizerMaster om ON om.OrganizerUkeyId = em.OrganizerUkeyId          
                 ${whereString} 
                 ORDER BY em.EntryDate DESC
             `,
@@ -47,6 +51,13 @@ const EventList = async (req, res) => {
         };
 
         const result = await getCommonAPIResponse(req, res, getUserList);
+        result.data.forEach(event => {
+            if(event.FileNames){
+                event.FileNames = event?.FileNames?.split(',')
+            } else {
+                event.FileNames = []
+            }
+        });
         return res.json(result);
 
     } catch (error) {
