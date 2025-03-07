@@ -38,7 +38,7 @@ const OrgUserMaster = async (req, res) => {
     try {
         const { IPAddress, ServerName, EntryTime } = getCommonKeys();
 
-        const insertQuery = `
+        let insertQuery = `
             INSERT INTO OrgUserMaster (
                 UserUkeyId, EventUkeyId, OrganizerUkeyId, Password, FirstName, Image, Mobile1, Mobile2, Add1, Add2,
                 StateCode, StateName, CityName, Pincode, DOB, Email, Gender, Role, IsActive, IpAddress, HostName, EntryDate
@@ -74,7 +74,25 @@ const OrgUserMaster = async (req, res) => {
                 SELECT Image FROM OrgUserMaster WHERE UserUkeyId = '${UserUkeyId}';
             `);
             const oldImg = oldImgResult.recordset?.[0]?.Image;
-
+            if (Role === 'Admin') {
+                insertQuery += `
+                UPDATE OrganizerMaster SET
+                Mobile1 = ${setSQLStringValue(Mobile1)},
+                Mobile2 = ${setSQLStringValue(Mobile2)},
+                Email = ${setSQLStringValue(Email)},
+                Add1 = ${setSQLStringValue(Add1)},
+                Add2 = ${setSQLStringValue(Add2)},
+                StateCode = ${setSQLNumberValue(StateCode)},
+                StateName = ${setSQLStringValue(StateName)},
+                IsActive = ${setSQLBooleanValue(IsActive)},
+                IpAddress = ${setSQLStringValue(IPAddress)},
+                HostName = ${setSQLStringValue(ServerName)},
+                EntryDate = ${setSQLStringValue(EntryTime)},
+                flag = ${setSQLStringValue(flag)}
+                WHERE OrganizerUkeyId = ${setSQLStringValue(OrganizerUkeyId)}
+                `;
+            }
+            
             const deleteResult = await pool.request().query(deleteQuery);
             const insertResult = await pool.request().query(insertQuery);
 
