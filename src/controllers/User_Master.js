@@ -139,7 +139,7 @@ const verifyHandler = async (req, res) => {
 
         // user mobile check if OTP implemented
         const userMaster = await pool.query(`SELECT * FROM UserMaster WHERE Mobile1 = '${Mobile1}' AND IsActive = 1`);
-        if (!userMaster?.recordset?.length) return res.status(200).send(errorMessage("User not found"));
+        if (!userMaster?.recordset?.length) return res.status(200).send(errorMessage("there is no user register found with the given mobile number"));
 
         // user mobile and password check if manual login
         const userMaterPassword = userMaster?.recordset?.[0]?.Password;
