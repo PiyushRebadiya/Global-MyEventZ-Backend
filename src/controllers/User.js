@@ -29,6 +29,26 @@ const fetchOrganizer = async (req, res) => {
 }
 //#endregion
 
+const VerifyOrganizerMobileNumber = async (req, res) => {
+    try{
+        const {Mobile1} = req.query
+
+        if(!Mobile1){
+            return res.status(200).json(errorMessage('Mobile1 is required'))
+        }
+
+        const result = await pool.request().query(`select * from OrganizerMaster where Mobile1 = ${setSQLStringValue(Mobile1)} and IsActive = 1`)
+
+        if(!result.recordset[0]){
+            return res.status(200).json({...successMessage("there is no user register found with the given mobile number."), verify : false})
+        }
+
+        return res.status(200).json({...successMessage("given mobile number is valid"), verify : true, FullName : result.recordset[0].FullName})
+    }catch(error){
+        return res.status(400).send(errorMessage(error?.message));
+    }
+}
+
 //#region Signup API
 
 const AddOrginizer = async (req, res) => {
@@ -250,5 +270,6 @@ module.exports = {
     AddOrginizer,
     Loginorganizer,
     updateOrginizer,
-    fetchOrganizer
+    fetchOrganizer,
+    VerifyOrganizerMobileNumber
 }

@@ -75,6 +75,7 @@ router.delete('/delete_user_category_master', auth, userCategoryMaster.removeUse
 
 //#region Organizer APIs
 router.get('/list_organizer', auth, UserController.fetchOrganizer);
+router.get('/verify_organizer_mobile_number', UserController.VerifyOrganizerMobileNumber);
 router.post('/organizer_login', UserController.Loginorganizer);
 router.post('/organizer_signup', UserController.AddOrginizer);
 router.put('/update_organizer', auth, OrginizerUpload, UserController.updateOrginizer);
