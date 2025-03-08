@@ -33,14 +33,15 @@ const EventList = async (req, res) => {
             am.IsActive AS IsActiveAddress, 
             om.OrganizerName, 
             (
-                SELECT STRING_AGG(du.FileName, ',') 
+                SELECT du.FileName, du.Label
                 FROM DocumentUpload du 
                 WHERE du.UkeyId = em.EventUkeyId
+                FOR JSON PATH
             ) AS FileNames
         FROM EventMaster em 
         LEFT JOIN AddressMaster am ON am.AddressUkeyID = em.AddressUkeyID 
-        LEFT JOIN OrganizerMaster om ON om.OrganizerUkeyId = em.OrganizerUkeyId          
-                ${whereString} 
+        LEFT JOIN OrganizerMaster om ON om.OrganizerUkeyId = em.OrganizerUkeyId
+                        ${whereString} 
                 ORDER BY em.EntryDate DESC
             `,
             countQuery: `
@@ -53,7 +54,7 @@ const EventList = async (req, res) => {
         const result = await getCommonAPIResponse(req, res, getUserList);
         result.data.forEach(event => {
             if(event.FileNames){
-                event.FileNames = event?.FileNames?.split(',')
+                event.FileNames = JSON.parse(event?.FileNames)
             } else {
                 event.FileNames = []
             }
