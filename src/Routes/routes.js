@@ -48,11 +48,13 @@ const otpController = require('../controllers/otp.js');
 const BookingController = require('../controllers/BookingMaster');
 const ContectMasterController = require('../controllers/ContectMaster');
 const EventContectSettingController = require('../controllers/EventContectSetting');
+const RoleRightsControler = require('../controllers/RoleRights')
 // const carouselController = require('../controllers/carousel');
 
 const auth = require("../middleware/auth");
 
 const {SpeakerUpload, SponsorUpload, PaymentUpload, VolunteerMasterUpload, carouselUpload, galleryMasterUpload, ticketViewUpload, UserUpload, complaintUpload, OrginizerUpload, DocumentUploadUpload} = require('../upload/index');
+const { Router } = require("express");
 
 //#region User Master
 router.get("/fetchUserMaster", auth, UserMasterController.fetchUserMaster)
@@ -263,6 +265,7 @@ router.post('/booking_master', auth, BookingController.BookingMaster);
 router.delete('/delete_bookings', auth, BookingController.RemoveBookings);
 //#endregion
 
+//#region CONTECT apiS
 router.get('/fetch_contect', auth, ContectMasterController.fetchContects);
 router.post('/contect_master', auth, ContectMasterController.ContectMaster);
 router.delete('/delete_contect', auth, ContectMasterController.RemoveContect);
@@ -270,5 +273,11 @@ router.delete('/delete_contect', auth, ContectMasterController.RemoveContect);
 router.get('/fetch_event_contect_setting', auth, EventContectSettingController.fetchEventContectSetting);
 router.post('/event_contect_setting_master', auth, EventContectSettingController.EventContectSetting);
 router.delete('/delete_event_contect_setting', auth, EventContectSettingController.RemoveEventContectSetting);
+//#endregion
+
+//#region ROLERIGHTS
+router.get('/fetch_role_rights', auth, RoleRightsControler.fetchRoleRights);
+router.post('/add_role_rights', auth, RoleRightsControler.addRoleRighys);
+//#endregion
 
 module.exports = router;
