@@ -134,10 +134,6 @@ router.delete('/delete_event', auth, EventController.RemoveEvent);
 // router.post('/sponsor_category_master', auth, SponsorCategoryMasterController.SponsorCategoryMaster);
 // router.delete('/delete_sponsor_category_master', auth, SponsorCategoryMasterController.RemoveSponsorCategory);
 
-// router.get("/carousel_list", carouselController.fetchCarouselList)
-// router.post("/carousel_master", auth, DocumentUploadUpload, carouselController.CarouserMaster)
-// router.delete('/delete_carousel_master', auth, carouselController.RemoveCarousel);
-
 // router.get("/gallery_list", auth, galleryMasterController.FetchGalleryMasterDetails);
 // router.post("/gallery_master", auth, galleryMasterUpload, galleryMasterController.GalleryMaster);
 // router.delete('/delete_gallery_master', auth, galleryMasterController.RemoveGalleryMaster);
@@ -183,7 +179,7 @@ router.delete('/delete_sponsor_category_master', auth, SponsorCategoryMasterCont
 //#endregion
 //#region carousel
 router.get("/carousel_list", carouselController.fetchCarouselList)
-router.post("/carousel_master", auth, carouselUpload, carouselController.CarouserMaster)
+router.post("/carousel_master", auth, DocumentUploadUpload, carouselController.CarouserMaster)
 router.delete('/delete_carousel_master', auth, carouselController.RemoveCarousel);
 //#endregion
 //#region gallery master
