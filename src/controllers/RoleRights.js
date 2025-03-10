@@ -1,5 +1,5 @@
 const { pool } = require("../sql/connectToDatabase");
-const { checkKeysAndRequireValues, errorMessage, getCommonKeys, successMessage, setSQLStringValue, setSQLNumberValue } = require("../common/main");
+const { checkKeysAndRequireValues, errorMessage, getCommonKeys, successMessage, setSQLStringValue, setSQLNumberValue, getCommonAPIResponse } = require("../common/main");
 
 const fetchRoleRights = async (req, res) => {
     try {
@@ -50,6 +50,34 @@ const fetchRoleRights = async (req, res) => {
     }
 };
 
+const fetchMainMenu = async (req, res) => {
+    try{
+        const getUserList = {
+            getQuery: `select * from MainMenu ORDER BY MainMenuId DESC`,
+            countQuery: `SELECT COUNT(*) AS totalCount FROM MainMenu`,
+        };
+        const result = await getCommonAPIResponse(req, res, getUserList);
+        return res.json(result);
+    }catch(error){
+        console.log('fetch Main Menu Error :', error);
+        return res.status(500).send(errorMessage(error?.message));
+    }
+}
+
+const fetcSubMenu = async (req, res) => {
+    try{
+        const getUserList = {
+            getQuery: `select * from SubMenu ORDER BY SubMenuId DESC`,
+            countQuery: `SELECT COUNT(*) AS totalCount FROM SubMenu`,
+        };
+        const result = await getCommonAPIResponse(req, res, getUserList);
+        return res.json(result);
+    }catch(error){
+        console.log('fetch Main Menu Error :', error);
+        return res.status(500).send(errorMessage(error?.message));
+    }
+}
+
 const addRoleRighys = async (req, res) => {
     try{
         const {UserUkeyId, SubMenuId} = req.body;
@@ -85,4 +113,6 @@ const addRoleRighys = async (req, res) => {
 module.exports = {
     addRoleRighys,
     fetchRoleRights,
+    fetchMainMenu,
+    fetcSubMenu
 }

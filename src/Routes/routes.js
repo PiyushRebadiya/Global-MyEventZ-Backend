@@ -3,45 +3,45 @@ const router = require("express").Router();
 const UserMasterController = require('../controllers/User_Master');
 const UserController = require('../controllers/User');
 const EventMasterController = require('../controllers/Event_Master');
-const PaymentMasterController = require('../controllers/Payment_Master');
-const TicketMasterController = require('../controllers/Ticket_Master');
+// const PaymentMasterController = require('../controllers/Payment_Master');
+// const TicketMasterController = require('../controllers/Ticket_Master');
 const OrginizerMasterController = require('../controllers/Organizer_Master');
 const QRCodeMasterController = require('../controllers/QR_Code');
 const EventController = require('../controllers/Event_Master');
-const VerifyTicketController = require('../controllers/Verify_Ticket');
+// const VerifyTicketController = require('../controllers/Verify_Ticket');
 const SpeakerMasterController = require('../controllers/Speaker_Master');
 const RazorpayController = require('../controllers/Razorpay');
-const PaymentController = require('../controllers/Payment');
+// const PaymentController = require('../controllers/Payment');
 const SponsorMasterController = require('../controllers/Sponsor_Master');
-const TicketPriceMasterController = require('../controllers/Ticket_Price_Master');
-const VolunteerMasterController = require('../controllers/Volumteer_Master');
+// const TicketPriceMasterController = require('../controllers/Ticket_Price_Master');
+// const VolunteerMasterController = require('../controllers/Volumteer_Master');
 const SponsorCategoryMasterController = require('../controllers/Sponsor_Category_Master');
 const carouselController = require('../controllers/Carousel_Master');
 const galleryMasterController = require('../controllers/Gallery_Master');
-const TicketViewController = require('../controllers/TicketView_Master');
+// const TicketViewController = require('../controllers/TicketView_Master');
 const firebaseSentNotification = require('../controllers/firebaseSentNotification');
-const AutoSentNotificationController = require('../controllers/Auto_Sent_Notification');
+// const AutoSentNotificationController = require('../controllers/Auto_Sent_Notification');
 const ContactMasterController = require('../controllers/Contact_Master');
-const TicketLimitMasterController = require('../controllers/Ticket_Limit_Master');
+// const TicketLimitMasterController = require('../controllers/Ticket_Limit_Master');
 const MemberTypeMasterController = require('../controllers/Member_Type_Master');
 const DashbordController = require('../controllers/dashbord');
-const bellNotificationController = require('../controllers/bellNotification');
+const ReminderMasterController = require('../controllers/ReminderMaster');
 const bellNotificationByUserController = require('../controllers/bellNotificationByUser');
-const LogTableController = require('../controllers/VerifyLog');
+// const LogTableController = require('../controllers/VerifyLog');
 const TemplateMasterController = require('../controllers/Template_Master');
 const WhatsAppMsgController = require('../controllers/Whats_App_Msg');
 const FeedbackMasterController = require('../controllers/FeedBack_Master');
 const GateNoListController = require('../controllers/Gate_No_List');
 const ComplaintMasterController = require('../controllers/ComplaintMaster');
 const LiveStreamController = require('../controllers/Live_Stream');
-const IsTicketUserList = require('../controllers/IsTicketUserList');
+// const IsTicketUserList = require('../controllers/IsTicketUserList');
 const ReactDeployController = require('../controllers/React_Deploy_IIS');
 const professionCategoryMaster = require('../controllers/professionCategory.js');
 const userCategoryMaster = require('../controllers/userCategory');
 const StateController = require('../controllers/State');
 const CityController = require('../controllers/city');
 const OrgUserController = require('../controllers/OrgUserMaster');
-const PaymentGatewayMaster = require('../controllers/PaymentGatewayMaster');
+// const PaymentGatewayMaster = require('../controllers/PaymentGatewayMaster');
 const DocumentUploadController = require('../controllers/DocumentUpload');
 const TicketCategoryController = require('../controllers/TicketCategoryMaster');
 const otpController = require('../controllers/otp.js');
@@ -53,7 +53,7 @@ const RoleRightsControler = require('../controllers/RoleRights')
 
 const auth = require("../middleware/auth");
 
-const {SpeakerUpload, SponsorUpload, PaymentUpload, VolunteerMasterUpload, carouselUpload, galleryMasterUpload, ticketViewUpload, UserUpload, complaintUpload, OrginizerUpload, DocumentUploadUpload} = require('../upload/index');
+const {SpeakerUpload, SponsorUpload, PaymentUpload, VolunteerMasterUpload, carouselUpload, galleryMasterUpload, ticketViewUpload, UserUpload, complaintUpload, OrginizerUpload, DocumentUploadUpload, ReminderUpload} = require('../upload/index');
 const { Router } = require("express");
 
 //#region User Master
@@ -194,12 +194,13 @@ router.delete('/delete_gallery_master', auth, galleryMasterController.RemoveGall
 //#region NOTIFICATION APIs MESSAGE
 router.post('/send_notification_in_background', auth, firebaseSentNotification.sendNotificationInBackground);
 
-router.get("/auto_sent_notification_list", auth, AutoSentNotificationController.fetchAutoSentNotificationList)
-router.post("/auto_sent_notification_master", auth, AutoSentNotificationController.AutoSentNotificationHandler)
-router.delete('/delete_auto_sent_notification', auth, AutoSentNotificationController.removeAutoSentNotification);
+// router.get("/auto_sent_notification_list", auth, AutoSentNotificationController.fetchAutoSentNotificationList)
+// router.post("/auto_sent_notification_master", auth, AutoSentNotificationController.AutoSentNotificationHandler)
+// router.delete('/delete_auto_sent_notification', auth, AutoSentNotificationController.removeAutoSentNotification);
 
-router.get("/bell_notification_list", auth, bellNotificationController.fetchBellNotificationList);
-router.get("/user_bell_notification_view", auth, bellNotificationController.fetchUserNotificationView);
+router.get('/fetch_reminder', auth, ReminderMasterController.fetchReminderMaster);
+router.post('/reminder_master', auth, ReminderUpload, ReminderMasterController.ReminderMaster);
+router.delete('/delete_reminder', auth, ReminderMasterController.RemoveReminderMaster);
 
 router.post("/bell_notification_by_user", auth, bellNotificationByUserController.verifyBellNotificationByUser);
 
@@ -275,8 +276,10 @@ router.post('/event_contect_setting_master', auth, EventContectSettingController
 router.delete('/delete_event_contect_setting', auth, EventContectSettingController.RemoveEventContectSetting);
 //#endregion
 
-//#region ROLERIGHTS
+//#region ROLE RIGHTS
 router.get('/fetch_role_rights', auth, RoleRightsControler.fetchRoleRights);
+router.get('/fetch_main_menu', auth, RoleRightsControler.fetchMainMenu);
+router.get('/fetch_sub_menu', auth, RoleRightsControler.fetcSubMenu);
 router.post('/add_role_rights', auth, RoleRightsControler.addRoleRighys);
 //#endregion
 
