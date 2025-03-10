@@ -26,7 +26,12 @@ const fetchCarouselList = async (req, res) => {
         // Combine the WHERE conditions into a single string
         const whereString = whereConditions.length > 0 ? `WHERE ${whereConditions.join(' AND ')}` : '';
         const getCarouselList = {
-            getQuery: `SELECT dm.FileName,cc.* FROM Carousel As cc LEFT JOIN DocumentUpload As dm ON cc.CarouselUkeyId = dm.UkeyId  ${whereString} ORDER BY ${SortBy} ${SortOrder}`,
+            getQuery: `SELECT dm.FileName,cc.* FROM Carousel As cc LEFT JOIN DocumentUpload As dm ON cc.CarouselUkeyId = dm.UkeyId  ${whereString} ORDER BY 
+                  CASE 
+                      WHEN cc.OrderId IS NULL THEN 1
+                      ELSE 0
+                  END,
+                  cc.OrderId ASC, cc.CarouselId DESC`,
             countQuery: `SELECT COUNT(*) AS totalCount FROM Carousel As cc ${whereString}`,
         };
         const result = await getCommonAPIResponse(req, res, getCarouselList);
