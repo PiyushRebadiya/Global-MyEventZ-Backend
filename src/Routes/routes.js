@@ -205,8 +205,8 @@ router.post('/add_what_app_msg', auth, WhatsAppMsgController.addWhatsAppMsg);
 router.delete('/delete_what_app_msg', auth, WhatsAppMsgController.deleteWhatAppMsg);
 //#endregion
 //#region OTHER APIs
-router.get('/fetch_contact_master', auth, ContactMasterController.FetchContactMasterDetails);
-router.post('/add_contact_master', ContactMasterController.AddContactMasterMaster);
+// router.get('/fetch_contact_master', auth, ContactMasterController.FetchContactMasterDetails);
+// router.post('/add_contact_master', ContactMasterController.AddContactMasterMaster);
 
 router.get('/fetch_member_type_master', auth, MemberTypeMasterController.FetchMemberTypeMasterDetails);
 router.post('/member_type_master', auth, MemberTypeMasterController.MemberTypeMaster);
