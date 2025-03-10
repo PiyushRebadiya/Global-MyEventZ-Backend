@@ -48,7 +48,8 @@ const otpController = require('../controllers/otp.js');
 const BookingController = require('../controllers/BookingMaster');
 const ContectMasterController = require('../controllers/ContectMaster');
 const EventContectSettingController = require('../controllers/EventContectSetting');
-const RoleRightsControler = require('../controllers/RoleRights')
+const RoleRightsControler = require('../controllers/RoleRights');
+const CouponMasterController = require('../controllers/CouponMaster');
 // const carouselController = require('../controllers/carousel');
 
 const auth = require("../middleware/auth");
@@ -278,5 +279,9 @@ router.get('/fetch_main_menu', auth, RoleRightsControler.fetchMainMenu);
 router.get('/fetch_sub_menu', auth, RoleRightsControler.fetcSubMenu);
 router.post('/add_role_rights', auth, RoleRightsControler.addRoleRighys);
 //#endregion
+
+router.get('/fetch_coupons', auth, CouponMasterController.FetchCoupons);
+router.post('/coupon_master', auth, CouponMasterController.CouponMaster);
+router.delete('/delete_coupon', auth, CouponMasterController.RemoveCoupon);
 
 module.exports = router;
