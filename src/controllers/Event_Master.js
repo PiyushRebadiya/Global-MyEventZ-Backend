@@ -140,7 +140,7 @@ const addEvent = async (req, res) => {
 
         // Ensure required fields exist
         const missingKeys = checkKeysAndRequireValues(
-            ['EventUkeyId', 'OrganizerUkeyId', 'EventName', 'EventDate'], { ...Event }
+            ['EventUkeyId', 'OrganizerUkeyId', 'EventName'], { ...Event }
         );
         if (missingKeys.length > 0) {
             return res.status(400).json(errorMessage(`${missingKeys.join(', ')} is Required`));

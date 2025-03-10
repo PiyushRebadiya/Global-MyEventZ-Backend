@@ -1,31 +1,26 @@
 const {
-    errorMessage,
-    successMessage,
-    checkKeysAndRequireValues,
-    setSQLStringValue,
-    setSQLNumberValue,
-    setSQLBooleanValue,
-    getCommonAPIResponse,
-    getCommonKeys,
-    generateUUID
+    errorMessage,successMessage, checkKeysAndRequireValues, setSQLStringValue, setSQLNumberValue, setSQLBooleanValue, getCommonAPIResponse, getCommonKeys
 } = require("../common/main");
 const { pool } = require('../sql/connectToDatabase');
 
 // Fetch TemplateMaster Details
 const FetchTemplateMasterDetails = async (req, res) => {
     try {
-        const { TemplateMasterUkeyId, TemplateName, IpAddress } = req.query;
+        const { TemplateUkeyId, Name, IsActive } = req.query;
         let whereConditions = [];
 
-        if (TemplateMasterUkeyId) {
-            whereConditions.push(`TemplateMasterUkeyId = '${TemplateMasterUkeyId}'`);
+        if (TemplateUkeyId) {
+            whereConditions.push(`TemplateUkeyId = ${setSQLStringValue(TemplateUkeyId)}`);
         }
-        if (TemplateName) {
-            whereConditions.push(`TemplateName LIKE '%${TemplateName}%'`);
+        if (IsActive) {
+            whereConditions.push(`IsActive = ${setSQLBooleanValue(IsActive)}`);
+        }
+        if (Name) {
+            whereConditions.push(`Name = ${setSQLStringValue(Name)}`);
         }
         const whereString = whereConditions.length > 0 ? `WHERE ${whereConditions.join(' AND ')}` : '';
         const queries = {
-            getQuery: `SELECT * FROM TemplateMaster ${whereString} ORDER BY TemplateMasterId DESC`,
+            getQuery: `SELECT * FROM TemplateMaster ${whereString} ORDER BY EntryDate DESC`,
             countQuery: `SELECT COUNT(*) AS totalCount FROM TemplateMaster ${whereString}`,
         };
 
@@ -39,14 +34,11 @@ const FetchTemplateMasterDetails = async (req, res) => {
 // Insert or Update TemplateMaster
 const ManageTemplateMaster = async (req, res) => {
     const {
-        TemplateName = '',
-        TemplateDescription = '',
-        TemplateMasterUkeyId = generateUUID(),
-        flag = null
+        TemplateUkeyId, EventUkeyId, OrganizerUkeyId, Description, Name, IsActive, flag
     } = req.body;
 
     try {
-        const missingKeys = checkKeysAndRequireValues(['TemplateName', 'TemplateDescription'], req.body);
+        const missingKeys = checkKeysAndRequireValues(['TemplateUkeyId', 'EventUkeyId', 'OrganizerUkeyId', 'Description', 'Name'], req.body);
 
         if (missingKeys.length > 0) {
             return res.status(400).json(errorMessage(`${missingKeys.join(', ')} is required`));
@@ -55,23 +47,15 @@ const ManageTemplateMaster = async (req, res) => {
         const { IPAddress, ServerName, EntryTime } = getCommonKeys(req);
 
         const insertQuery = `
-            INSERT INTO TemplateMaster (TemplateMasterUkeyId, TemplateName, TemplateDescription, IpAddress, HostName, EntryDate)
-            VALUES (
-                ${setSQLStringValue(TemplateMasterUkeyId)},
-                ${setSQLStringValue(TemplateName)},
-                ${setSQLStringValue(TemplateDescription)},
-                ${setSQLStringValue(IPAddress)},
-                ${setSQLStringValue(ServerName)},
-                ${setSQLStringValue(EntryTime)}
+            INSERT INTO TemplateMaster (
+                TemplateUkeyId, EventUkeyId, OrganizerUkeyId, Description, Name, UserId, UserName, IsActive, flag, IpAddress, HostName, EntryDate
+            ) VALUES (
+                ${setSQLStringValue(TemplateUkeyId)}, ${setSQLStringValue(EventUkeyId)}, ${setSQLStringValue(OrganizerUkeyId)}, ${setSQLStringValue(Description)}, ${setSQLStringValue(Name)}, ${setSQLNumberValue(req.user.UserId)}, ${setSQLStringValue(req.user.FirstName)}, ${setSQLBooleanValue(IsActive)}, ${setSQLStringValue(flag)}, ${setSQLStringValue(IPAddress)}, ${setSQLStringValue(ServerName)}, ${setSQLStringValue(EntryTime)}
             );
         `;
-
-        const oldQuery = `
-            SELECT * FROM TemplateMaster WHERE TemplateMasterUkeyId = '${TemplateMasterUkeyId}';
-        `;
-
+        
         const deleteQuery = `
-            DELETE FROM TemplateMaster WHERE TemplateMasterUkeyId = '${TemplateMasterUkeyId}';
+            DELETE FROM TemplateMaster WHERE TemplateUkeyId = ${setSQLStringValue(TemplateUkeyId)};
         `;
 
         if (flag === 'A') {
@@ -81,13 +65,9 @@ const ManageTemplateMaster = async (req, res) => {
                 return res.status(400).json(errorMessage('Failed to create template.'));
             }
 
-            return res.status(200).json(successMessage('Template created successfully.'));
+            return res.status(200).json({...successMessage('Template created successfully.'), ...req.body});
         } else if (flag === 'U') {
 
-            const oldResult = await pool.request().query(oldQuery);
-            if (oldResult.rowsAffected[0] === 0) {
-                return res.status(400).json(errorMessage('No template found to update.'));
-            }
             const deleteResult = await pool.request().query(deleteQuery);
             const insertResult = await pool.request().query(insertQuery);
 
@@ -95,7 +75,7 @@ const ManageTemplateMaster = async (req, res) => {
                 return res.status(400).json(errorMessage('Failed to update template.'));
             }
 
-            return res.status(200).json(successMessage('Template updated successfully.'));
+            return res.status(200).json({...successMessage('Template updated successfully.'), ...req.body});
         } else {
             return res.status(400).json(errorMessage("Use 'A' flag to add and 'U' flag to update."));
         }
@@ -108,16 +88,16 @@ const ManageTemplateMaster = async (req, res) => {
 // Remove TemplateMaster Entry
 const RemoveTemplateMaster = async (req, res) => {
     try {
-        const { TemplateMasterUkeyId } = req.query;
+        const { TemplateUkeyId, OrganizerUkeyId } = req.query;
 
-        const missingKeys = checkKeysAndRequireValues(['TemplateMasterUkeyId'], req.query);
+        const missingKeys = checkKeysAndRequireValues(['TemplateUkeyId', 'OrganizerUkeyId'], req.query);
 
         if (missingKeys.length > 0) {
             return res.status(400).json(errorMessage(`${missingKeys.join(', ')} is required`));
         }
 
         const query = `
-            DELETE FROM TemplateMaster WHERE TemplateMasterUkeyId = '${TemplateMasterUkeyId}';
+            DELETE FROM TemplateMaster WHERE TemplateUkeyId = ${setSQLStringValue(TemplateUkeyId)} and OrganizerUkeyId = ${setSQLStringValue(OrganizerUkeyId)};
         `;
 
         const result = await pool.request().query(query);

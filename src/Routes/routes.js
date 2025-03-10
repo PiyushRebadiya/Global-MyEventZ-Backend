@@ -219,7 +219,7 @@ router.delete('/delete_member_type_master', auth, MemberTypeMasterController.Rem
 router.get('/dashboard_list', auth, DashbordController.DashbordList);
 
 router.get('/fetch_template_master', auth, TemplateMasterController.FetchTemplateMasterDetails);
-router.post('/manage_template_master', auth, TemplateMasterController.ManageTemplateMaster);
+router.post('/template_master', auth, TemplateMasterController.ManageTemplateMaster);
 router.delete('/delete_template_master', auth, TemplateMasterController.RemoveTemplateMaster);
 
 
