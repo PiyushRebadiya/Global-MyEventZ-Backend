@@ -156,7 +156,7 @@ const BookingMaster = async (req, res) => {
 
 const RemoveBookings = async (req, res) => {
     try {
-        const { BookingUkeyID, EventUkeyId } = req.query;
+        const { BookingUkeyID, EventUkeyId, OrganizerUkeyId } = req.query;
         // Check if required keys are missing
         const missingKeys = checkKeysAndRequireValues(['BookingUkeyID', 'EventUkeyId'], req.query);
         if (missingKeys.length > 0) {
@@ -165,7 +165,7 @@ const RemoveBookings = async (req, res) => {
 
         // Execute the DELETE query
         const deleteQuery = `
-            DELETE FROM Bookingmast WHERE BookingUkeyID = ${setSQLStringValue(BookingUkeyID)} AND EventUkeyId = ${setSQLStringValue(EventUkeyId)};
+            DELETE FROM Bookingmast WHERE BookingUkeyID = ${setSQLStringValue(BookingUkeyID)} AND EventUkeyId = ${setSQLStringValue(EventUkeyId)} and OrganizerUkeyId = ${setSQLStringValue(OrganizerUkeyId)};
             DELETE FROM Bookingdetails WHERE BookingUkeyID = ${setSQLStringValue(BookingUkeyID)};
         `;
         const deleteResult = await pool.request().query(deleteQuery);

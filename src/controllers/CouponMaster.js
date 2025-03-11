@@ -1,6 +1,7 @@
 const {
     errorMessage,successMessage, checkKeysAndRequireValues, setSQLStringValue, setSQLNumberValue, setSQLBooleanValue, getCommonAPIResponse, getCommonKeys,
-    setSQLDecimalValue
+    setSQLDecimalValue,
+    setSQLDateTime
 } = require("../common/main");
 const { pool } = require('../sql/connectToDatabase');
 
@@ -32,7 +33,7 @@ const FetchCoupons = async (req, res) => {
 // Insert or Update CouponMaster
 const CouponMaster = async (req, res) => {
     const {
-        CouponUkeyId, EventUkeyId, OrganizerUkeyId, CouponCode, Remarks, DiscPer, DiscAmt, IsActive, flag
+        CouponUkeyId, EventUkeyId, OrganizerUkeyId, CouponCode, Remarks, DiscPer, DiscAmt, IsActive, StartDate, EndDate, flag
     } = req.body;
 
     try {
@@ -46,9 +47,9 @@ const CouponMaster = async (req, res) => {
 
         const insertQuery = `
             INSERT INTO CouponMaster (
-                CouponUkeyId, EventUkeyId, OrganizerUkeyId, CouponCode, Remarks, DiscPer, DiscAmt, IsActive, UserId, UserName, flag, IpAddress, HostName, EntryDate
+                CouponUkeyId, EventUkeyId, OrganizerUkeyId, CouponCode, Remarks, DiscPer, DiscAmt, IsActive, UserId, UserName, flag, IpAddress, HostName, EntryDate, StartDate, EndDate
             ) VALUES (
-                ${setSQLStringValue(CouponUkeyId)}, ${setSQLStringValue(EventUkeyId)}, ${setSQLStringValue(OrganizerUkeyId)}, ${setSQLStringValue(CouponCode)}, ${setSQLStringValue(Remarks)}, ${setSQLDecimalValue(DiscPer)}, ${setSQLDecimalValue(DiscAmt)}, ${setSQLBooleanValue(IsActive)}, ${setSQLStringValue(req.user.UserId)}, ${setSQLStringValue(req.user.FirstName)}, ${setSQLStringValue(flag)}, ${setSQLStringValue(IPAddress)}, ${setSQLStringValue(ServerName)}, ${setSQLStringValue(EntryTime)}
+                ${setSQLStringValue(CouponUkeyId)}, ${setSQLStringValue(EventUkeyId)}, ${setSQLStringValue(OrganizerUkeyId)}, ${setSQLStringValue(CouponCode)}, ${setSQLStringValue(Remarks)}, ${setSQLDecimalValue(DiscPer)}, ${setSQLDecimalValue(DiscAmt)}, ${setSQLBooleanValue(IsActive)}, ${setSQLStringValue(req.user.UserId)}, ${setSQLStringValue(req.user.FirstName)}, ${setSQLStringValue(flag)}, ${setSQLStringValue(IPAddress)}, ${setSQLStringValue(ServerName)}, ${setSQLStringValue(EntryTime)}, ${setSQLDateTime(StartDate)}, ${setSQLDateTime(EndDate)}
             );
         `;
         
