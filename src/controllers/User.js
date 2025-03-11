@@ -129,7 +129,8 @@ const AddOrginizer = async (req, res) => {
             }),
             ...req.body,
             EventUKeyId,
-            UserUkeyId
+            UserUkeyId,
+            EventName : 'Default Event'
         })
     }catch(error){
         console.log('Add User Error :', error);
@@ -154,8 +155,10 @@ const Loginorganizer = async (req, res) => {
         const {IPAddress, ServerName, EntryTime} = getCommonKeys(req); 
 
         const result = await pool.request().query(`
-            SELECT * FROM OrguserMaster 
-            WHERE Mobile1 = '${Mobile1}' AND Password = '${Password}' AND IsActive = 1
+
+        SELECT om.*, em.EventName FROM OrguserMaster om
+        left join EventMaster em on om.OrganizerUkeyId = em.OrganizerUkeyId
+        WHERE om.Mobile1 = '${Mobile1}' AND om.Password = '${Password}' AND om.IsActive = 1
         `);
 
         if(result.rowsAffected[0] === 0){
@@ -177,8 +180,7 @@ const Loginorganizer = async (req, res) => {
             Mobile1: result?.recordset[0]?.Mobile1,
             Role: result?.recordset[0]?.Role,
             IsActive: result?.recordset[0]?.IsActive,
-            IPAddress,
-            ServerName
+            EventName : result?.recordset?.[0]?.EventName
     });
     }catch(error){
         console.log('Login User Error :', error);
