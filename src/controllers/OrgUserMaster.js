@@ -3,11 +3,12 @@ const { pool } = require("../sql/connectToDatabase");
 
 const FetchOrgUserMasterDetails = async (req, res) => {
     try {
-        const { UserUkeyId, IsActive, OrganizerUkeyId, Role } = req.query;
+        const { UserUkeyId, IsActive, OrganizerUkeyId, Role, EventUkeyId } = req.query;
         let whereConditions = [];
 
         if (UserUkeyId) whereConditions.push(`UserUkeyId = ${setSQLStringValue(UserUkeyId)}`);
         if (OrganizerUkeyId) whereConditions.push(`OrganizerUkeyId = ${setSQLStringValue(OrganizerUkeyId)}`);
+        if (EventUkeyId) whereConditions.push(`EventUkeyId = ${setSQLStringValue(EventUkeyId)}`);
         if (Role) whereConditions.push(`Role = ${setSQLStringValue(Role)}`);
         if (IsActive) whereConditions.push(`IsActive = ${setSQLBooleanValue(IsActive)}`);
 
