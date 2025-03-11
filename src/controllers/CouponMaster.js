@@ -39,11 +39,11 @@ const FetchCoupons = async (req, res) => {
 // Insert or Update CouponMaster
 const CouponMaster = async (req, res) => {
     const {
-        CouponUkeyId, EventUkeyId, OrganizerUkeyId, CouponCode, Remarks, DiscPer, DiscAmt, IsActive, StartDate, EndDate, flag
+        CouponUkeyId, EventUkeyId, OrganizerUkeyId, CouponCode, Remarks, isAmount, Discount, IsActive, StartDate, EndDate, flag
     } = req.body;
 
     try {
-        const missingKeys = checkKeysAndRequireValues(['CouponUkeyId', 'EventUkeyId', 'CouponCode', 'DiscPer', 'DiscAmt'], req.body);
+        const missingKeys = checkKeysAndRequireValues(['CouponUkeyId', 'EventUkeyId', 'CouponCode', 'isAmount', 'Discount'], req.body);
 
         if (missingKeys.length > 0) {
             return res.status(400).json(errorMessage(`${missingKeys.join(', ')} is required`));
@@ -53,9 +53,9 @@ const CouponMaster = async (req, res) => {
 
         const insertQuery = `
             INSERT INTO CouponMaster (
-                CouponUkeyId, EventUkeyId, OrganizerUkeyId, CouponCode, Remarks, DiscPer, DiscAmt, IsActive, UserId, UserName, flag, IpAddress, HostName, EntryDate, StartDate, EndDate
+                CouponUkeyId, EventUkeyId, OrganizerUkeyId, CouponCode, Remarks, isAmount, Discount, IsActive, UserId, UserName, flag, IpAddress, HostName, EntryDate, StartDate, EndDate
             ) VALUES (
-                ${setSQLStringValue(CouponUkeyId)}, ${setSQLStringValue(EventUkeyId)}, ${setSQLStringValue(OrganizerUkeyId)}, ${setSQLStringValue(CouponCode)}, ${setSQLStringValue(Remarks)}, ${setSQLDecimalValue(DiscPer)}, ${setSQLDecimalValue(DiscAmt)}, ${setSQLBooleanValue(IsActive)}, ${setSQLStringValue(req.user.UserId)}, ${setSQLStringValue(req.user.FirstName)}, ${setSQLStringValue(flag)}, ${setSQLStringValue(IPAddress)}, ${setSQLStringValue(ServerName)}, ${setSQLStringValue(EntryTime)}, ${setSQLDateTime(StartDate)}, ${setSQLDateTime(EndDate)}
+                ${setSQLStringValue(CouponUkeyId)}, ${setSQLStringValue(EventUkeyId)}, ${setSQLStringValue(OrganizerUkeyId)}, ${setSQLStringValue(CouponCode)}, ${setSQLStringValue(Remarks)}, ${setSQLBooleanValue(isAmount)}, ${setSQLDecimalValue(Discount)}, ${setSQLBooleanValue(IsActive)}, ${setSQLStringValue(req.user.UserId)}, ${setSQLStringValue(req.user.FirstName)}, ${setSQLStringValue(flag)}, ${setSQLStringValue(IPAddress)}, ${setSQLStringValue(ServerName)}, ${setSQLStringValue(EntryTime)}, ${setSQLDateTime(StartDate)}, ${setSQLDateTime(EndDate)}
             );
         `;
         
