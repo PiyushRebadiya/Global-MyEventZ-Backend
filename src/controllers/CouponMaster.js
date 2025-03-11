@@ -8,11 +8,17 @@ const { pool } = require('../sql/connectToDatabase');
 // Fetch CouponMaster Details
 const FetchCoupons = async (req, res) => {
     try {
-        const { CouponUkeyId, Name, IsActive } = req.query;
+        const { CouponUkeyId, Name, IsActive, EventUkeyId, OrganizerUkeyId } = req.query;
         let whereConditions = [];
 
         if (CouponUkeyId) {
             whereConditions.push(`CouponUkeyId = ${setSQLStringValue(CouponUkeyId)}`);
+        }
+        if (EventUkeyId) {
+            whereConditions.push(`EventUkeyId = ${setSQLStringValue(EventUkeyId)}`);
+        }
+        if (OrganizerUkeyId) {
+            whereConditions.push(`OrganizerUkeyId = ${setSQLStringValue(OrganizerUkeyId)}`);
         }
         if (IsActive) {
             whereConditions.push(`IsActive = ${setSQLBooleanValue(IsActive)}`);
