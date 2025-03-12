@@ -38,7 +38,7 @@ const fetchCarouselList = async (req, res) => {
                 WHEN cc.OrderId IS NULL THEN 1 ELSE 0 
             END,
             cc.OrderId ASC, 
-            cc.CarouselId DESC;
+            cc.CarouselId DESC
         `,
             countQuery: `SELECT COUNT(*) AS totalCount FROM Carousel As cc ${whereString}`,
         };
