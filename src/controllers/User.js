@@ -61,7 +61,7 @@ const AddOrginizer = async (req, res) => {
             return res.status(400).json(errorMessage(`${missingKeys.join(', ')} is Required`));
         }
 
-        const EventUKeyId = generateUUID()
+        const EventUkeyId = generateUUID()
         const UserUkeyId = generateUUID()
         const AddressUkeyID = generateUUID()
 
@@ -89,7 +89,7 @@ const AddOrginizer = async (req, res) => {
             INSERT INTO OrguserMaster ( 
                 UserUkeyId, EventUKeyId, OrganizerUkeyId, Password, IsActive, IpAddress, HostName, EntryDate, FirstName, Mobile1, Mobile2, StateCode, StateName, CityName, Role, flag, Add1
             ) OUTPUT INSERTED.* VALUES (
-                ${setSQLStringValue(UserUkeyId)}, ${setSQLStringValue(EventUKeyId)}, ${setSQLStringValue(OrganizerUkeyId)}, ${setSQLStringValue(Password)}  , 1, ${setSQLStringValue(IPAddress)}, ${setSQLStringValue(ServerName)}, ${setSQLStringValue(EntryTime)}, ${setSQLStringValue(OrganizerName)}, ${setSQLStringValue(Mobile1)}, ${setSQLStringValue(Mobile2)}, ${setSQLNumberValue(StateCode)}, ${setSQLStringValue(StateName)}, ${setSQLStringValue(City)}, 'Admin', 'A', ${setSQLStringValue(Add1)}
+                ${setSQLStringValue(UserUkeyId)}, ${setSQLStringValue(EventUkeyId)}, ${setSQLStringValue(OrganizerUkeyId)}, ${setSQLStringValue(Password)}  , 1, ${setSQLStringValue(IPAddress)}, ${setSQLStringValue(ServerName)}, ${setSQLStringValue(EntryTime)}, ${setSQLStringValue(OrganizerName)}, ${setSQLStringValue(Mobile1)}, ${setSQLStringValue(Mobile2)}, ${setSQLNumberValue(StateCode)}, ${setSQLStringValue(StateName)}, ${setSQLStringValue(City)}, 'Admin', 'A', ${setSQLStringValue(Add1)}
             );
         `;
 
@@ -99,7 +99,7 @@ const AddOrginizer = async (req, res) => {
             INSERT INTO AddressMaster ( 
                 AddressUkeyID, OrganizerUkeyId, EventUkeyId, Alias, Address1, CityName, StateCode, StateName, IsActive, IpAddress, HostName, EntryDate, flag, CountryName, IsPrimaryAddress, UsreID
             ) OUTPUT INSERTED.*  VALUES (
-                ${setSQLStringValue(AddressUkeyID)}, ${setSQLStringValue(OrganizerUkeyId)}, ${setSQLStringValue(EventUKeyId)}, ${setSQLStringValue(AliasName)}, ${setSQLStringValue(Add1)}, ${setSQLStringValue(City)}, ${setSQLStringValue(StateCode)}, ${setSQLStringValue(StateName)}, 1, ${setSQLStringValue(IPAddress)}, ${setSQLStringValue(ServerName)}, ${setSQLStringValue(EntryTime)}, 'A', 'INDIA', 1, ${setSQLNumberValue(resultOrgUserMst.recordset[0].UserId)}
+                ${setSQLStringValue(AddressUkeyID)}, ${setSQLStringValue(OrganizerUkeyId)}, ${setSQLStringValue(EventUkeyId)}, ${setSQLStringValue(AliasName)}, ${setSQLStringValue(Add1)}, ${setSQLStringValue(City)}, ${setSQLStringValue(StateCode)}, ${setSQLStringValue(StateName)}, 1, ${setSQLStringValue(IPAddress)}, ${setSQLStringValue(ServerName)}, ${setSQLStringValue(EntryTime)}, 'A', 'INDIA', 1, ${setSQLNumberValue(resultOrgUserMst.recordset[0].UserId)}
             );    
         `;
     
@@ -109,7 +109,7 @@ const AddOrginizer = async (req, res) => {
         INSERT INTO EventMaster ( 
             EventUKeyId, OrganizerUkeyId, EventName, EventCode, IsActive, IpAddress, HostName, EntryDate, StartEventDate, EndEventDate, UserID, AddressUkeyID, flag
         ) OUTPUT INSERTED.* VALUES (
-            ${setSQLStringValue(EventUKeyId)}, ${setSQLStringValue(OrganizerUkeyId)}, 'Default Event', ${setSQLStringValue(EventCode)}, 1, ${setSQLStringValue(IPAddress)}, ${setSQLStringValue(ServerName)}, ${setSQLStringValue(EntryTime)}, GETDATE(), GETDATE(), ${resultOrgUserMst.recordset[0].UserId}, ${setSQLStringValue(AddressUkeyID)}, 'A'
+            ${setSQLStringValue(EventUkeyId)}, ${setSQLStringValue(OrganizerUkeyId)}, 'Default Event', ${setSQLStringValue(EventCode)}, 1, ${setSQLStringValue(IPAddress)}, ${setSQLStringValue(ServerName)}, ${setSQLStringValue(EntryTime)}, GETDATE(), GETDATE(), ${resultOrgUserMst.recordset[0].UserId}, ${setSQLStringValue(AddressUkeyID)}, 'A'
             );
         `;
     
@@ -122,13 +122,13 @@ const AddOrginizer = async (req, res) => {
             ...successMessage('User Registerd Successfully.'), 
             token : generateJWTT({
                 OrganizerUkeyId
-                , EventUKeyId
+                , EventUkeyId
                 , Role : 'Admin'
                 , UserId : resultOrgUserMst.recordset[0].UserId
                 , FirstName : OrganizerName
             }),
             ...req.body,
-            EventUKeyId,
+            EventUkeyId,
             UserUkeyId,
             EventName : 'Default Event'
         })
@@ -168,7 +168,7 @@ const Loginorganizer = async (req, res) => {
             ...successMessage('User Verified Successfully.'), IsVerified : true, token : generateJWTT({
                 Role: result?.recordset[0]?.Role
                 , OrganizerUKeyId : result?.recordset[0]?.OrganizerUkeyId
-                , EventUKeyId : result?.recordset[0]?.EventUkeyId
+                , EventUkeyId : result?.recordset[0]?.EventUkeyId
                 , UserId : result?.recordset[0]?.UserId
                 , FirstName : result?.recordset[0]?.FirstName
             }),
