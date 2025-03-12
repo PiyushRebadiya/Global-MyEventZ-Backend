@@ -23,15 +23,33 @@ const fetchCarouselList = async (req, res) => {
         // Combine the WHERE conditions into a single string
         const whereString = whereConditions.length > 0 ? `WHERE ${whereConditions.join(' AND ')}` : '';
         const getCarouselList = {
-            getQuery: `SELECT cc.*, dm.FileName FROM Carousel As cc LEFT JOIN DocumentUpload As dm ON cc.CarouselUkeyId = dm.UkeyId  ${whereString} ORDER BY 
-                  CASE 
-                      WHEN cc.OrderId IS NULL THEN 1
-                      ELSE 0
-                  END,
-                  cc.OrderId ASC, cc.CarouselId DESC`,
+            getQuery: `SELECT 
+            cc.*, 
+            ( 
+                SELECT dm.FileName, dm.Label 
+                FROM DocumentUpload dm 
+                WHERE dm.UkeyId = cc.CarouselUkeyId 
+                FOR JSON PATH 
+            ) AS FileNames
+        FROM Carousel AS cc 
+        ${whereString}
+        ORDER BY 
+            CASE 
+                WHEN cc.OrderId IS NULL THEN 1 ELSE 0 
+            END,
+            cc.OrderId ASC, 
+            cc.CarouselId DESC;
+        `,
             countQuery: `SELECT COUNT(*) AS totalCount FROM Carousel As cc ${whereString}`,
         };
         const result = await getCommonAPIResponse(req, res, getCarouselList);
+        result.data.forEach(event => {
+            if(event.FileNames){
+                event.FileNames = JSON.parse(event?.FileNames)
+            } else {
+                event.FileNames = []
+            }
+        });
         return res.json(result);
 
     } catch (error) {
