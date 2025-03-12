@@ -176,7 +176,7 @@ const Loginorganizer = async (req, res) => {
             UserUkeyId: result?.recordset[0]?.UserUkeyId,
             EventUkeyId: result?.recordset[0]?.EventUkeyId,
             OrganizerUkeyId: result?.recordset[0]?.OrganizerUkeyId,
-            FirstName: result?.recordset[0]?.FirstName,
+            OrganizerName: result?.recordset[0]?.FirstName,
             Mobile1: result?.recordset[0]?.Mobile1,
             Role: result?.recordset[0]?.Role,
             IsActive: result?.recordset[0]?.IsActive,
