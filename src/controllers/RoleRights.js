@@ -43,7 +43,11 @@ const fetchRoleRights = async (req, res) => {
             )
         `)
 
-        if(req?.user?.Role == 'Admin'){
+        const UserData = await pool.request().query(`
+                select * from OrgUserMaster where UserUkeyId = ${setSQLStringValue(UserUkeyId)}
+        `)
+
+        if(UserData?.recordset?.[0]?.Role == 'Admin'){
             for (const obj of result.recordset) {
                 obj.UserUkeyId = UserUkeyId
             }
