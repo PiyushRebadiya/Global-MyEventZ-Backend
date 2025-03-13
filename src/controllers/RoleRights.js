@@ -41,7 +41,6 @@ const fetchRoleRights = async (req, res) => {
             WHERE SM.SubMenuId NOT IN (
                 SELECT SubMenuId FROM Rolerights RR WHERE RR.UserUkeyId = ${setSQLStringValue(UserUkeyId)}
             )
-            order by MM.MainMenuId desc
         `)
 
         if(req?.user?.Role == 'Admin'){
@@ -60,7 +59,7 @@ const fetchRoleRights = async (req, res) => {
 const fetchMainMenu = async (req, res) => {
     try{
         const getUserList = {
-            getQuery: `select * from MainMenu ORDER BY MainMenuId DESC`,
+            getQuery: `select * from MainMenu ORDER BY MainMenuId ASC`,
             countQuery: `SELECT COUNT(*) AS totalCount FROM MainMenu`,
         };
         const result = await getCommonAPIResponse(req, res, getUserList);
@@ -87,7 +86,7 @@ const fetcSubMenu = async (req, res) => {
 
 const addRoleRighys = async (req, res) => {
     try{
-        const {UserUkeyId, SubMenuId} = req.body;
+        const {UserUkeyId, SubMenuId, EventUkeyId} = req.body;
         const missingKeys = checkKeysAndRequireValues(['UserUkeyId', 'SubMenuId'], req.body);
         if(missingKeys.length > 0){
             return res.status(400).send(errorMessage(`${missingKeys} is required`));
@@ -100,7 +99,7 @@ const addRoleRighys = async (req, res) => {
         let status = 0
         for(let id of subMenuds){
             if (id.trim() !== '') {
-                const result = await pool.request().query(`INSERT INTO Rolerights (UserUkeyId, SubMenuId, IpAddress, HostName, EntryDate) VALUES (${setSQLStringValue(UserUkeyId)}, ${setSQLNumberValue(id)}, ${setSQLStringValue(IPAddress)}, ${setSQLStringValue(ServerName)}, ${setSQLStringValue(EntryTime)})`);
+                const result = await pool.request().query(`INSERT INTO Rolerights (UserUkeyId, SubMenuId, IpAddress, HostName, EntryDate, EventUkeyId) VALUES (${setSQLStringValue(UserUkeyId)}, ${setSQLNumberValue(id)}, ${setSQLStringValue(IPAddress)}, ${setSQLStringValue(ServerName)}, ${setSQLStringValue(EntryTime)}, ${setSQLStringValue(EventUkeyId)})`);
                 if (result.rowsAffected[0] > 0) {
                     status++;
                 }
