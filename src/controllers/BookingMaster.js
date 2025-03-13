@@ -85,8 +85,9 @@ const fetchBookingInfoById = async( req, res)=> {
 
         // Execute the query and return results
         const result = await getCommonAPIResponse(req, res, getAutoSentNotificationList);
-
-        result.data[0].Bookingdetails = bookingDetails.recordset
+        if(result.data.length > 0){
+            result.data[0].Bookingdetails = bookingDetails.recordset
+        }
         return res.json({ BookingMaster : result.data[0] });
     }catch(error){
         console.error('Error fetching bookings:', error);
