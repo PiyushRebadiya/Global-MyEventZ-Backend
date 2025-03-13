@@ -40,7 +40,8 @@ const fetchRoleRights = async (req, res) => {
             LEFT JOIN MainMenu MM ON MM.MainMenuId = SM.MainMenuId
             WHERE SM.SubMenuId NOT IN (
                 SELECT SubMenuId FROM Rolerights RR WHERE RR.UserUkeyId = ${setSQLStringValue(UserUkeyId)}
-            );
+            )
+            order by MM.MainMenuId desc
         `)
 
         if(req?.user?.Role == 'Admin'){
