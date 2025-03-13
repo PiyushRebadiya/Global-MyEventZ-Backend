@@ -47,7 +47,7 @@ const fetchRoleRights = async (req, res) => {
                 select * from OrgUserMaster where UserUkeyId = ${setSQLStringValue(UserUkeyId)}
         `)
 
-        if(UserData?.recordset?.[0]?.Role == 'Admin'){
+        if(UserData?.recordset?.[0]?.Role == 'Admin' || UserData?.recordset?.[0]?.Role == 'SuperAdmin'){
             for (const obj of result.recordset) {
                 obj.UserUkeyId = UserUkeyId
             }
