@@ -43,6 +43,12 @@ const fetchRoleRights = async (req, res) => {
             );
         `)
 
+        if(req?.user?.Role == 'Admin'){
+            for (const obj of result.recordset) {
+                obj.UserUkeyId = UserUkeyId
+            }
+        } 
+
         return res.json({data : result.recordset});
     } catch (error) {
         console.log('fetch Asign Permission Error :', error);
