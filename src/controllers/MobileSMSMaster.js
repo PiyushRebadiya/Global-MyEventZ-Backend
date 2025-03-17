@@ -22,7 +22,7 @@ const FetchMobSMSMastDetails = async (req, res) => {
         const result = await getCommonAPIResponse(req, res, { getQuery, countQuery });
         return res.json(result);
     } catch (error) {
-        return res.status(400).send(errorMessage(error?.message));
+        return res.status(500).send(errorMessage(error?.message));
     }
 };
 
@@ -32,7 +32,7 @@ const ManageMobSMSMast = async (req, res) => {
 
     const missingKeys = checkKeysAndRequireValues(["OrganizerUkeyId", "EventUkeyId", "BaseUrl"], req.body);
     if (missingKeys.length > 0) {
-        return res.status(400).json(errorMessage(`${missingKeys.join(", ")} is required`));
+        return res.status(200).json(errorMessage(`${missingKeys.join(", ")} is required`));
     }
 
     const transaction = pool.transaction();
@@ -54,7 +54,7 @@ const ManageMobSMSMast = async (req, res) => {
             const result = await transaction.request().query(insertQuery);
             if (result.rowsAffected[0] === 0) {
                 await transaction.rollback();
-                return res.status(400).json(errorMessage("No SMS Entry Created."));
+                return res.status(200).json(errorMessage("No SMS Entry Created."));
             }
 
             if (IsActive) {
@@ -72,7 +72,7 @@ const ManageMobSMSMast = async (req, res) => {
 
             if (recordset.length === 0) {
                 await transaction.rollback();
-                return res.status(400).json(errorMessage("No SMS Entry Found."));
+                return res.status(200).json(errorMessage("No SMS Entry Found."));
             }
 
             const deleteQuery = `DELETE FROM MobSMSMast WHERE MsgUkeyId = '${MsgUkeyId}'`;
@@ -92,7 +92,7 @@ const ManageMobSMSMast = async (req, res) => {
             const result = await transaction.request().query(insertQuery);
             if (result.rowsAffected[0] === 0) {
                 await transaction.rollback();
-                return res.status(400).json(errorMessage("No SMS Entry Updated."));
+                return res.status(200).json(errorMessage("No SMS Entry Updated."));
             }
 
             if (IsActive) {
@@ -105,7 +105,7 @@ const ManageMobSMSMast = async (req, res) => {
             return res.status(200).json(successMessage("SMS Entry Updated Successfully.", { MsgUkeyId }));
         } else {
             await transaction.rollback();
-            return res.status(400).json(errorMessage("Use 'A' flag to Add and 'U' flag to update."));
+            return res.status(200).json(errorMessage("Use 'A' flag to Add and 'U' flag to update."));
         }
     } catch (error) {
         await transaction.rollback();
@@ -121,14 +121,14 @@ const RemoveMobSMSMast = async (req, res) => {
         const missingKeys = checkKeysAndRequireValues(["MsgUkeyId"], req.query);
 
         if (missingKeys.length > 0) {
-            return res.status(400).json(errorMessage(`${missingKeys.join(", ")} is required`));
+            return res.status(200).json(errorMessage(`${missingKeys.join(", ")} is required`));
         }
 
         const query = `DELETE FROM MobSMSMast WHERE MsgUkeyId = '${MsgUkeyId}'`;
         const result = await pool.request().query(query);
 
         if (result.rowsAffected[0] === 0) {
-            return res.status(400).json(errorMessage("No SMS Entry Deleted."));
+            return res.status(200).json(errorMessage("No SMS Entry Deleted."));
         }
         return res.status(200).json(successMessage("SMS Entry Deleted Successfully.", { MsgUkeyId }));
     } catch (error) {

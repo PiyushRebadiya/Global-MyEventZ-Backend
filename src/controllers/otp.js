@@ -1,10 +1,19 @@
 const { successMessage, checkKeysAndRequireValues, errorMessage } = require('../common/main');
+const { pool } = require('../sql/connectToDatabase');
 
 const sentMobileOTPMsg = async (RegisterMobile, otp) => {
     try {
         const mobile = `${RegisterMobile}`
         const message = `Your%20OTP%20is%20${otp}%20for%20Monarch%20MyTaxReport%20Application.%20-%20MONARCH`
-        const otpURL = `http://api.smsbrain.in/1.2/appsms/send.php?user=monaapp.t&passwd=monaapp123&senderId=MONAPP&recipients=${mobile}&message=${message}`
+        const urlData = await pool.query(`SELECT * FROM MobSMSMast WHERE IsActive = 1`);
+        let otpURL = '';
+        if (urlData?.rowsAffected?.length > 0) {
+            otpURL = urlData.recordset[0].BaseUrl;
+            otpURL = otpURL.replace('#Mobile#', mobile);
+            otpURL = otpURL.replace('#Message#', message);
+        } else {
+            return false;
+        }
         const result = await fetch(otpURL, {
             method: 'GET'
         })
