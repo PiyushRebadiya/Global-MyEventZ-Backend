@@ -94,7 +94,7 @@ const fetchEventById = async (req, res)=> {
                 SELECT 
                     em.*, 
                     am.Address1, am.Address2, am.Pincode, am.StateName, am.CityName, 
-                    am.IsPrimaryAddress, am.IsActive AS IsActiveAddress, om.OrganizerName 
+                    am.IsPrimaryAddress, am.IsActive AS IsActiveAddress, am.StateCode, om.OrganizerName 
                 FROM EventMaster em 
                 LEFT JOIN 
                     AddressMaster am 
