@@ -50,6 +50,7 @@ const ContectMasterController = require('../controllers/ContectMaster');
 const EventContectSettingController = require('../controllers/EventContectSetting');
 const RoleRightsControler = require('../controllers/RoleRights');
 const CouponMasterController = require('../controllers/CouponMaster');
+const MobileSMSMasterController = require('../controllers/MobileSMSMaster');
 // const carouselController = require('../controllers/carousel');
 
 const auth = require("../middleware/auth");
@@ -283,5 +284,11 @@ router.post('/add_role_rights', auth, RoleRightsControler.addRoleRighys);
 router.get('/fetch_coupons', auth, CouponMasterController.FetchCoupons);
 router.post('/coupon_master', auth, CouponMasterController.CouponMaster);
 router.delete('/delete_coupon', auth, CouponMasterController.RemoveCoupon);
+
+//#region MOBILE SMS MASTER
+router.get("/fetch_mob_sms_master", auth, MobileSMSMasterController.FetchMobSMSMastDetails);
+router.post("/mob_sms_master", auth, MobileSMSMasterController.ManageMobSMSMast);
+router.delete('/delete_mob_sms_master', auth, MobileSMSMasterController.RemoveMobSMSMast);
+//#endregion
 
 module.exports = router;
