@@ -8,19 +8,21 @@ const FetchOrganizerDetails = async (req, res)=>{
 
         // Build the WHERE clause based on the Status
         if (OrganizerUkeyId) {
-            whereConditions.push(`OrganizerUkeyId = '${OrganizerUkeyId}'`);
+            whereConditions.push(`om.OrganizerUkeyId = '${OrganizerUkeyId}'`);
         }
         if (Role) {
-            whereConditions.push(`Role = '${Role}'`);
+            whereConditions.push(`om.Role = '${Role}'`);
         }
         if(IsActive){
-            whereConditions.push(`IsActive = ${setSQLBooleanValue(IsActive)}`);
+            whereConditions.push(`om.IsActive = ${setSQLBooleanValue(IsActive)}`);
         }
         // Combine the WHERE conditions into a single string
         const whereString = whereConditions.length > 0 ? `WHERE ${whereConditions.join(' AND ')}` : '';
         const getUserList = {
-            getQuery: `SELECT * FROM OrganizerMaster ${whereString} ORDER BY OrganizerId DESC`,
-            countQuery: `SELECT COUNT(*) AS totalCount FROM OrganizerMaster ${whereString}`,
+            getQuery: `SELECT om.*, oum.Password FROM OrganizerMaster om
+            left join OrgUserMaster oum on om.OrganizerUkeyId = oum.OrganizerUkeyId
+            ${whereString} ORDER BY OrganizerId DESC`,
+            countQuery: `SELECT COUNT(*) AS totalCount FROM OrganizerMaster om ${whereString}`,
         };
         const result = await getCommonAPIResponse(req, res, getUserList);
         return res.json(result);
@@ -35,7 +37,7 @@ const OrginazerMaster = async (req, res) => {
         const { 
             OrganizerUkeyId, OrganizerName, Mobile1, Mobile2 = null, Email = null, AliasName = null, 
             Description = null, Add1 = null, Add2 = null, City = null, StateCode, StateName = null, 
-            IsActive = true, UserName = null, flag = null 
+            IsActive = true, UserName = null, flag = null , Password
         } = req.body;
 
         if (!flag) return res.status(400).json(errorMessage("Flag is required. Use 'A' for Add or 'U' for Update."));
@@ -67,6 +69,9 @@ const OrginazerMaster = async (req, res) => {
         if (flag === "U") {
             await pool.request().query(deleteQuery);
             const insertResult = await pool.request().query(insertQuery);
+            const updatePassword = await pool.request().query(`
+                update OrgUserMaster set Password = ${setSQLStringValue(Password)} where OrganizerUkeyId = ${setSQLStringValue(OrganizerUkeyId)}
+            `);
             if (!insertResult.rowsAffected[0]) return res.status(400).json(errorMessage("No Organizer Updated."));
             return res.status(200).json({ ...successMessage("Organizer Updated Successfully."), OrganizerUkeyId });
         }
