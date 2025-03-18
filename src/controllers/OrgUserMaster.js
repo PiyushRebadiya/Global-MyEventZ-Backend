@@ -67,6 +67,20 @@ const OrgUserMaster = async (req, res) => {
                 if (Image) deleteImage(req?.files?.Image?.[0]?.path);
                 return res.status(400).json(errorMessage('No User Created.'));
             }
+            CommonLogFun({
+                EventUkeyId : EventUkeyId, 
+                OrganizerUkeyId : OrganizerUkeyId, 
+                ReferenceUkeyId : UserUkeyId, 
+                MasterName : FirstName,  
+                TableName : "OrgUserMaster", 
+                UserId : req.user.UserId, 
+                UserName : req.user.FirstName, 
+                IsActive : IsActive,
+                flag : flag, 
+                IPAddress : IPAddress, 
+                ServerName : ServerName, 
+                EntryTime : EntryTime
+            })
 
             return res.status(200).json({...successMessage('New User Created Successfully.'), Image, ...req.body });
         } 
@@ -105,6 +119,21 @@ const OrgUserMaster = async (req, res) => {
             if (oldImg && req.files && req.files.Image && req.files.Image.length > 0){
                 deleteImage('./media/Organizer/' + oldImg);
             }
+
+            CommonLogFun({
+                EventUkeyId : EventUkeyId, 
+                OrganizerUkeyId : OrganizerUkeyId, 
+                ReferenceUkeyId : UserUkeyId, 
+                MasterName : FirstName,  
+                TableName : "OrgUserMaster", 
+                UserId : req.user.UserId, 
+                UserName : req.user.FirstName, 
+                IsActive : IsActive,
+                flag : flag, 
+                IPAddress : IPAddress, 
+                ServerName : ServerName, 
+                EntryTime : EntryTime
+            })
 
             return res.status(200).json({...successMessage('User Updated Successfully.'), Image, ...req.body });
         } 

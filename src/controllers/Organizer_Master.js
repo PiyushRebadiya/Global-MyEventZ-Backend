@@ -73,6 +73,21 @@ const OrginazerMaster = async (req, res) => {
                 update OrgUserMaster set Password = ${setSQLStringValue(Password)} where OrganizerUkeyId = ${setSQLStringValue(OrganizerUkeyId)}
             `);
             if (!insertResult.rowsAffected[0]) return res.status(400).json(errorMessage("No Organizer Updated."));
+
+            CommonLogFun({
+                OrganizerUkeyId : OrganizerUkeyId, 
+                ReferenceUkeyId : OrganizerUkeyId, 
+                MasterName : OrganizerName,  
+                TableName : "OrganizerMaster", 
+                UserId : req.user.UserId, 
+                UserName : req.user.FirstName, 
+                IsActive : IsActive,
+                flag : flag, 
+                IPAddress : IPAddress, 
+                ServerName : ServerName, 
+                EntryTime : EntryTime
+            })
+
             return res.status(200).json({ ...successMessage("Organizer Updated Successfully."), OrganizerUkeyId });
         }
 

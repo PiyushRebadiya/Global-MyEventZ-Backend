@@ -87,6 +87,21 @@ const CarouserMaster = async (req, res) => {
             return res.status(200).json(successMessage(`NO Carousel Successfully.`));
         }
 
+        CommonLogFun({
+            EventUkeyId : EventUkeyId,
+            OrganizerUkeyId : OrganizerUkeyId, 
+            ReferenceUkeyId : CarouselUkeyId, 
+            MasterName : Title,  
+            TableName : "Carousel", 
+            UserId : req.user.UserId, 
+            UserName : req.user.FirstName, 
+            IsActive : IsActive,
+            flag : flag, 
+            IPAddress : IPAddress, 
+            ServerName : ServerName, 
+            EntryTime : EntryTime
+        })
+
         return res.status(200).json(successMessage(`Carousel Master ${flag == 'A' ? 'Created' : 'update'} Successfully.`));
     } catch (error) {
         return res.status(500).json(errorMessage(error.message));

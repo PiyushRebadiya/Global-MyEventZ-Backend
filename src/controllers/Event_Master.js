@@ -192,6 +192,21 @@ const addEvent = async (req, res) => {
         // Commit transaction
         await transaction.commit();
 
+        CommonLogFun({
+            EventUkeyId : EventUkeyId, 
+            OrganizerUkeyId : OrganizerUkeyId, 
+            ReferenceUkeyId : EventUkeyId, 
+            MasterName : EventName,  
+            TableName : "EventMaster", 
+            UserId : req.user.UserId, 
+            UserName : req.user.FirstName, 
+            IsActive : IsActive,
+            flag : flag, 
+            IPAddress : IPAddress, 
+            ServerName : ServerName, 
+            EntryTime : EntryTime
+        })
+
         return res.status(200).json({
             ...successMessage(flag === 'A' ? 'New Event Created Successfully.' : 'Event Updated Successfully.'),
             ...req.body,

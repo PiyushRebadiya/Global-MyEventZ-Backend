@@ -55,6 +55,21 @@ const SponsorCategoryMaster = async (req, res) => {
             if(result.rowsAffected[0] === 0){
                 return res.status(400).json({...errorMessage('No Sponsor Category Created.'),})
             }
+
+            CommonLogFun({
+                EventUkeyId : EventUkeyId, 
+                OrganizerUkeyId : OrganizerUkeyId, 
+                ReferenceUkeyId : SpCatUkeyId, 
+                MasterName : Name,  
+                TableName : "SponsorCategoryMaster", 
+                UserId : req.user.UserId, 
+                UserName : req.user.FirstName, 
+                IsActive : IsActive,
+                flag : flag, 
+                IPAddress : IPAddress, 
+                ServerName : ServerName, 
+                EntryTime : EntryTime
+            })
     
             return res.status(200).json({...successMessage('New Sponsor Category Created Successfully.'), ...req.body});
 
@@ -66,6 +81,21 @@ const SponsorCategoryMaster = async (req, res) => {
             if(deleteResult.rowsAffected[0] === 0 && insertResult.rowsAffected[0] === 0){
                 return res.status(400).json({...errorMessage('No Sponsor Category Updated.')})
             }
+
+            CommonLogFun({
+                EventUkeyId : EventUkeyId, 
+                OrganizerUkeyId : OrganizerUkeyId, 
+                ReferenceUkeyId : SpCatUkeyId, 
+                MasterName : Name,  
+                TableName : "SponsorCategoryMaster", 
+                UserId : req.user.UserId, 
+                UserName : req.user.FirstName, 
+                IsActive : IsActive,
+                flag : flag, 
+                IPAddress : IPAddress, 
+                ServerName : ServerName, 
+                EntryTime : EntryTime
+            })
     
             return res.status(200).json({...successMessage('New Sponsor Category Updated Successfully.'), ...req.body});
         }else{

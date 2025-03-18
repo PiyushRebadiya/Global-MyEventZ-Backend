@@ -118,6 +118,21 @@ const AddOrginizer = async (req, res) => {
         if(resultOrgUsrMst.rowsAffected[0] === 0 && resultEvent.rowsAffected[0] === 0 && resultOrgUserMst.rowsAffected[0] === 0 && resulAddress.rowsAffected[0] === 0){
             return res.status(400).json({...errorMessage('User Not Registerd Successfully.')})
         }
+
+        CommonLogFun({
+            OrganizerUkeyId : OrganizerUkeyId, 
+            ReferenceUkeyId : OrganizerUkeyId, 
+            MasterName : OrganizerName,  
+            TableName : "OrganizerMaster", 
+            UserId : req.user.UserId, 
+            UserName : req.user.FirstName, 
+            IsActive : IsActive,
+            flag : 'A', 
+            IPAddress : IPAddress, 
+            ServerName : ServerName, 
+            EntryTime : EntryTime
+        })
+
         return res.status(200).json({
             ...successMessage('User Registerd Successfully.'), 
             token : generateJWTT({
