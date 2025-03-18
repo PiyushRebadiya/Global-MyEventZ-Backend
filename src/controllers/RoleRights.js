@@ -91,7 +91,7 @@ const fetcSubMenu = async (req, res) => {
 const addRoleRighys = async (req, res) => {
     try{
         const {UserUkeyId, SubMenuId, EventUkeyId} = req.body;
-        const missingKeys = checkKeysAndRequireValues(['UserUkeyId', 'SubMenuId'], req.body);
+        const missingKeys = checkKeysAndRequireValues(['UserUkeyId'], req.body);
         if(missingKeys.length > 0){
             return res.status(400).send(errorMessage(`${missingKeys} is required`));
         }
