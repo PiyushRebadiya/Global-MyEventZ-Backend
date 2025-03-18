@@ -330,6 +330,22 @@ function toFloat(value) {
     return floatValue;
 }
 
+const CommonLogFun = async (body) => {
+    try{
+        const { EventUkeyId, OrganizerUkeyId, ReferenceUkeyId, MasterName, IsActive, TableName, UserId, UserName, flag, IPAddress, ServerName, EntryTime} = body
+
+        const result = await pool.request().query(`
+            insert into CommonLog (
+                LogUkeyId, EventUkeyId, OrganizerUkeyId, ReferenceUkeyId, MasterName, IsActive, TableName, UserId, UserName, flag, IpAddress, HostName, EntryDate
+            ) values (
+                newid(), ${setSQLStringValue(EventUkeyId)}, ${setSQLStringValue(OrganizerUkeyId)}, ${setSQLStringValue(ReferenceUkeyId)}, ${setSQLStringValue(MasterName)}, ${setSQLBooleanValue(IsActive)}, ${setSQLStringValue(TableName)}, ${setSQLNumberNullValue(UserId)}, ${setSQLStringValue(UserName)}, ${setSQLStringValue(flag)}, ${setSQLStringValue(IPAddress)}, ${setSQLStringValue(ServerName)}, ${setSQLDateTime(EntryTime)}
+            )
+        `)
+    }catch(error){
+        console.log('common log error : ', error);
+    }
+}
+
 module.exports = {
     getServerIpAddress,
     getServerName,
@@ -359,4 +375,5 @@ module.exports = {
     generateSixDigitCode,
     toFloat,
     setSQLDecimalValue,
+    CommonLogFun,
 }

@@ -1,4 +1,4 @@
-const { errorMessage, successMessage, checkKeysAndRequireValues, generateCODE, setSQLBooleanValue, getCommonKeys, generateJWTT, generateUUID, getCommonAPIResponse, deleteImage, setSQLStringValue, setSQLNumberValue } = require("../common/main");
+const { errorMessage, successMessage, checkKeysAndRequireValues, generateCODE, setSQLBooleanValue, getCommonKeys, generateJWTT, generateUUID, getCommonAPIResponse, deleteImage, setSQLStringValue, setSQLNumberValue, CommonLogFun } = require("../common/main");
 const {pool} = require('../sql/connectToDatabase');
 
 const FetchSpeakerMasterDetails = async (req, res)=>{
@@ -39,17 +39,17 @@ const FetchSpeakerMasterDetails = async (req, res)=>{
 }
 
 const SpeakerMaster = async (req, res) => {
-    const { SpeakerUkeyId, OrganizerUkeyId, EventUkeyId, Name, Alias, Description, Email, Mobile, FB, Instagram, Youtube, Other, flag, DiscriptionHindi, DiscriptionGujarati} = req.body;
+    const { SpeakerUkeyId, OrganizerUkeyId, EventUkeyId, Name, Alias, Description, Email, Mobile, FB, Instagram, Youtube, Other, flag, DiscriptionHindi, DiscriptionGujarati, IsActive} = req.body;
     try {
         const { IPAddress, ServerName, EntryTime } = getCommonKeys(req);
         
         const insertQuery = `
             INSERT INTO SpeakerMaster (
                 SpeakerUkeyId, Name, Alias, Description, Email, Mobile, FB, Instagram, Youtube, Other, 
-                UserName, UserID, IpAddress, HostName, EntryDate, flag, OrganizerUkeyId, EventUkeyId, DiscriptionHindi, DiscriptionGujarati
+                UserName, UserID, IpAddress, HostName, EntryDate, flag, OrganizerUkeyId, EventUkeyId, DiscriptionHindi, DiscriptionGujarati, IsActive
             ) VALUES (
                 ${setSQLStringValue(SpeakerUkeyId)}, ${setSQLStringValue(Name)}, ${setSQLStringValue(Alias)}, ${setSQLStringValue(Description)}, ${setSQLStringValue(Email)}, ${setSQLStringValue(Mobile)}, ${setSQLStringValue(FB)}, 
-                ${setSQLStringValue(Instagram)}, ${setSQLStringValue(Youtube)}, ${setSQLStringValue(Other)}, ${setSQLStringValue(req.user.FirstName)}, ${setSQLNumberValue(req.user.UserId)}, ${setSQLStringValue(IPAddress)}, ${setSQLStringValue(ServerName)}, ${setSQLStringValue(EntryTime)}, ${setSQLStringValue(flag)}, ${setSQLStringValue(OrganizerUkeyId)}, ${setSQLStringValue(EventUkeyId)}, ${setSQLStringValue(DiscriptionHindi)}, ${setSQLStringValue(DiscriptionGujarati)}
+                ${setSQLStringValue(Instagram)}, ${setSQLStringValue(Youtube)}, ${setSQLStringValue(Other)}, ${setSQLStringValue(req.user.FirstName)}, ${setSQLNumberValue(req.user.UserId)}, ${setSQLStringValue(IPAddress)}, ${setSQLStringValue(ServerName)}, ${setSQLStringValue(EntryTime)}, ${setSQLStringValue(flag)}, ${setSQLStringValue(OrganizerUkeyId)}, ${setSQLStringValue(EventUkeyId)}, ${setSQLStringValue(DiscriptionHindi)}, ${setSQLStringValue(DiscriptionGujarati)}, ${setSQLBooleanValue(IsActive)}
             );
         `;
 
@@ -70,6 +70,21 @@ const SpeakerMaster = async (req, res) => {
                 return res.status(400).json({ ...errorMessage('No Speaker Created.') });
             }
 
+            CommonLogFun({
+                EventUkeyId : EventUkeyId, 
+                OrganizerUkeyId : OrganizerUkeyId, 
+                ReferenceUkeyId : SpeakerUkeyId, 
+                MasterName : Name,  
+                TableName : "SpeakerMaster", 
+                UserId : req.user.UserId, 
+                UserName : req.user.FirstName, 
+                IsActive : IsActive,
+                flag : flag, 
+                IPAddress : IPAddress, 
+                ServerName : ServerName, 
+                EntryTime : EntryTime
+            })
+
             return res.status(200).json({ 
                 ...successMessage('New Speaker Created Successfully.'), 
                 ...req.body 
@@ -83,6 +98,21 @@ const SpeakerMaster = async (req, res) => {
             if (deleteResult.rowsAffected[0] === 0 && insertResult.rowsAffected[0] === 0) {
                 return res.status(400).json({ ...errorMessage('No Speaker Master Updated.') });
             }
+
+            CommonLogFun({
+                EventUkeyId : EventUkeyId, 
+                OrganizerUkeyId : OrganizerUkeyId, 
+                ReferenceUkeyId : SpeakerUkeyId, 
+                MasterName : Name,  
+                TableName : "SpeakerMaster", 
+                UserId : req.user.UserId, 
+                UserName : req.user.FirstName, 
+                IsActive : IsActive,
+                flag : flag, 
+                IPAddress : IPAddress, 
+                ServerName : ServerName, 
+                EntryTime : EntryTime
+            })
 
             return res.status(200).json({ 
                 ...successMessage('Speaker Master Updated Successfully.'), 
