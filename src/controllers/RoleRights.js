@@ -110,9 +110,9 @@ const addRoleRighys = async (req, res) => {
             }
         }
 
-        if(status === 0){
-            return res.status(400).send(errorMessage('No Role Assigned'));
-        }
+        // if(status === 0){
+        //     return res.status(400).send(errorMessage('No Role Assigned'));
+        // }
         return res.status(200).send({...successMessage('Role Assigned Successfully'), addedRows : status});
     }catch(error){
         console.log('add Asign Permission Error :', error);
