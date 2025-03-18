@@ -43,16 +43,16 @@ const FetchSponsorMasterDetails = async (req, res)=>{
 
 const SponsorMaster = async (req, res) => {
     const { 
-        SponsorUkeyId = '', SponsorCatUkeyId = '', Name = '', Mobile = '', CompanyName = '', flag = '' , OrganizerUkeyId = '',EventUkeyId = '', Description1 = '', Description2 = '', Description3 = '', Description4 = '', Link = '', LinkType = ''
+        SponsorUkeyId = '', SponsorCatUkeyId = '', Name = '', Mobile = '', CompanyName = '', flag = '' , OrganizerUkeyId = '',EventUkeyId = '', Description1 = '', Description2 = '', Description3 = '', Description4 = '', Link = '', LinkType = '', IsActive
     } = req.body;
     try {
         const { IPAddress, ServerName, EntryTime } = getCommonKeys(req);
 
         const insertQuery = `
             INSERT INTO SponsorMaster (
-                SponsorUkeyId, SponsorCatUkeyId, Name, Mobile, CompanyName, UserName, UserID, IpAddress, HostName, EntryDate, flag, OrganizerUkeyId, EventUkeyId,Description1, Description2, Description3, Description4, Link, LinkType
+                SponsorUkeyId, SponsorCatUkeyId, Name, Mobile, CompanyName, UserName, UserID, IpAddress, HostName, EntryDate, flag, OrganizerUkeyId, EventUkeyId,Description1, Description2, Description3, Description4, Link, LinkType, IsActive
             ) VALUES (
-                ${setSQLStringValue(SponsorUkeyId)}, ${setSQLStringValue(SponsorCatUkeyId)}, ${setSQLStringValue(Name)}, ${setSQLStringValue(Mobile)}, ${setSQLStringValue(CompanyName)}, ${setSQLStringValue(req.user.FirstName)}, ${setSQLStringValue(req.user.UserId)}, ${setSQLStringValue(IPAddress)}, ${setSQLStringValue(ServerName)}, ${setSQLStringValue(EntryTime)}, ${setSQLStringValue(flag)}, ${setSQLStringValue(OrganizerUkeyId)}, ${setSQLStringValue(EventUkeyId)}, ${setSQLStringValue(Description1)}, ${setSQLStringValue(Description2)}, ${setSQLStringValue(Description3)}, ${setSQLStringValue(Description4)}, ${setSQLStringValue(Link)}, ${setSQLStringValue(LinkType)}
+                ${setSQLStringValue(SponsorUkeyId)}, ${setSQLStringValue(SponsorCatUkeyId)}, ${setSQLStringValue(Name)}, ${setSQLStringValue(Mobile)}, ${setSQLStringValue(CompanyName)}, ${setSQLStringValue(req.user.FirstName)}, ${setSQLStringValue(req.user.UserId)}, ${setSQLStringValue(IPAddress)}, ${setSQLStringValue(ServerName)}, ${setSQLStringValue(EntryTime)}, ${setSQLStringValue(flag)}, ${setSQLStringValue(OrganizerUkeyId)}, ${setSQLStringValue(EventUkeyId)}, ${setSQLStringValue(Description1)}, ${setSQLStringValue(Description2)}, ${setSQLStringValue(Description3)}, ${setSQLStringValue(Description4)}, ${setSQLStringValue(Link)}, ${setSQLStringValue(LinkType)}, ${setSQLBooleanValue(IsActive)}
             );
         `;
 
