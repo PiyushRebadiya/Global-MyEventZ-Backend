@@ -1,8 +1,7 @@
 const { errorMessage, successMessage, checkKeysAndRequireValues, generateCODE, setSQLBooleanValue, getCommonKeys, generateJWTT, generateUUID, getCommonAPIResponse, deleteImage, setSQLStringValue, setSQLNumberValue, CommonLogFun } = require("../common/main");
 const {pool} = require('../sql/connectToDatabase');
-
-const FetchSpeakerMasterDetails = async (req, res)=>{
-    try{
+const FetchSpeakerMasterDetails = async (req, res) => {
+    try {
         const { SpeakerUkeyId, OrganizerUkeyId, EventUkeyId } = req.query;
         let whereConditions = [];
 
@@ -13,30 +12,43 @@ const FetchSpeakerMasterDetails = async (req, res)=>{
         if (EventUkeyId) {
             whereConditions.push(`SM.EventUkeyId = ${setSQLStringValue(EventUkeyId)}`);
         }
-        if(OrganizerUkeyId){
+        if (OrganizerUkeyId) {
             whereConditions.push(`SM.OrganizerUkeyId = ${setSQLStringValue(OrganizerUkeyId)}`);
         }
+
         // Combine the WHERE conditions into a single string
         const whereString = whereConditions.length > 0 ? `WHERE ${whereConditions.join(' AND ')}` : '';
+
         const getUserList = {
             getQuery: `
-			SELECT SM.*, DU.FileName FROM SpeakerMaster SM OUTER APPLY (
-                SELECT TOP 1 FileName 
-                FROM DocumentUpload 
-                WHERE UkeyId = SM.SpeakerUkeyId 
-                ORDER BY EntryDate DESC  
-            ) DU ${whereString}
-            ORDER BY SM.EntryDate DESC`,
-            countQuery: `SELECT COUNT(*) AS totalCount from SpeakerMaster SM 
-            ${whereString}`,
+                SELECT SM.*, 
+                    (SELECT JSON_QUERY(
+                        (SELECT FileName, Label 
+                        FROM DocumentUpload 
+                        WHERE UkeyId = SM.SpeakerUkeyId 
+                        FOR JSON PATH)
+                    )) AS FileNames
+                FROM SpeakerMaster SM
+                ${whereString}
+                ORDER BY SM.EntryDate DESC
+            `,
+            countQuery: `SELECT COUNT(*) AS totalCount FROM SpeakerMaster SM ${whereString}`,
         };
+
         const result = await getCommonAPIResponse(req, res, getUserList);
+        result.data.forEach(event => {
+            if(event.FileNames){
+                event.FileNames = JSON.parse(event?.FileNames)
+            } else {
+                event.FileNames = []
+            }
+        });
         return res.json(result);
 
-    }catch(error){
+    } catch (error) {
         return res.status(400).send(errorMessage(error?.message));
     }
-}
+};
 
 const SpeakerMaster = async (req, res) => {
     const { SpeakerUkeyId, OrganizerUkeyId, EventUkeyId, Name, Alias, Description, Email, Mobile, FB, Instagram, Youtube, Other, flag, DiscriptionHindi, DiscriptionGujarati, IsActive} = req.body;

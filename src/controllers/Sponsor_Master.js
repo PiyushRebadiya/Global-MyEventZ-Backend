@@ -1,8 +1,8 @@
 const { errorMessage, successMessage, checkKeysAndRequireValues, generateCODE, setSQLBooleanValue, getCommonKeys, generateJWTT, generateUUID, getCommonAPIResponse, deleteImage, setSQLStringValue, setSQLNumberValue } = require("../common/main");
 const {pool} = require('../sql/connectToDatabase');
 
-const FetchSponsorMasterDetails = async (req, res)=>{
-    try{
+const FetchSponsorMasterDetails = async (req, res) => {
+    try {
         const { SponsorUkeyId, OrganizerUkeyId, EventUkeyId, SponsorCatUkeyId } = req.query;
         let whereConditions = [];
 
@@ -18,28 +18,40 @@ const FetchSponsorMasterDetails = async (req, res)=>{
         if (SponsorCatUkeyId) {
             whereConditions.push(`SM.SponsorCatUkeyId = ${setSQLStringValue(SponsorCatUkeyId)}`);
         }
+        
         const whereString = whereConditions.length > 0 ? `WHERE ${whereConditions.join(' AND ')}` : '';
+
         const getUserList = {
-            getQuery: `SELECT SM.*, DU.FileName 
-            FROM SponsorMaster SM
-            OUTER APPLY (
-                SELECT TOP 1 FileName 
-                FROM DocumentUpload 
-                WHERE UkeyId = SM.SponsorUkeyId 
-                ORDER BY EntryDate DESC  
-            ) DU 
-            ${whereString}
-            ORDER BY SM.EntryDate DESC
+            getQuery: `
+                SELECT SM.*, 
+                    (SELECT JSON_QUERY(
+                        (SELECT FileName, Label 
+                        FROM DocumentUpload 
+                        WHERE UkeyId = SM.SponsorUkeyId 
+                        FOR JSON PATH)
+                    )) AS FileNames
+                FROM SponsorMaster SM
+                ${whereString}
+                ORDER BY SM.EntryDate DESC
             `,
             countQuery: `SELECT COUNT(*) AS totalCount FROM SponsorMaster SM ${whereString}`,
         };
+
         const result = await getCommonAPIResponse(req, res, getUserList);
+        result.data.forEach(event => {
+            if(event.FileNames){
+                event.FileNames = JSON.parse(event?.FileNames)
+            } else {
+                event.FileNames = []
+            }
+        });
+
         return res.json(result);
 
-    }catch(error){
+    } catch (error) {
         return res.status(400).send(errorMessage(error?.message));
     }
-}
+};
 
 const SponsorMaster = async (req, res) => {
     const { 
