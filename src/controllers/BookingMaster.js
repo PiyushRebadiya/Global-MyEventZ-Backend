@@ -108,7 +108,7 @@ const BookingMaster = async (req, res) => {
                 ...errorMessage("Use 'A' flag to Add and 'U' flag to Update. It is compulsory to send the flag.")
             });
         }
-        const missingKeys = checkKeysAndRequireValues(['flag', 'BookingMast', 'bookingdetails', 'UserUkeyID'], { ...req.body, ...BookingAmt });
+        const missingKeys = checkKeysAndRequireValues(['flag', 'BookingMast', 'bookingdetails'], { ...req.body });
         if (missingKeys.length > 0) {
             return res.status(400).send(errorMessage(`${missingKeys.join(', ')} is required`));
         }
