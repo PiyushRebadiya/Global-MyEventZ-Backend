@@ -90,6 +90,7 @@ router.post('/org_user_master', auth, OrginizerUpload, OrgUserController.OrgUser
 router.delete('/delete_org_user_master', auth, OrgUserController.RemoveOrgUser);
 
 router.get('/fetch_orginizer_master', auth, OrginizerMasterController.FetchOrganizerDetails);
+router.get('/fetch_all_organizer', auth, OrginizerMasterController.fetchAllOrganizer);
 router.post('/orginizer_master', OrginizerMasterController.OrginazerMaster);
 router.delete('/delete_orginizer_master', auth, OrginizerMasterController.RemoveOrginazer);
 //#endregion

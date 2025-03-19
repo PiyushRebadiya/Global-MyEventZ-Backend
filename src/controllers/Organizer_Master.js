@@ -1,4 +1,4 @@
-const { errorMessage, successMessage, checkKeysAndRequireValues, generateCODE, setSQLBooleanValue, getCommonKeys, generateJWTT, generateUUID, getCommonAPIResponse, setSQLStringValue, CommonLogFun } = require("../common/main");
+const { errorMessage, successMessage, checkKeysAndRequireValues, generateCODE, setSQLBooleanValue, getCommonKeys, generateJWTT, generateUUID, getCommonAPIResponse, setSQLStringValue } = require("../common/main");
 const {pool} = require('../sql/connectToDatabase');
 
 const FetchOrganizerDetails = async (req, res)=>{
@@ -10,25 +10,39 @@ const FetchOrganizerDetails = async (req, res)=>{
         if (OrganizerUkeyId) {
             whereConditions.push(`om.OrganizerUkeyId = '${OrganizerUkeyId}'`);
         }
+        if (Role) {
+            whereConditions.push(`om.Role = '${Role}'`);
+        }
         if(IsActive){
             whereConditions.push(`om.IsActive = ${setSQLBooleanValue(IsActive)}`);
         }
-        whereConditions.push(`oum.Role = 'Admin'`);
-
         // Combine the WHERE conditions into a single string
         const whereString = whereConditions.length > 0 ? `WHERE ${whereConditions.join(' AND ')}` : '';
         const getUserList = {
             getQuery: `SELECT om.*, oum.Password FROM OrganizerMaster om
             left join OrgUserMaster oum on om.OrganizerUkeyId = oum.OrganizerUkeyId
             ${whereString} ORDER BY OrganizerId DESC`,
-            countQuery: `SELECT COUNT(*) AS totalCount FROM OrganizerMaster om
-            left join OrgUserMaster oum on om.OrganizerUkeyId = oum.OrganizerUkeyId
-            ${whereString}`,
+            countQuery: `SELECT COUNT(*) AS totalCount FROM OrganizerMaster om ${whereString}`,
         };
         const result = await getCommonAPIResponse(req, res, getUserList);
         return res.json(result);
 
     }catch(error){
+        return res.status(400).send(errorMessage(error?.message));
+    }
+}
+
+const fetchAllOrganizer = async (req, res) => {
+    try{
+        const getUserList = {
+            getQuery: `SELECT * FROM OrganizerMaster 
+            ORDER BY OrganizerId DESC`,
+            countQuery: `SELECT COUNT(*) AS totalCount FROM OrganizerMaster  `,
+        };
+        const result = await getCommonAPIResponse(req, res, getUserList);
+        return res.json(result);
+    }catch(error) {
+        console.log('fetch all organizer error :', error);
         return res.status(400).send(errorMessage(error?.message));
     }
 }
@@ -140,4 +154,5 @@ module.exports = {
     FetchOrganizerDetails,
     OrginazerMaster,
     RemoveOrginazer,
+    fetchAllOrganizer,
 }
