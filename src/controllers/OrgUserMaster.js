@@ -1,4 +1,4 @@
-const { errorMessage, successMessage, checkKeysAndRequireValues, generateUUID, getCommonKeys, getCommonAPIResponse, deleteImage, setSQLStringValue, setSQLNumberValue, setSQLBooleanValue } = require("../common/main");
+const { errorMessage, successMessage, checkKeysAndRequireValues, generateUUID, getCommonKeys, getCommonAPIResponse, deleteImage, setSQLStringValue, setSQLNumberValue, setSQLBooleanValue, CommonLogFun } = require("../common/main");
 const { pool } = require("../sql/connectToDatabase");
 
 const FetchOrgUserMasterDetails = async (req, res) => {

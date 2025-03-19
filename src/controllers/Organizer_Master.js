@@ -1,4 +1,4 @@
-const { errorMessage, successMessage, checkKeysAndRequireValues, generateCODE, setSQLBooleanValue, getCommonKeys, generateJWTT, generateUUID, getCommonAPIResponse, setSQLStringValue } = require("../common/main");
+const { errorMessage, successMessage, checkKeysAndRequireValues, generateCODE, setSQLBooleanValue, getCommonKeys, generateJWTT, generateUUID, getCommonAPIResponse, setSQLStringValue, CommonLogFun } = require("../common/main");
 const {pool} = require('../sql/connectToDatabase');
 
 const FetchOrganizerDetails = async (req, res)=>{

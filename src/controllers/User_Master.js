@@ -61,7 +61,7 @@ const addOrUpdateUserMaster = async (req, res) => {
 
     const UserName = req?.user?.firstName;
     try {
-        const { UserUkeyId, FullName, Mobile1, Mobile2, DOB, Email, Gender, Role, IsActive, flag, Password } = req.body;
+        const { UserUkeyId, FullName, Mobile1, Mobile2, DOB, Email, Gender, Role, IsActive, flag, Password, NotificationToken } = req.body;
         
         ProfiilePic = req?.files?.ProfiilePic?.length ? `${req?.files?.ProfiilePic[0]?.filename}` : ProfiilePic;
         const fieldCheck = checkKeysAndRequireValues(['Mobile1', 'FullName', 'UserUkeyId'], req.body);
@@ -76,7 +76,7 @@ const addOrUpdateUserMaster = async (req, res) => {
         if (flag === 'A') {
             const userMobile = await pool.query(`SELECT * FROM UserMaster WHERE Mobile1 = '${Mobile1}'`);
             if (userMobile?.recordset?.length) return res.status(200).send(errorMessage("Mobile number already exists"));
-            const insertQuery = `INSERT INTO UserMaster (UserUkeyId, FullName, ProfiilePic, Mobile1, Mobile2, DOB, Email, Gender, Role, IsActive, IsLogin, flag, UserName, Password, IpAddress, HostName, EntryDate) VALUES (${setSQLStringValue(UserUkeyId)}, ${setSQLStringValue(FullName)}, ${setSQLStringValue(ProfiilePic)}, ${setSQLNumberValue(Mobile1)}, ${setSQLNumberNullValue(Mobile2)}, ${setSQLDateTime(DOB)}, ${setSQLStringValue(Email)}, ${setSQLStringValue(Gender)}, ${setSQLStringValue(Role)}, ${setSQLBooleanValue(IsActive)}, 1, 'A', ${setSQLStringValue(UserName)}, ${setSQLStringValue(Password)}, ${setSQLStringValue(IPAddress)}, ${setSQLStringValue(ServerName)}, ${setSQLDateTime(EntryTime)})`;
+            const insertQuery = `INSERT INTO UserMaster (UserUkeyId, FullName, ProfiilePic, Mobile1, Mobile2, DOB, Email, Gender, Role, IsActive, IsLogin, flag, UserName, Password, IpAddress, HostName, EntryDate, NotificationToken) VALUES (${setSQLStringValue(UserUkeyId)}, ${setSQLStringValue(FullName)}, ${setSQLStringValue(ProfiilePic)}, ${setSQLNumberValue(Mobile1)}, ${setSQLNumberNullValue(Mobile2)}, ${setSQLDateTime(DOB)}, ${setSQLStringValue(Email)}, ${setSQLStringValue(Gender)}, ${setSQLStringValue(Role)}, ${setSQLBooleanValue(IsActive)}, 1, 'A', ${setSQLStringValue(UserName)}, ${setSQLStringValue(Password)}, ${setSQLStringValue(IPAddress)}, ${setSQLStringValue(ServerName)}, ${setSQLDateTime(EntryTime)}, ${setSQLStringValue(NotificationToken)})`;
             const result = await pool.query(insertQuery);
 
             if (result?.rowsAffected[0] === 0) {
@@ -94,7 +94,7 @@ const addOrUpdateUserMaster = async (req, res) => {
                 const userMobile = await pool.query(`SELECT * FROM UserMaster WHERE Mobile1 = '${Mobile1}'`);
                 if (userMobile?.recordset?.length) return res.status(200).send(errorMessage("Mobile number already exists"));
             }
-            const updateQuery = `UPDATE UserMaster SET FullName = ${setSQLStringValue(FullName)}, ProfiilePic = ${setSQLStringValue(ProfiilePic)}, Mobile1 = ${setSQLNumberValue(Mobile1)}, Mobile2 = ${setSQLNumberNullValue(Mobile2)}, DOB = ${setSQLDateTime(DOB)}, Email = ${setSQLStringValue(Email)}, Gender = ${setSQLStringValue(Gender)}, Role = ${setSQLStringValue(Role)}, IsActive = ${setSQLBooleanValue(IsActive)}, IsLogin = 1, Password = ${setSQLStringValue(Password)}, UserName = ${setSQLStringValue(req?.user?.FullName)}, IpAddress = ${setSQLStringValue(IPAddress)}, HostName = ${setSQLStringValue(ServerName)}, EntryDate = ${setSQLDateTime(EntryTime)},  flag = 'U' WHERE UserUkeyId = '${UserUkeyId}'`;
+            const updateQuery = `UPDATE UserMaster SET FullName = ${setSQLStringValue(FullName)}, ProfiilePic = ${setSQLStringValue(ProfiilePic)}, Mobile1 = ${setSQLNumberValue(Mobile1)}, Mobile2 = ${setSQLNumberNullValue(Mobile2)}, DOB = ${setSQLDateTime(DOB)}, Email = ${setSQLStringValue(Email)}, Gender = ${setSQLStringValue(Gender)}, Role = ${setSQLStringValue(Role)}, IsActive = ${setSQLBooleanValue(IsActive)}, IsLogin = 1, Password = ${setSQLStringValue(Password)}, UserName = ${setSQLStringValue(req?.user?.FullName)}, IpAddress = ${setSQLStringValue(IPAddress)}, HostName = ${setSQLStringValue(ServerName)}, EntryDate = ${setSQLDateTime(EntryTime)},  flag = 'U', NotificationToken = ${setSQLStringValue(NotificationToken)} WHERE UserUkeyId = '${UserUkeyId}'`;
             await pool.query(updateQuery);
 
             try {
