@@ -10,19 +10,20 @@ const FetchOrganizerDetails = async (req, res)=>{
         if (OrganizerUkeyId) {
             whereConditions.push(`om.OrganizerUkeyId = '${OrganizerUkeyId}'`);
         }
-        if (Role) {
-            whereConditions.push(`om.Role = '${Role}'`);
-        }
         if(IsActive){
             whereConditions.push(`om.IsActive = ${setSQLBooleanValue(IsActive)}`);
         }
+        whereConditions.push(`oum.Role = 'Admin'`);
+
         // Combine the WHERE conditions into a single string
         const whereString = whereConditions.length > 0 ? `WHERE ${whereConditions.join(' AND ')}` : '';
         const getUserList = {
             getQuery: `SELECT om.*, oum.Password FROM OrganizerMaster om
             left join OrgUserMaster oum on om.OrganizerUkeyId = oum.OrganizerUkeyId
             ${whereString} ORDER BY OrganizerId DESC`,
-            countQuery: `SELECT COUNT(*) AS totalCount FROM OrganizerMaster om ${whereString}`,
+            countQuery: `SELECT COUNT(*) AS totalCount FROM OrganizerMaster om
+            left join OrgUserMaster oum on om.OrganizerUkeyId = oum.OrganizerUkeyId
+            ${whereString}`,
         };
         const result = await getCommonAPIResponse(req, res, getUserList);
         return res.json(result);

@@ -51,6 +51,7 @@ const EventContectSettingController = require('../controllers/EventContectSettin
 const RoleRightsControler = require('../controllers/RoleRights');
 const CouponMasterController = require('../controllers/CouponMaster');
 const MobileSMSMasterController = require('../controllers/MobileSMSMaster');
+const SuperAdminDashboardController = require('../controllers/SuperAdminDashboard');
 // const carouselController = require('../controllers/carousel');
 
 const auth = require("../middleware/auth");
@@ -289,6 +290,10 @@ router.delete('/delete_coupon', auth, CouponMasterController.RemoveCoupon);
 router.get("/fetch_mob_sms_master", auth, MobileSMSMasterController.FetchMobSMSMastDetails);
 router.post("/mob_sms_master", auth, MobileSMSMasterController.ManageMobSMSMast);
 router.delete('/delete_mob_sms_master', auth, MobileSMSMasterController.RemoveMobSMSMast);
+//#endregion
+
+//#region  DASBOARD apis
+router.get('/super_admin_dashboard_list', auth, SuperAdminDashboardController.SuperAdminDashoardList);
 //#endregion
 
 module.exports = router;
