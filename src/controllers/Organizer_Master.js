@@ -134,7 +134,14 @@ const RemoveOrginazer = async (req, res) => {
         }
 
         const query = `
-            DELETE FROM OrganizerMaster WHERE OrganizerUkeyId = '${OrganizerUkeyId}'
+            DELETE FROM OrganizerMaster WHERE OrganizerUkeyId = ${setSQLStringValue(OrganizerUkeyId)}
+            DELETE FROM EventMaster WHERE OrganizerUkeyId = ${setSQLStringValue(OrganizerUkeyId)}
+            DELETE FROM AddressMaster WHERE OrganizerUkeyId = ${setSQLStringValue(OrganizerUkeyId)}
+            DELETE FROM OrgUserMaster WHERE OrganizerUkeyId = ${setSQLStringValue(OrganizerUkeyId)}
+            DELETE FROM Carousel WHERE OrganizerUkeyId = ${setSQLStringValue(OrganizerUkeyId)}
+            DELETE FROM SpeakerMaster WHERE OrganizerUkeyId = ${setSQLStringValue(OrganizerUkeyId)}
+            DELETE FROM SponsorCatMaster WHERE OrganizerUkeyId = ${setSQLStringValue(OrganizerUkeyId)}
+            DELETE FROM SponsorMaster WHERE OrganizerUkeyId = ${setSQLStringValue(OrganizerUkeyId)}
         `
 
         const result = await pool.request().query(query);
