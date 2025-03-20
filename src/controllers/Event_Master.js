@@ -125,7 +125,7 @@ const fetchEventById = async (req, res)=> {
 const addEvent = async (req, res) => {
     const { flag, Event, Addresses } = req.body;
     const {
-        EventUkeyId, OrganizerUkeyId, EventName, Alias, StartEventDate, EventDetails, IsActive, TicketLimit,
+        EventUkeyId, OrganizerUkeyId, EventName, Alias, StartEventDate, EventDetails, IsActive = false, TicketLimit,
         EventCode = generateCODE(EventName), Location, PaymentGateway, Longitude, Latitude, EndEventDate
     } = Event;
 

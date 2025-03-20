@@ -8,8 +8,9 @@ const bodyParser = require('body-parser');
 const cors = require('cors');
 const { autoVerifyCarousel } = require('./controllers/autoRunQuery');
 const cron = require('node-cron');
-const { sendNotificationOnSetTime } = require('./controllers/globleAutoSentNotification');
+// const { sendNotificationOnSetTime } = require('./controllers/globleAutoSentNotification');
 const path = require('path');
+const { sendNotificationOnSetTime } = require('./common/notification');
 // const { sendNotificationOnSetTime } = require('./controller/globleAutoSentNotification');
 
 // Connect to the database
@@ -63,9 +64,9 @@ cron.schedule('15 0 * * *', () => {
 //     createAllTableInDB();
 // }, 5000);
 
-// setInterval(() => {
-//     sendNotificationOnSetTime()
-// }, 300000);
+setInterval(() => {
+    sendNotificationOnSetTime()
+}, 50000);
 
 // Start the server
 app.listen(PORT, () => {

@@ -62,7 +62,7 @@ const sentNotificationOnSetTime = async (req) => {
         notification: {
           title: Title,
           body: Description,
-          image: `${Image}`
+          image: `${LIVE_URL}/${Image}`
         },
         data: {
           page: Link
@@ -86,19 +86,21 @@ const sentNotificationOnSetTime = async (req) => {
 }
 
 const sendNotificationInBackground = async (req, res) => {
-  const { Title, Description, LinkType, Link, NotificationToken, Image } = req.body;
+  const { Title, Description, LinkType, Link, NotificationTopic, Image } = req.body;
 
-  const missingKeys = checkKeysAndRequireValues(['Title', 'Description', 'NotificationToken'], req.body)
+  // Ensure required fields are present
+  const missingKeys = checkKeysAndRequireValues(['Title', 'Description', 'NotificationTopic'], req.body);
   if (missingKeys.length !== 0) {
     return res.status(400).send(errorMessage(`${missingKeys} is required`));
   }
+
   const accessToken = await getAccessToken();
 
   const endpoint = `https://fcm.googleapis.com/v1/projects/${FIREBASE_PROJECT_ID}/messages:send`;
 
   const message = {
     message: {
-      token: NotificationToken,
+      topic: NotificationTopic, // 🔹 Send to topic instead of individual token
       notification: {
         title: Title,
         body: Description,
@@ -118,7 +120,7 @@ const sendNotificationInBackground = async (req, res) => {
       }
     });
     console.log('Send Notification Done', response.data);
-    return res.status(200).send(successMessage('Notification sent successfully'));
+    return res.status(200).send(successMessage('Notification sent successfully to topic'));
   } catch (error) {
     console.error('Failed Notification Sent', error.response ? error.response.data : error.message);
     return res.status(500).send(errorMessage(error.response ? error?.response?.data?.error?.message : error.message));
