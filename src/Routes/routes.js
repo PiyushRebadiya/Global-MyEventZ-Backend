@@ -41,7 +41,7 @@ const userCategoryMaster = require('../controllers/userCategory');
 const StateController = require('../controllers/State');
 const CityController = require('../controllers/city');
 const OrgUserController = require('../controllers/OrgUserMaster');
-// const PaymentGatewayMaster = require('../controllers/PaymentGatewayMaster');
+const PaymentGatewayMaster = require('../controllers/PaymentGatewayMaster');
 const DocumentUploadController = require('../controllers/DocumentUpload');
 const TicketCategoryController = require('../controllers/TicketCategoryMaster');
 const otpController = require('../controllers/otp.js');
@@ -150,9 +150,9 @@ router.delete('/delete_event', auth, EventController.RemoveEvent);
 // router.post('/ticket_limit_master', auth, TicketLimitMasterController.TicketLimitMaster);
 // router.delete('/delete_ticket_limit', auth, TicketLimitMasterController.RemoveTicketLimit);
 
-// router.get('/fetch_payment_gateway', auth, PaymentGatewayMaster.FetchPaymentGatewayMasterDetails);
-// router.post('/payment_gateway_master', auth, PaymentGatewayMaster.PaymentGatewayMaster);
-// router.delete('/delete_payment_gateway', auth, PaymentGatewayMaster.RemovePaymentGateway);
+router.get('/fetch_payment_gateway', auth, PaymentGatewayMaster.FetchPaymentGatewayMasterDetails);
+router.post('/payment_gateway_master', auth, PaymentGatewayMaster.PaymentGatewayMaster);
+router.delete('/delete_payment_gateway', auth, PaymentGatewayMaster.RemovePaymentGateway);
 
 // router.get('/Fetch_verify_ticket_log', auth, LogTableController.fetchLogTable);
 
