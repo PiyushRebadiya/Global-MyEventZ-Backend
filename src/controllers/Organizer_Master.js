@@ -78,6 +78,19 @@ const OrginazerMaster = async (req, res) => {
         if (flag === "A") {
             const result = await pool.request().query(insertQuery);
             if (!result.rowsAffected[0]) return res.status(400).json(errorMessage("No Organizer Created."));
+            CommonLogFun({
+                OrganizerUkeyId : OrganizerUkeyId, 
+                ReferenceUkeyId : OrganizerUkeyId, 
+                MasterName : OrganizerName,  
+                TableName : "OrganizerMaster", 
+                UserId : req.user.UserId, 
+                UserName : req.user.FirstName, 
+                IsActive : IsActive,
+                flag : flag, 
+                IPAddress : IPAddress, 
+                ServerName : ServerName, 
+                EntryTime : EntryTime
+            })
             return res.status(200).json({ ...successMessage("New Organizer Created Successfully."), OrganizerUkeyId });
         }
 
