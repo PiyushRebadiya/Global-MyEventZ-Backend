@@ -23,14 +23,15 @@ const FetchSponsorMasterDetails = async (req, res) => {
 
         const getUserList = {
             getQuery: `
-                SELECT SM.*, 
-                    (SELECT JSON_QUERY(
-                        (SELECT FileName, Label 
-                        FROM DocumentUpload 
-                        WHERE UkeyId = SM.SponsorUkeyId 
-                        FOR JSON PATH)
-                    )) AS FileNames
+                SELECT SM.*, SCM.Name AS SponsorCategoryName,
+                (SELECT JSON_QUERY(
+                    (SELECT FileName, Label 
+                    FROM DocumentUpload 
+                    WHERE UkeyId = SM.SponsorUkeyId 
+                    FOR JSON PATH)
+                )) AS FileNames
                 FROM SponsorMaster SM
+                left join SponsorCatMaster SCM on SM.SponsorCatUkeyId = SCM.SpCatUkeyId
                 ${whereString}
                 ORDER BY SM.EntryDate DESC
             `,
