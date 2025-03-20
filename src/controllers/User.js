@@ -124,15 +124,14 @@ const AddOrginizer = async (req, res) => {
             ReferenceUkeyId : OrganizerUkeyId, 
             MasterName : OrganizerName,  
             TableName : "OrganizerMaster", 
-            UserId : req.user.UserId, 
-            UserName : req.user.FirstName, 
-            IsActive : IsActive,
+            // UserId : req.user.UserId, 
+            UserName :OrganizerName, 
+            IsActive : true,
             flag : 'A', 
             IPAddress : IPAddress, 
             ServerName : ServerName, 
             EntryTime : EntryTime
         })
-
         return res.status(200).json({
             ...successMessage('User Registerd Successfully.'), 
             token : generateJWTT({
