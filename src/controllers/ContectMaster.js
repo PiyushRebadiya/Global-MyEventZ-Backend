@@ -3,7 +3,7 @@ const {pool} = require('../sql/connectToDatabase');
 
 const fetchContects = async(req, res)=>{
     try{
-        const { ContactUkeyId, OrganizerUkeyId, EventUkeyId } = req.query;
+        const { ContactUkeyId, OrganizerUkeyId, EventUkeyId, FormType, QueryType } = req.query;
         let whereConditions = [];
 
         // Build the WHERE clause based on the Status
@@ -15,6 +15,12 @@ const fetchContects = async(req, res)=>{
         }
         if (OrganizerUkeyId) {
             whereConditions.push(`OrganizerUkeyId = ${setSQLStringValue(OrganizerUkeyId)}`);
+        }
+        if (FormType) {
+            whereConditions.push(`FormType = ${setSQLStringValue(FormType)}`);
+        }
+        if (QueryType) {
+            whereConditions.push(`QueryType = ${setSQLStringValue(QueryType)}`);
         }
         // Combine the WHERE conditions into a single string
         const whereString = whereConditions.length > 0 ? `WHERE ${whereConditions.join(' AND ')}` : '';
@@ -31,7 +37,7 @@ const fetchContects = async(req, res)=>{
 }
 
 const ContectMaster = async(req, res)=>{
-    const { ContactUkeyId, EventUkeyId, OrganizerUkeyId, Name, Mobile, Email, Message, flag = 'A'} = req.body;
+    const { ContactUkeyId, EventUkeyId, OrganizerUkeyId, Name, Mobile, Email, Message, flag = 'A', FormType = '', QueryType = '', Subject = ''} = req.body;
     const {IPAddress, ServerName, EntryTime} = getCommonKeys(req);
     try{
         const missingKeys = checkKeysAndRequireValues(['ContactUkeyId', 'OrganizerUkeyId', 'EventUkeyId', 'Name', 'Mobile'], req.body)
@@ -40,9 +46,9 @@ const ContectMaster = async(req, res)=>{
         }
         const insertQuery = `
             INSERT INTO ContactMaster (
-                ContactUkeyId, EventUkeyId, OrganizerUkeyId, Name, Mobile, Email, Message, flag, IpAddress, HostName, EntryDate            
+                ContactUkeyId, EventUkeyId, OrganizerUkeyId, Name, Mobile, Email, Message, flag, IpAddress, HostName, EntryDate, FormType, QueryType, Subject
             ) VALUES (
-                ${setSQLStringValue(ContactUkeyId)}, ${setSQLStringValue(EventUkeyId)}, ${setSQLStringValue(OrganizerUkeyId)}, ${setSQLStringValue(Name)}, ${setSQLStringValue(Mobile)}, ${setSQLStringValue(Email)}, ${setSQLStringValue(Message)}, ${setSQLStringValue(flag)}, ${setSQLStringValue(IPAddress)}, ${setSQLStringValue(ServerName)}, ${setSQLStringValue(EntryTime)}
+                ${setSQLStringValue(ContactUkeyId)}, ${setSQLStringValue(EventUkeyId)}, ${setSQLStringValue(OrganizerUkeyId)}, ${setSQLStringValue(Name)}, ${setSQLStringValue(Mobile)}, ${setSQLStringValue(Email)}, ${setSQLStringValue(Message)}, ${setSQLStringValue(flag)}, ${setSQLStringValue(IPAddress)}, ${setSQLStringValue(ServerName)}, ${setSQLStringValue(EntryTime)}, ${setSQLStringValue(FormType)}, ${setSQLStringValue(QueryType)}, ${setSQLStringValue(Subject)}
             );
         `
         const deleteQuery = `
