@@ -41,6 +41,19 @@ const TicketCategoryMaster = async(req, res)=>{
         if(missingKeys.length > 0){
             return res.status(200).json(errorMessage(`${missingKeys.join(', ')} is required`));
         }
+
+        const EventCategoryLimits = await pool.request().query(`
+        select SUM(TicketLimits) AS TotalLimits from TicketCategoryMaster where EventUkeyId = ${setSQLStringValue(EventUkeyId)}
+        `)
+        const EventLimits = await pool.request().query(`
+            select TicketLimit from EventMaster where EventUkeyId = ${setSQLStringValue(EventUkeyId)}
+        `)
+        if(EventCategoryLimits.recordset?.[0].TotalLimits >= EventLimits.recordset?.[0]?.TicketLimit){
+            return res.status(400).json({
+                ...errorMessage(`Event Seat Limit: ${EventLimits.recordset?.[0]?.TicketLimit}. The total seat limit across all ticket categories is ${EventCategoryLimits.recordset?.[0].TotalLimits}, leaving ${EventLimits.recordset?.[0]?.TicketLimit - EventCategoryLimits.recordset?.[0].TotalLimits} seats available. To add a new ticket category, please adjust the seat limits of existing categories.`)
+              });
+            }
+
         const insertQuery = `
             INSERT INTO TicketCategoryMaster (
                 TicketCateUkeyId, TicketLimits, Category, TicketPrice, IsActive, OrganizerUkeyId, EventUkeyId, flag, IpAddress, HostName, EntryDate, DiscPer, DiscAmt, ConvenienceFee
