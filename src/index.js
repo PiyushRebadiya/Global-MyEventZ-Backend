@@ -66,7 +66,7 @@ cron.schedule('15 0 * * *', () => {
 
 setInterval(() => {
     sendNotificationOnSetTime()
-}, 50000);
+}, 300000);
 
 // Start the server
 app.listen(PORT, () => {

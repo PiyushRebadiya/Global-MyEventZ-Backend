@@ -1,43 +1,60 @@
 const { errorMessage, successMessage, checkKeysAndRequireValues, generateCODE, setSQLBooleanValue, getCommonKeys, generateJWTT, generateUUID, getCommonAPIResponse, toFloat, setSQLStringValue } = require("../common/main");
 const {pool} = require('../sql/connectToDatabase');
 
-const fetchContects = async(req, res)=>{
-    try{
+const fetchContects = async (req, res) => {
+    try {
         const { ContactUkeyId, OrganizerUkeyId, EventUkeyId, FormType, QueryType } = req.query;
         let whereConditions = [];
 
-        // Build the WHERE clause based on the Status
         if (ContactUkeyId) {
-            whereConditions.push(`ContactUkeyId = ${setSQLStringValue(ContactUkeyId)}`);
+            whereConditions.push(`CM.ContactUkeyId = ${setSQLStringValue(ContactUkeyId)}`);
         }
         if (EventUkeyId) {
-            whereConditions.push(`EventUkeyId = ${setSQLStringValue(EventUkeyId)}`);
+            whereConditions.push(`CM.EventUkeyId = ${setSQLStringValue(EventUkeyId)}`);
         }
         if (OrganizerUkeyId) {
-            whereConditions.push(`OrganizerUkeyId = ${setSQLStringValue(OrganizerUkeyId)}`);
+            whereConditions.push(`CM.OrganizerUkeyId = ${setSQLStringValue(OrganizerUkeyId)}`);
         }
         if (FormType) {
-            whereConditions.push(`FormType = ${setSQLStringValue(FormType)}`);
+            whereConditions.push(`CM.FormType = ${setSQLStringValue(FormType)}`);
         }
         if (QueryType) {
-            whereConditions.push(`QueryType = ${setSQLStringValue(QueryType)}`);
+            whereConditions.push(`CM.QueryType = ${setSQLStringValue(QueryType)}`);
         }
-        // Combine the WHERE conditions into a single string
+
         const whereString = whereConditions.length > 0 ? `WHERE ${whereConditions.join(' AND ')}` : '';
+
         const getUserList = {
-            getQuery: `SELECT * FROM ContactMaster ${whereString} ORDER BY EntryDate DESC`,
-            countQuery: `SELECT COUNT(*) AS totalCount FROM ContactMaster ${whereString}`,
+            getQuery: `
+                SELECT CM.*, 
+                (SELECT JSON_QUERY(
+                    (SELECT FileName, Label 
+                    FROM DocumentUpload 
+                    WHERE UkeyId = CM.ContactUkeyId 
+                    FOR JSON PATH)
+                )) AS FileNames
+                FROM ContactMaster CM
+                ${whereString}
+                ORDER BY CM.EntryDate DESC
+            `,
+            countQuery: `SELECT COUNT(*) AS totalCount FROM ContactMaster CM ${whereString}`,
         };
+
         const result = await getCommonAPIResponse(req, res, getUserList);
+
+        result.data.forEach(contact => {
+            contact.FileNames = contact.FileNames ? JSON.parse(contact.FileNames) : [];
+        });
+
         return res.json(result);
 
-    }catch(error){
+    } catch (error) {
         return res.status(400).send(errorMessage(error?.message));
     }
-}
+};
 
 const ContectMaster = async(req, res)=>{
-    const { ContactUkeyId, EventUkeyId, OrganizerUkeyId, Name, Mobile, Email, Message, flag = 'A', FormType = '', QueryType = '', Subject = ''} = req.body;
+    const { ContactUkeyId, EventUkeyId, OrganizerUkeyId, Name, Mobile, Email, Message, flag = 'A', FormType = '', QueryType = ''} = req.body;
     const {IPAddress, ServerName, EntryTime} = getCommonKeys(req);
     try{
         const missingKeys = checkKeysAndRequireValues(['ContactUkeyId', 'OrganizerUkeyId', 'EventUkeyId', 'Name', 'Mobile'], req.body)
@@ -46,9 +63,9 @@ const ContectMaster = async(req, res)=>{
         }
         const insertQuery = `
             INSERT INTO ContactMaster (
-                ContactUkeyId, EventUkeyId, OrganizerUkeyId, Name, Mobile, Email, Message, flag, IpAddress, HostName, EntryDate, FormType, QueryType, Subject
+                ContactUkeyId, EventUkeyId, OrganizerUkeyId, Name, Mobile, Email, Message, flag, IpAddress, HostName, EntryDate, FormType, QueryType
             ) VALUES (
-                ${setSQLStringValue(ContactUkeyId)}, ${setSQLStringValue(EventUkeyId)}, ${setSQLStringValue(OrganizerUkeyId)}, ${setSQLStringValue(Name)}, ${setSQLStringValue(Mobile)}, ${setSQLStringValue(Email)}, ${setSQLStringValue(Message)}, ${setSQLStringValue(flag)}, ${setSQLStringValue(IPAddress)}, ${setSQLStringValue(ServerName)}, ${setSQLStringValue(EntryTime)}, ${setSQLStringValue(FormType)}, ${setSQLStringValue(QueryType)}, ${setSQLStringValue(Subject)}
+                ${setSQLStringValue(ContactUkeyId)}, ${setSQLStringValue(EventUkeyId)}, ${setSQLStringValue(OrganizerUkeyId)}, ${setSQLStringValue(Name)}, ${setSQLStringValue(Mobile)}, ${setSQLStringValue(Email)}, ${setSQLStringValue(Message)}, ${setSQLStringValue(flag)}, ${setSQLStringValue(IPAddress)}, ${setSQLStringValue(ServerName)}, ${setSQLStringValue(EntryTime)}, ${setSQLStringValue(FormType)}, ${setSQLStringValue(QueryType)}
             );
         `
         const deleteQuery = `
