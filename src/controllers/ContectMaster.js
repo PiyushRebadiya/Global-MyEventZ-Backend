@@ -82,7 +82,7 @@ const ContectMaster = async(req, res)=>{
                 return res.status(400).json({...errorMessage('No Contect Created.'),})
             }
 
-            return res.status(200).json({...successMessage('New Contect Created Successfully.'), ...req.bod, Imagey});
+            return res.status(200).json({...successMessage('New Contect Created Successfully.'), ...req.bod, Image});
 
         }else if(flag === 'U'){
             const oldImageResult = await pool.request().query(`SELECT Image FROM ContactMaster WHERE ContactUkeyId = '${ContactUkeyId}'`);
