@@ -68,8 +68,8 @@ const manageComplaintMaster = async (req, res) => {
         } else if (flag === 'U') {
             const oldImageResult = await pool.request().query(`SELECT Image FROM ComplaintMaster WHERE ComplaintMasterUkeyId = '${ComplaintMasterUkeyId}'`);
             const oldImage = oldImageResult.recordset?.[0]?.Image; // Safely access the first record
-            console.log('oldImage :>> ', oldImage);
-            console.log('full path :>> ', `./media/Complaint/${oldImage}`);
+            // console.log('oldImage :>> ', oldImage);
+            // console.log('full path :>> ', `./media/Complaint/${oldImage}`);
 
             await pool.request().query(deleteQuery);
             const result = await pool.request().query(insertQuery);

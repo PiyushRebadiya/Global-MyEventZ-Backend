@@ -165,6 +165,18 @@ const ReminderUpload = multer({ storage: ReminderStorage }).fields([
     { name: 'Image', maxCount: 1 },
 ]);
 
+const ContectStorage = multer.diskStorage({
+    destination: function (req, file, cb) {
+        cb(null, `./media/Contect`);
+    },
+    filename: function (req, file, cb) {
+        cb(null, Date.now() + '_' + file.originalname);
+    }
+});
+const ContectUpload = multer({ storage: ContectStorage }).fields([
+    { name: 'Image', maxCount: 1 },
+]);
+
 module.exports = {
     SpeakerUpload,
     SponsorUpload,
@@ -177,5 +189,6 @@ module.exports = {
     complaintUpload,
     OrginizerUpload,
     DocumentUploadUpload,
-    ReminderUpload
+    ReminderUpload,
+    ContectUpload
 }

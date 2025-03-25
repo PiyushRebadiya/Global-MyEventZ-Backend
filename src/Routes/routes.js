@@ -56,7 +56,7 @@ const SuperAdminDashboardController = require('../controllers/SuperAdminDashboar
 
 const auth = require("../middleware/auth");
 
-const {SpeakerUpload, SponsorUpload, PaymentUpload, VolunteerMasterUpload, carouselUpload, galleryMasterUpload, ticketViewUpload, UserUpload, complaintUpload, OrginizerUpload, DocumentUploadUpload, ReminderUpload} = require('../upload/index');
+const {SpeakerUpload, SponsorUpload, PaymentUpload, VolunteerMasterUpload, carouselUpload, galleryMasterUpload, ticketViewUpload, UserUpload, complaintUpload, OrginizerUpload, DocumentUploadUpload, ReminderUpload, ContectUpload} = require('../upload/index');
 const { Router } = require("express");
 
 //#region User Master
@@ -268,7 +268,7 @@ router.delete('/delete_bookings', auth, BookingController.RemoveBookings);
 
 //#region CONTECT apiS
 router.get('/fetch_contect', auth, ContectMasterController.fetchContects);
-router.post('/contect_master', auth, ContectMasterController.ContectMaster);
+router.post('/contect_master', auth, ContectUpload, ContectMasterController.ContectMaster);
 router.delete('/delete_contect', auth, ContectMasterController.RemoveContect);
 
 router.get('/fetch_event_contect_setting', auth, EventContectSettingController.fetchEventContectSetting);
