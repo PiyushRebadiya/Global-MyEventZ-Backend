@@ -3,7 +3,7 @@ const {pool} = require('../sql/connectToDatabase');
 
 const FetchPaymentGatewayMasterDetails = async (req, res)=>{
     try{
-        const { GatewayUkeyId, OrganizerUkeyId, EventUkeyId } = req.query;
+        const { GatewayUkeyId, OrganizerUkeyId, EventUkeyId, IsActive } = req.query;
         let whereConditions = [];
 
         if (GatewayUkeyId) {
@@ -14,6 +14,9 @@ const FetchPaymentGatewayMasterDetails = async (req, res)=>{
         }
         if (EventUkeyId) {
             whereConditions.push(`EventUkeyId = ${setSQLStringValue(EventUkeyId)}`);
+        }
+        if (IsActive) {
+            whereConditions.push(`IsActive = ${setSQLBooleanValue(IsActive)}`);
         }
         const whereString = whereConditions.length > 0 ? `WHERE ${whereConditions.join(' AND ')}` : '';
         const getUserList = {
@@ -30,15 +33,15 @@ const FetchPaymentGatewayMasterDetails = async (req, res)=>{
 
 const PaymentGatewayMaster = async (req, res) => {
     const { 
-        GatewayUkeyId, ShortName, GatewayName, KeyId, SecretKey, ConvenienceFee, EventUkeyId, OrganizerUkeyId, flag} = req.body;
+        GatewayUkeyId, ShortName, GatewayName, KeyId, SecretKey, ConvenienceFee, EventUkeyId, OrganizerUkeyId, flag, IsActive} = req.body;
     try {
         const { IPAddress, ServerName, EntryTime } = getCommonKeys(req);
 
         const insertQuery = `
             INSERT INTO PaymentGatewayMaster (
-                GatewayUkeyId, ShortName, GatewayName, KeyId, SecretKey, ConvenienceFee, UserId, UserName, IpAddress, HostName, EntryDate, EventUkeyId, OrganizerUkeyId, flag
+                GatewayUkeyId, ShortName, GatewayName, KeyId, SecretKey, ConvenienceFee, UserId, UserName, IpAddress, HostName, EntryDate, EventUkeyId, OrganizerUkeyId, flag, IsActive
             ) VALUES (
-                ${setSQLStringValue(GatewayUkeyId)}, ${setSQLStringValue(ShortName)}, ${setSQLStringValue(GatewayName)}, ${setSQLStringValue(KeyId)}, ${setSQLStringValue(SecretKey)}, ${setSQLStringValue(ConvenienceFee)}, ${setSQLStringValue(req.user.UserId)},${setSQLStringValue(req.user.firstName)}, ${setSQLStringValue(IPAddress)}, ${setSQLStringValue(ServerName)}, ${setSQLStringValue(EntryTime)}, ${setSQLStringValue(EventUkeyId)}, ${setSQLStringValue(OrganizerUkeyId)}, ${setSQLStringValue(flag)}
+                ${setSQLStringValue(GatewayUkeyId)}, ${setSQLStringValue(ShortName)}, ${setSQLStringValue(GatewayName)}, ${setSQLStringValue(KeyId)}, ${setSQLStringValue(SecretKey)}, ${setSQLStringValue(ConvenienceFee)}, ${setSQLStringValue(req.user.UserId)},${setSQLStringValue(req.user.firstName)}, ${setSQLStringValue(IPAddress)}, ${setSQLStringValue(ServerName)}, ${setSQLStringValue(EntryTime)}, ${setSQLStringValue(EventUkeyId)}, ${setSQLStringValue(OrganizerUkeyId)}, ${setSQLStringValue(flag)}, ${setSQLStringValue(IsActive)}
             );
         `;
 
