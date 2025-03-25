@@ -92,6 +92,9 @@ const fetchBookingInfoById = async( req, res)=> {
         if(result.data.length > 0){
             result.data[0].Bookingdetails = bookingDetails.recordset
         }
+        result.data.forEach(contact => {
+            contact.FileNames = contact.FileNames ? JSON.parse(contact.FileNames) : [];
+        });
         return res.json({ BookingMaster : result.data[0] });
     }catch(error){
         console.error('Error fetching bookings:', error);

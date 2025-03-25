@@ -52,6 +52,7 @@ const RoleRightsControler = require('../controllers/RoleRights');
 const CouponMasterController = require('../controllers/CouponMaster');
 const MobileSMSMasterController = require('../controllers/MobileSMSMaster');
 const SuperAdminDashboardController = require('../controllers/SuperAdminDashboard');
+const AdminDashboardController = require('../controllers/AdminDashboardList');
 // const carouselController = require('../controllers/carousel');
 
 const auth = require("../middleware/auth");
@@ -295,6 +296,7 @@ router.delete('/delete_mob_sms_master', auth, MobileSMSMasterController.RemoveMo
 
 //#region  DASBOARD apis
 router.get('/super_admin_dashboard_list', auth, SuperAdminDashboardController.SuperAdminDashoardList);
+router.get('/admin_dashboard_count_list', auth, AdminDashboardController.AdminDashboardList);
 //#endregion
 
 module.exports = router;
