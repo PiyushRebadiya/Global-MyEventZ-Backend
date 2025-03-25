@@ -85,7 +85,7 @@ const fetchBookingInfoById = async( req, res)=> {
             `,
         };
 
-        const bookingDetails = await pool.request().query(`select * from Bookingdetails where BookingUkeyID = ${setSQLStringValue(BookingUkeyID)}`)
+        const bookingDetails = await pool.request().query(`select BD.*, TCM.Category from Bookingdetails BD  left join TicketCategoryMaster TCM on BD.TicketCateUkeyId = TCM.TicketCateUkeyId where BD.BookingUkeyID = ${setSQLStringValue(BookingUkeyID)}`)
 
         // Execute the query and return results
         const result = await getCommonAPIResponse(req, res, getAutoSentNotificationList);
