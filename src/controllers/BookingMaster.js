@@ -34,7 +34,7 @@ const fetchBookings = async (req, res) => {
         // Query definitions
         const getAutoSentNotificationList = {
             getQuery: `
-            select * from bookinglistview     
+            select * from bookinglistview 
                 ${whereString}
                 ORDER BY ${SortBy} ${SortOrder}
             `,
@@ -47,7 +47,11 @@ const fetchBookings = async (req, res) => {
         // Execute the query and return results
         const result = await getCommonAPIResponse(req, res, getAutoSentNotificationList);
 
-        return res.json({ ...result });
+        result.data.forEach(contact => {
+            contact.FileNames = contact.FileNames ? JSON.parse(contact.FileNames) : [];
+        });
+
+        return res.json(result);
     } catch (error) {
         console.error('Error fetching bookings:', error);
         return res.status(500).send(errorMessage(error?.message));
