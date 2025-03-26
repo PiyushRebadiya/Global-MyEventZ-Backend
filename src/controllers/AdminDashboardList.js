@@ -51,7 +51,6 @@ const AdminDashboadChartList = async (req, res)=> {
             @StartDate = ${StartDate && EndDate ? `'${StartDate}'` : null},
             @EndDate = ${EndDate && StartDate ? `'${EndDate}'` : null}
         `
-        console.log(query);
         const result = await pool.request().query(query)
 
         return res.status(200).json({Data : result.recordset})
