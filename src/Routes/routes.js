@@ -11,7 +11,7 @@ const EventController = require('../controllers/Event_Master');
 // const VerifyTicketController = require('../controllers/Verify_Ticket');
 const SpeakerMasterController = require('../controllers/Speaker_Master');
 const RazorpayController = require('../controllers/Razorpay');
-// const PaymentController = require('../controllers/Payment');
+const PaymentController = require('../controllers/RazorpayAPIs');
 const SponsorMasterController = require('../controllers/Sponsor_Master');
 // const TicketPriceMasterController = require('../controllers/Ticket_Price_Master');
 // const VolunteerMasterController = require('../controllers/Volumteer_Master');
@@ -121,7 +121,7 @@ router.delete('/delete_event', auth, EventController.RemoveEvent);
 // router.delete("/delete_ticket_master", auth, TicketMasterController.deleteTicketMaster)
 
 // router.get('/payment', auth, PaymentController.getPaymentDetails);
-// router.post('/payment/create', PaymentController.createPayment);
+router.post('/create_razorpay_order_id', auth, PaymentController.createPayment);
 // router.post('/payment/capture', PaymentController.capturePayment);
 // router.get('/payment/all', auth, PaymentController.getAllPayments);
 
@@ -265,6 +265,8 @@ router.get('/fetch_booking_master', auth, BookingController.fetchBookings);
 router.get('/fetch_booking_master_by_id', auth, BookingController.fetchBookingInfoById);
 router.post('/booking_master', auth, BookingController.BookingMaster);
 router.delete('/delete_bookings', auth, BookingController.RemoveBookings);
+
+
 //#endregion
 
 //#region CONTECT apiS

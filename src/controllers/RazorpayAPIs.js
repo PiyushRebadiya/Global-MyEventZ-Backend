@@ -1,5 +1,5 @@
 const Razorpay = require("razorpay");
-const { errorMessage, checkKeysAndRequireValues } = require("../common/main");
+const { errorMessage, checkKeysAndRequireValues, setSQLStringValue } = require("../common/main");
 const { pool } = require("../sql/connectToDatabase");
 
 const getPaymentDetails = async (req, res) => {
@@ -34,12 +34,12 @@ const getPaymentDetails = async (req, res) => {
 
 const createPayment = async (req, res) => {
     try {
-        const { Amount } = req.body
-        const missingKey = checkKeysAndRequireValues(['Amount'], req.body)
+        const { Amount, OrganizerUkeyId, EventUkeyId } = req.body
+        const missingKey = checkKeysAndRequireValues(['Amount', 'OrganizerUkeyId', 'EventUkeyId'], req.body)
         if (missingKey.length > 0) {
             return res.status(400).send(errorMessage(`${missingKey} is required`))
         }
-        const razorpayQuery = await pool.query('SELECT * FROM RazorpayCredentials')
+        const razorpayQuery = await pool.query(`SELECT * FROM PaymentGatewayMaster where OrganizerUkeyId = ${setSQLStringValue(OrganizerUkeyId)} and EventUkeyId = ${setSQLStringValue(EventUkeyId)}`)
         if(!razorpayQuery?.recordset?.length){
             return res.status(404).send(errorMessage('Razorpay credentials not found'))
         }
