@@ -1,4 +1,4 @@
-const { errorMessage, successMessage, checkKeysAndRequireValues, generateCODE, setSQLBooleanValue, getCommonKeys, generateJWTT, generateUUID, setSQLStringValue, setSQLNumberValue, getCommonAPIResponse } = require("../common/main");
+const { errorMessage, successMessage, checkKeysAndRequireValues, generateCODE, setSQLBooleanValue, getCommonKeys, generateJWTT, generateUUID, setSQLStringValue, setSQLNumberValue, getCommonAPIResponse, setSQLDateTime } = require("../common/main");
 const {pool} = require('../sql/connectToDatabase');
 
 const AdminDashboardList = async (req, res) => {
@@ -41,51 +41,24 @@ const AdminDashboardList = async (req, res) => {
 
 const AdminDashboadChartList = async (req, res)=> {
     try{
-        const {EventUkeyId, OrganizerUkeyId, StartDate, EndDate} = req.query
-        let whereConditions = [];
+        const { FetchType = 'DAY', EventUkeyId, OrganizerUkeyId, StartDate = null, EndDate = null} = req.query
 
-        if (EventUkeyId) {
-            whereConditions.push(`EventUkeyId = ${setSQLStringValue(EventUkeyId)}`);
-        }
+        const query = `
+            exec SP_TicketChartReport 
+            @FetchType = ${setSQLStringValue(FetchType)},
+            @OrganizerUkeyId = ${setSQLStringValue(OrganizerUkeyId)},
+            @EventUkeyId= ${setSQLStringValue(EventUkeyId)},
+            @StartDate = ${StartDate && EndDate ? `'${StartDate}'` : null},
+            @EndDate = ${EndDate && StartDate ? `'${EndDate}'` : null}
+        `
+        console.log(query);
+        const result = await pool.request().query(query)
 
-        if (OrganizerUkeyId) {
-            whereConditions.push(`OrganizerUkeyId = ${setSQLStringValue(OrganizerUkeyId)}`);
-        }
-        if(StartDate && EndDate){
-            whereConditions.push(`EntryDate = ${setSQLStringValue(OrganizerUkeyId)}`);
-        }
-
-        const whereString = whereConditions.length > 0 ? `WHERE ${whereConditions.join(' AND ')}` : '';
-        
-        const daywisedata = await pool.request().query(`
-            SELECT 
-            COUNT(*) AS TotalTicketsBooked, 
-            CONVERT(DATE, BM.BookingDate) AS BookingDate
-            FROM 
-            Bookingdetails BD
-            LEFT JOIN  
-            Bookingmast BM ON BD.BookingUkeyID = BM.BookingUkeyID
-            WHERE 
-            BM.OrganizerUkeyId = '20CC3-AA2025-b17e44ab-f3d6-49a4-b671-412564dbd6ce-W' 
-            AND BM.EventUkeyId = '07827632-4706-4F0C-AF3E-B52CA78489ED'
-            AND CONVERT(DATE, BM.BookingDate) >= '2025-03-24'
-            ANd CONVERT(DATE, BM.BookingDate) <= '2025-03-25'
-            GROUP BY 
-            CONVERT(DATE, BM.BookingDate);
-        `)
-
-        const monthwisedata = await pool.request().query(`
-            SELECT YEAR(BookingDate) AS Year,MONTH(BookingDate) AS MonthNumber, DATENAME(MONTH, BookingDate) AS MonthName,SUM(TotalNetAmount) AS TotalAmount , COUNT(BD.BookingdetailUkeyID) AS TotalTickets
-            FROM Bookingmast BM
-            left join Bookingdetails BD on BM.BookingUkeyID = BD.BookingUkeyID
-            WHERE OrganizerUkeyId = '20CC3-AA2025-b17e44ab-f3d6-49a4-b671-412564dbd6ce-W' 
-            AND EventUkeyId = '07827632-4706-4F0C-AF3E-B52CA78489ED'
-            GROUP BY YEAR(BookingDate), MONTH(BookingDate),
-            DATENAME(MONTH, BookingDate) ORDER BY Year, MonthNumber;
-        `)
+        return res.status(200).json({Data : result.recordset})
 
     }catch(error) {
         console.log('fetch super admin dashboard list error :' ,error);
+        return res.status(500).json(errorMessage(error.message))
     }
 }
 

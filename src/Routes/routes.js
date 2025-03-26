@@ -301,6 +301,7 @@ router.delete('/delete_mob_sms_master', auth, MobileSMSMasterController.RemoveMo
 router.get('/super_admin_dashboard_list', auth, SuperAdminDashboardController.SuperAdminDashoardList);
 router.get('/admin_dashboard_count_list', auth, AdminDashboardController.AdminDashboardList);
 router.get('/ticket_register_report', auth, AdminDashboardController.TicketRegisterReport);
+router.get('/admin_dashboard_chart_list', auth, AdminDashboardController.AdminDashboadChartList);
 //#endregion
 
 module.exports = router;
