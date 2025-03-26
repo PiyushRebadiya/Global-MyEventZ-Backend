@@ -116,7 +116,7 @@ const ContectMaster = async(req, res)=>{
 
 const RemoveContect = async(req, res)=>{
     try{
-        const {ContactUkeyId, OrganizerUkeyId} = req.query;
+        const {ContactUkeyId} = req.query;
 
         const missingKeys = checkKeysAndRequireValues(['ContactUkeyId'], req.query);
 
