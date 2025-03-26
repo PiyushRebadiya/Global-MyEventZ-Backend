@@ -118,7 +118,7 @@ const RemoveContect = async(req, res)=>{
     try{
         const {ContactUkeyId, OrganizerUkeyId} = req.query;
 
-        const missingKeys = checkKeysAndRequireValues(['ContactUkeyId', 'OrganizerUkeyId'], req.query);
+        const missingKeys = checkKeysAndRequireValues(['ContactUkeyId'], req.query);
 
         if(missingKeys.length > 0){
             return res.status(400).json(errorMessage(`${missingKeys.join(', ')} is Required`));
@@ -128,7 +128,7 @@ const RemoveContect = async(req, res)=>{
 
 
         const query = `
-            DELETE FROM ContactMaster WHERE ContactUkeyId = ${setSQLStringValue(ContactUkeyId)} and OrganizerUkeyId = ${setSQLStringValue(OrganizerUkeyId)}
+            DELETE FROM ContactMaster WHERE ContactUkeyId = ${setSQLStringValue(ContactUkeyId)}
         `
 
         const result = await pool.request().query(query);
