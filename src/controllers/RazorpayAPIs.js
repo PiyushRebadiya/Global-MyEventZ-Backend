@@ -32,33 +32,90 @@ const getPaymentDetails = async (req, res) => {
     }
 };
 
-const createPayment = async (req, res) => {
+const createRazorpayOrderId = async (req, res) => {
     try {
-        const { Amount, OrganizerUkeyId, EventUkeyId } = req.body
-        const missingKey = checkKeysAndRequireValues(['Amount', 'OrganizerUkeyId', 'EventUkeyId'], req.body)
+        const { Amount, OrganizerUkeyId, EventUkeyId } = req.body;
+        
+        // Check for missing required values
+        const missingKey = checkKeysAndRequireValues(['Amount', 'OrganizerUkeyId', 'EventUkeyId'], req.body);
         if (missingKey.length > 0) {
-            return res.status(400).send(errorMessage(`${missingKey} is required`))
-        }
-        const razorpayQuery = await pool.query(`SELECT * FROM PaymentGatewayMaster where OrganizerUkeyId = ${setSQLStringValue(OrganizerUkeyId)} and EventUkeyId = ${setSQLStringValue(EventUkeyId)}`)
-        if(!razorpayQuery?.recordset?.length){
-            return res.status(404).send(errorMessage('Razorpay credentials not found'))
+            return res.status(400).send(errorMessage(`${missingKey} is required`));
         }
 
-        const { KeyId, SecretKey } = razorpayQuery?.recordset[0]
+        // Fetch Razorpay credentials from database
+        const razorpayQuery = await pool.query(`
+            SELECT * FROM PaymentGatewayMaster 
+            WHERE OrganizerUkeyId = ${setSQLStringValue(OrganizerUkeyId)} 
+            AND EventUkeyId = ${setSQLStringValue(EventUkeyId)}
+        `);
+        
+        if (!razorpayQuery?.recordset?.length) {
+            return res.status(404).send(errorMessage('Razorpay credentials not found'));
+        }
+
+        // Extract API credentials
+        const { KeyId, SecretKey } = razorpayQuery?.recordset[0];
+
+        // Initialize Razorpay instance
         const razorpay = new Razorpay({
             key_id: KeyId,
             key_secret: SecretKey
-        })
+        });
+
+        // Create Razorpay order with metadata
         const response = await razorpay.orders.create({
-            amount: Amount * 100,
+            amount: Amount * 100, // Convert to paise
             currency: 'INR',
-        })
+            notes: {
+                OrganizerUkeyId: `${OrganizerUkeyId}`,  // Ensure string format
+                EventUkeyId: `${EventUkeyId}`
+            }
+        });
+
+
         return res.status(200).json({ Success: true, data: response });
     } catch (error) {   
-        console.log('error :', error);
+        console.log('Error:', error);
         return res.status(500).send(errorMessage(error?.message || error?.error?.description));
     }
-}  
+};
+
+const fetchOrderDetails = async (req, res) => {
+    try {
+        const { orderId, OrganizerUkeyId, EventUkeyId } = req.query;
+
+        if (!orderId) {
+            return res.status(400).json(errorMessage("orderId is required"));
+        }
+
+        // Fetch Razorpay credentials from your database
+        const razorpayQuery = await pool.query(`SELECT * FROM PaymentGatewayMaster WHERE OrganizerUkeyId = ${setSQLStringValue(OrganizerUkeyId)} 
+        AND EventUkeyId = ${setSQLStringValue(EventUkeyId)}
+`); 
+
+        if (!razorpayQuery?.recordset?.length) {
+            return res.status(404).json(errorMessage("Razorpay credentials not found"));
+        }
+
+        const { KeyId, SecretKey } = razorpayQuery?.recordset[0];
+
+        // ✅ Create an instance of Razorpay
+        const razorpay = new Razorpay({
+            key_id: KeyId,
+            key_secret: SecretKey
+        });
+
+        // ✅ Now fetch order details using the instance
+        const orderDetails = await razorpay.orders.fetch(orderId);
+
+        console.log("Fetched Order Details:", orderDetails);
+
+        return res.status(200).json({ success: true, data: orderDetails });
+    } catch (error) {
+        console.error("Error fetching order:", error);
+        return res.status(500).json(errorMessage(error.message || "Internal Server Error"));
+    }
+};
 
 const capturePayment = async (req, res) => {
     try {
@@ -129,4 +186,4 @@ const getAllPayments = async (req, res) => {
     }
 }
 
-module.exports = { getPaymentDetails, createPayment, getAllPayments, capturePayment };
+module.exports = { getPaymentDetails, createRazorpayOrderId, getAllPayments, capturePayment, fetchOrderDetails };

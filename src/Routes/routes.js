@@ -121,7 +121,8 @@ router.delete('/delete_event', auth, EventController.RemoveEvent);
 // router.delete("/delete_ticket_master", auth, TicketMasterController.deleteTicketMaster)
 
 // router.get('/payment', auth, PaymentController.getPaymentDetails);
-router.post('/create_razorpay_order_id', auth, PaymentController.createPayment);
+router.post('/create_razorpay_order_id', auth, PaymentController.createRazorpayOrderId);
+router.get('/fetch_razorpay_order_details_by_id', auth, PaymentController.fetchOrderDetails);
 // router.post('/payment/capture', PaymentController.capturePayment);
 // router.get('/payment/all', auth, PaymentController.getAllPayments);
 

@@ -54,21 +54,21 @@ const fetchContects = async (req, res) => {
 };
 
 const ContectMaster = async(req, res)=>{
-    const { ContactUkeyId, EventUkeyId, OrganizerUkeyId, Name, Mobile, Email, Message, flag = 'A', FormType = '', QueryType = ''} = req.body;
+    const { ContactUkeyId, Name, Mobile, Email, Message, flag = 'A', FormType = '', QueryType = ''} = req.body;
     let {Image} = req.body;
     Image = req?.files?.Image?.length ? `${req?.files?.Image[0]?.filename}` : Image;
     const {IPAddress, ServerName, EntryTime} = getCommonKeys(req);
     try{
-        const missingKeys = checkKeysAndRequireValues(['ContactUkeyId', 'OrganizerUkeyId', 'EventUkeyId', 'Name', 'Mobile'], req.body)
+        const missingKeys = checkKeysAndRequireValues(['ContactUkeyId', 'Name', 'Mobile'], req.body)
         if(missingKeys.length > 0){
             if (Image) deleteImage(req?.files?.Image?.[0]?.path); // Only delete if `Img` exists
             return res.status(200).json(errorMessage(`${missingKeys.join(', ')} is required`));
         }
         const insertQuery = `
             INSERT INTO ContactMaster (
-                ContactUkeyId, EventUkeyId, OrganizerUkeyId, Name, Mobile, Email, Message, flag, IpAddress, HostName, EntryDate, FormType, QueryType, Image
+                ContactUkeyId, Name, Mobile, Email, Message, flag, IpAddress, HostName, EntryDate, FormType, QueryType, Image
             ) VALUES (
-                ${setSQLStringValue(ContactUkeyId)}, ${setSQLStringValue(EventUkeyId)}, ${setSQLStringValue(OrganizerUkeyId)}, ${setSQLStringValue(Name)}, ${setSQLStringValue(Mobile)}, ${setSQLStringValue(Email)}, ${setSQLStringValue(Message)}, ${setSQLStringValue(flag)}, ${setSQLStringValue(IPAddress)}, ${setSQLStringValue(ServerName)}, ${setSQLStringValue(EntryTime)}, ${setSQLStringValue(FormType)}, ${setSQLStringValue(QueryType)}, ${setSQLStringValue(Image)}
+                ${setSQLStringValue(ContactUkeyId)}, ${setSQLStringValue(Name)}, ${setSQLStringValue(Mobile)}, ${setSQLStringValue(Email)}, ${setSQLStringValue(Message)}, ${setSQLStringValue(flag)}, ${setSQLStringValue(IPAddress)}, ${setSQLStringValue(ServerName)}, ${setSQLStringValue(EntryTime)}, ${setSQLStringValue(FormType)}, ${setSQLStringValue(QueryType)}, ${setSQLStringValue(Image)}
             );
         `
         const deleteQuery = `
