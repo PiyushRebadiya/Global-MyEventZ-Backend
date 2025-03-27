@@ -2,42 +2,128 @@ const { errorMessage, successMessage, checkKeysAndRequireValues, generateCODE, s
 const {pool} = require('../sql/connectToDatabase');
 
 const AdminDashboardList = async (req, res) => {
-    try{
-        const {EventUkeyId, OrganizerUkeyId} = req.query
+    try {
+        const { EventUkeyId, OrganizerUkeyId, StartDate = '', EndDate = '' } = req.query;
+        const missingKey = checkKeysAndRequireValues(['EventUkeyId', 'OrganizerUkeyId'], req.query);
+        
+        if (missingKey.length > 0) {
+            return res.status(400).send(errorMessage(`${missingKey} is required`));
+        }
+
         const totalEvents = await pool.request().query(`
-            select COUNT(*) as TotalEvents from EventMaster where EventUkeyId = ${setSQLStringValue(EventUkeyId)} and OrganizerUkeyId = ${setSQLStringValue(OrganizerUkeyId)}
-        `)
+            SELECT COUNT(*) AS TotalEvents 
+            FROM EventMaster WITH (NOLOCK) 
+            WHERE EventUkeyId = ${setSQLStringValue(EventUkeyId)} 
+            AND OrganizerUkeyId = ${setSQLStringValue(OrganizerUkeyId)}
+        `);
+
         const totalUsers = await pool.request().query(`
-            select COUNT(*) as totalUsers from Bookingmast where EventUkeyId = ${setSQLStringValue(EventUkeyId)} and OrganizerUkeyId = ${setSQLStringValue(OrganizerUkeyId)}
-        `)
+            SELECT COUNT(*) AS totalUsers 
+            FROM Bookingmast WITH (NOLOCK) 
+            WHERE EventUkeyId = ${setSQLStringValue(EventUkeyId)} 
+            AND OrganizerUkeyId = ${setSQLStringValue(OrganizerUkeyId)} 
+            ${StartDate && EndDate ? `AND CONVERT(DATE, EntryDate) BETWEEN '${StartDate}' AND '${EndDate}'` : ''}
+        `);
+
         const SumOfTotalBookingAmount = await pool.request().query(`
-            select SUM(BookingAmt) as SumOfTotalBookingAmount from Bookingmast where EventUkeyId = ${setSQLStringValue(EventUkeyId)} and OrganizerUkeyId = ${setSQLStringValue(OrganizerUkeyId)}
-        `)
+            SELECT SUM(BookingAmt) AS SumOfTotalBookingAmount 
+            FROM Bookingmast WITH (NOLOCK) 
+            WHERE EventUkeyId = ${setSQLStringValue(EventUkeyId)} 
+            AND OrganizerUkeyId = ${setSQLStringValue(OrganizerUkeyId)} 
+            ${StartDate && EndDate ? `AND CONVERT(DATE, EntryDate) BETWEEN '${StartDate}' AND '${EndDate}'` : ''}
+        `);
+
         const SumOfTotalConviencefee = await pool.request().query(`
-            select SUM(TotalConviencefee) as SumOfTotalConviencefee from Bookingmast where EventUkeyId = ${setSQLStringValue(EventUkeyId)} and OrganizerUkeyId = ${setSQLStringValue(OrganizerUkeyId)}
-        `)
+            SELECT SUM(TotalConviencefee) AS SumOfTotalConviencefee 
+            FROM Bookingmast WITH (NOLOCK) 
+            WHERE EventUkeyId = ${setSQLStringValue(EventUkeyId)} 
+            AND OrganizerUkeyId = ${setSQLStringValue(OrganizerUkeyId)} 
+            ${StartDate && EndDate ? `AND CONVERT(DATE, EntryDate) BETWEEN '${StartDate}' AND '${EndDate}'` : ''}
+        `);
+
         const SumOfTotalDiscountAmt = await pool.request().query(`
-            select SUM(DiscountAmt) as SumOfTotalDiscountAmt from Bookingmast where EventUkeyId = ${setSQLStringValue(EventUkeyId)} and OrganizerUkeyId = ${setSQLStringValue(OrganizerUkeyId)}
-        `)
+            SELECT SUM(DiscountAmt) AS SumOfTotalDiscountAmt 
+            FROM Bookingmast WITH (NOLOCK) 
+            WHERE EventUkeyId = ${setSQLStringValue(EventUkeyId)} 
+            AND OrganizerUkeyId = ${setSQLStringValue(OrganizerUkeyId)} 
+            ${StartDate && EndDate ? `AND CONVERT(DATE, EntryDate) BETWEEN '${StartDate}' AND '${EndDate}'` : ''}
+        `);
+
         const SumOfTotalGST = await pool.request().query(`
-            select SUM(TotalGST) as SumOfTotalGST from Bookingmast where EventUkeyId = ${setSQLStringValue(EventUkeyId)} and OrganizerUkeyId = ${setSQLStringValue(OrganizerUkeyId)}
-        `)
+            SELECT SUM(TotalGST) AS SumOfTotalGST 
+            FROM Bookingmast WITH (NOLOCK) 
+            WHERE EventUkeyId = ${setSQLStringValue(EventUkeyId)} 
+            AND OrganizerUkeyId = ${setSQLStringValue(OrganizerUkeyId)} 
+            ${StartDate && EndDate ? `AND CONVERT(DATE, EntryDate) BETWEEN '${StartDate}' AND '${EndDate}'` : ''}
+        `);
+
         const SumOfTotalNetAmount = await pool.request().query(`
-            select SUM(TotalNetAmount) as SumOfTotalNetAmount from Bookingmast where EventUkeyId = ${setSQLStringValue(EventUkeyId)} and OrganizerUkeyId = ${setSQLStringValue(OrganizerUkeyId)}
-        `)
+            SELECT SUM(TotalNetAmount) AS SumOfTotalNetAmount 
+            FROM Bookingmast WITH (NOLOCK) 
+            WHERE EventUkeyId = ${setSQLStringValue(EventUkeyId)} 
+            AND OrganizerUkeyId = ${setSQLStringValue(OrganizerUkeyId)} 
+            ${StartDate && EndDate ? `AND CONVERT(DATE, EntryDate) BETWEEN '${StartDate}' AND '${EndDate}'` : ''}
+        `);
+
+        const TotalTicketsBooked = await pool.request().query(`
+            SELECT 
+                COUNT(BD.BookingUkeyID) AS TotalTicketsBooked, 
+                TCM.Category
+            FROM 
+                TicketCategoryMaster TCM WITH (NOLOCK)
+            LEFT JOIN 
+                Bookingdetails BD WITH (NOLOCK) ON BD.TicketCateUkeyId = TCM.TicketCateUkeyId
+            LEFT JOIN 
+                Bookingmast BM WITH (NOLOCK) ON BD.BookingUkeyID = BM.BookingUkeyID
+            WHERE 
+                BM.EventUkeyId = ${setSQLStringValue(EventUkeyId)} 
+                AND BM.OrganizerUkeyId = ${setSQLStringValue(OrganizerUkeyId)}
+                ${StartDate && EndDate ? `AND CONVERT(DATE, BD.EntryDate) BETWEEN '${StartDate}' AND '${EndDate}'` : ''}
+            GROUP BY 
+                TCM.Category
+        
+            UNION ALL
+        
+            SELECT 
+                0 AS TotalTicketsBooked, 
+                TCM.Category
+            FROM 
+                TicketCategoryMaster TCM WITH (NOLOCK)
+            WHERE 
+                TCM.TicketCateUkeyId IN (
+                    SELECT DISTINCT BD.TicketCateUkeyId 
+                    FROM Bookingdetails BD WITH (NOLOCK)
+                    LEFT JOIN Bookingmast BM WITH (NOLOCK) ON BD.BookingUkeyID = BM.BookingUkeyID
+                    WHERE BM.EventUkeyId = ${setSQLStringValue(EventUkeyId)}
+                    AND BM.OrganizerUkeyId = ${setSQLStringValue(OrganizerUkeyId)}
+                )
+                AND NOT EXISTS (
+                    SELECT 1 
+                    FROM Bookingdetails BD WITH (NOLOCK)
+                    LEFT JOIN Bookingmast BM WITH (NOLOCK) ON BD.BookingUkeyID = BM.BookingUkeyID
+                    WHERE BM.EventUkeyId = ${setSQLStringValue(EventUkeyId)}
+                    AND BM.OrganizerUkeyId = ${setSQLStringValue(OrganizerUkeyId)}
+                    AND BD.TicketCateUkeyId = TCM.TicketCateUkeyId
+                    ${StartDate && EndDate ? `AND CONVERT(DATE, BD.EntryDate) BETWEEN '${StartDate}' AND '${EndDate}'` : ''}
+                )
+        `);
+
         return res.status(200).json({
-            TotalEvents : totalEvents?.recordset[0]?.TotalEvents,
-            TotalUsers : totalUsers?.recordset[0]?.totalUsers,
-            SumOfTotalBookingAmount : SumOfTotalBookingAmount.recordset?.[0]?.SumOfTotalBookingAmount,
-            SumOfTotalNetAmount : SumOfTotalNetAmount.recordset?.[0].SumOfTotalNetAmount,
-            SumOfTotalConviencefee : SumOfTotalConviencefee.recordset?.[0].SumOfTotalConviencefee,
-            SumOfTotalDiscountAmt : SumOfTotalDiscountAmt.recordset?.[0]?.SumOfTotalDiscountAmt,
-            SumOfTotalGST : SumOfTotalGST.recordset?.[0].SumOfTotalGST,
-        })
-    }catch(error){
-        console.log('fetch super admin dashboard list error :' ,error);
+            TotalEvents: totalEvents?.recordset[0]?.TotalEvents,
+            TotalUsers: totalUsers?.recordset[0]?.totalUsers,
+            SumOfTotalBookingAmount: SumOfTotalBookingAmount.recordset?.[0]?.SumOfTotalBookingAmount,
+            SumOfTotalNetAmount: SumOfTotalNetAmount.recordset?.[0]?.SumOfTotalNetAmount,
+            SumOfTotalConviencefee: SumOfTotalConviencefee.recordset?.[0]?.SumOfTotalConviencefee,
+            SumOfTotalDiscountAmt: SumOfTotalDiscountAmt.recordset?.[0]?.SumOfTotalDiscountAmt,
+            SumOfTotalGST: SumOfTotalGST.recordset?.[0]?.SumOfTotalGST,
+            TotalTicketsBooked: TotalTicketsBooked.recordset,
+        });
+
+    } catch (error) {
+        console.log('fetch super admin dashboard list error:', error);
+        return res.status(500).json(errorMessage(error.message));
     }
-}
+};
 
 const AdminDashboadChartList = async (req, res)=> {
     try{
