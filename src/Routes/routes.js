@@ -120,11 +120,6 @@ router.delete('/delete_event', auth, EventController.RemoveEvent);
 // router.put("/update_ticket_master", auth, TicketMasterController.updateTicketMaster)
 // router.delete("/delete_ticket_master", auth, TicketMasterController.deleteTicketMaster)
 
-// router.get('/payment', auth, PaymentController.getPaymentDetails);
-router.post('/create_razorpay_order_id', auth, PaymentController.createRazorpayOrderId);
-router.get('/fetch_razorpay_order_details_by_id', auth, PaymentController.fetchOrderDetails);
-// router.post('/payment/capture', PaymentController.capturePayment);
-// router.get('/payment/all', auth, PaymentController.getAllPayments);
 
 // router.get('/fetch_ticket_price_master', auth, TicketPriceMasterController.TicketPriceMasterList);
 // router.post('/ticket_price_master', auth, TicketPriceMasterController.addTicketPriceMaster);
@@ -302,6 +297,14 @@ router.get('/super_admin_dashboard_list', auth, SuperAdminDashboardController.Su
 router.get('/admin_dashboard_count_list', auth, AdminDashboardController.AdminDashboardList);
 router.get('/ticket_register_report', auth, AdminDashboardController.TicketRegisterReport);
 router.get('/admin_dashboard_chart_list', auth, AdminDashboardController.AdminDashboadChartList);
+//#endregion
+
+//#region RAZORPAY apis 
+// router.get('/payment', auth, PaymentController.getPaymentDetails);
+router.post('/create_razorpay_order_id', auth, PaymentController.createRazorpayOrderId);
+router.get('/fetch_razorpay_order_details_by_id', auth, PaymentController.fetchOrderDetails);
+// router.post('/payment/capture', PaymentController.capturePayment);
+// router.get('/payment/all', auth, PaymentController.getAllPayments);
 //#endregion
 
 module.exports = router;

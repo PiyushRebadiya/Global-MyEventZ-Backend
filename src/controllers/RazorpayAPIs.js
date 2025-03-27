@@ -34,10 +34,10 @@ const getPaymentDetails = async (req, res) => {
 
 const createRazorpayOrderId = async (req, res) => {
     try {
-        const { Amount, OrganizerUkeyId, EventUkeyId } = req.body;
+        const { BookingAmt, OrganizerUkeyId, EventUkeyId, UserUkeyID, TotalGST, TotalConviencefee, DiscountAmt, TotalNetAmount, TotalNumberOfTicket, CouponUkeyId, CouponAmount } = req.body;
         
         // Check for missing required values
-        const missingKey = checkKeysAndRequireValues(['Amount', 'OrganizerUkeyId', 'EventUkeyId'], req.body);
+        const missingKey = checkKeysAndRequireValues(['BookingAmt', 'OrganizerUkeyId', 'EventUkeyId', 'UserUkeyID', 'TotalGST', 'TotalConviencefee', 'DiscountAmt', 'TotalNetAmount', 'TotalNumberOfTicket', 'CouponUkeyId', 'CouponAmount'], req.body);
         if (missingKey.length > 0) {
             return res.status(400).send(errorMessage(`${missingKey} is required`));
         }
@@ -64,11 +64,20 @@ const createRazorpayOrderId = async (req, res) => {
 
         // Create Razorpay order with metadata
         const response = await razorpay.orders.create({
-            amount: Amount * 100, // Convert to paise
+            amount: TotalNetAmount * 100, // Convert to paise
             currency: 'INR',
             notes: {
+                BookingAmt : `${BookingAmt}`,
                 OrganizerUkeyId: `${OrganizerUkeyId}`,  // Ensure string format
-                EventUkeyId: `${EventUkeyId}`
+                EventUkeyId: `${EventUkeyId}`,
+                UserUkeyID: `${UserUkeyID}`,
+                CouponUkeyId : `${CouponUkeyId}`,
+                TotalGST: `${TotalGST}`, 
+                TotalConviencefee : `${TotalConviencefee}`, 
+                DiscountAmt : `${DiscountAmt}`, 
+                TotalNetAmount : `${TotalNetAmount}`,
+                TotalNumberOfTicket : `${TotalNumberOfTicket}`,
+                CouponAmount : `${CouponAmount}`
             }
         });
 
