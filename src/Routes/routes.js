@@ -304,7 +304,7 @@ router.get('/admin_dashboard_chart_list', auth, AdminDashboardController.AdminDa
 router.post('/create_razorpay_order_id', auth, PaymentController.createRazorpayOrderId);
 router.get('/fetch_razorpay_order_details_by_id', auth, PaymentController.fetchOrderDetails);
 // router.post('/payment/capture', PaymentController.capturePayment);
-// router.get('/payment/all', auth, PaymentController.getAllPayments);
+router.get('/fetch_razorpay_payments', auth, PaymentController.getAllPayments);
 //#endregion
 
 module.exports = router;

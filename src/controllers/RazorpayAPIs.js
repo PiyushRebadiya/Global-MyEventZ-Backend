@@ -34,10 +34,10 @@ const getPaymentDetails = async (req, res) => {
 
 const createRazorpayOrderId = async (req, res) => {
     try {
-        const { BookingAmt, OrganizerUkeyId, EventUkeyId, UserUkeyID, TotalGST, TotalConviencefee, DiscountAmt, TotalNetAmount, TotalNumberOfTicket, CouponUkeyId, CouponAmount } = req.body;
+        const { BookingAmt, OrganizerUkeyId, EventUkeyId, UserUkeyID, TotalGST, TotalConviencefee, DiscountAmt, TotalNetAmount, TotalNumberOfTicket, CouponUkeyId = '', CouponAmount } = req.body;
         
         // Check for missing required values
-        const missingKey = checkKeysAndRequireValues(['BookingAmt', 'OrganizerUkeyId', 'EventUkeyId', 'UserUkeyID', 'TotalGST', 'TotalConviencefee', 'DiscountAmt', 'TotalNetAmount', 'TotalNumberOfTicket', 'CouponUkeyId', 'CouponAmount'], req.body);
+        const missingKey = checkKeysAndRequireValues(['BookingAmt', 'OrganizerUkeyId', 'EventUkeyId', 'UserUkeyID', 'TotalGST', 'TotalConviencefee', 'DiscountAmt', 'TotalNetAmount', 'TotalNumberOfTicket', 'CouponAmount'], req.body);
         if (missingKey.length > 0) {
             return res.status(400).send(errorMessage(`${missingKey} is required`));
         }
@@ -157,42 +157,59 @@ const capturePayment = async (req, res) => {
 
 const getAllPayments = async (req, res) => {
     try {
-        const razorpayQuery = await pool.query('SELECT * FROM RazorpayCredentials')
-        if(!razorpayQuery?.recordset?.length){
-            return res.status(404).send(errorMessage('Razorpay credentials not found'))
+        const { OrganizerUkeyId, EventUkeyId } = req.query;
+        const missingKey = checkKeysAndRequireValues(['OrganizerUkeyId', 'EventUkeyId'], req.query);
+        
+        if (missingKey.length > 0) {
+            return res.status(400).send(errorMessage(`${missingKey} is required`));
         }
 
-        const { KeyId, SecretKey } = razorpayQuery?.recordset[0]
+        const razorpayQuery = await pool.query(`
+        SELECT * FROM PaymentGatewayMaster 
+            WHERE OrganizerUkeyId = ${setSQLStringValue(OrganizerUkeyId)} 
+            AND EventUkeyId = ${setSQLStringValue(EventUkeyId)}
+        `);
+
+        if (!razorpayQuery?.recordset?.length) {
+            return res.status(404).send(errorMessage('Razorpay credentials not found'));
+        }
+
+        const { KeyId, SecretKey } = razorpayQuery?.recordset[0];
         const razorpay = new Razorpay({
             key_id: KeyId,
             key_secret: SecretKey
-        })
+        });
 
-        // const allPaymentList = await razorpay.payments.all({ count: 100, skip: 0 });
         let allPayments = [];
         let skip = 0;
-        const count = 100; // Max number of records to fetch per request
+        const count = 100;
 
         while (true) {
             const response = await razorpay.payments.all({ count, skip });
             allPayments = allPayments.concat(response.items);
 
-            // If the number of payments returned is less than the count, we've retrieved all available records
             if (response.items.length < count) {
                 break;
             }
 
-            skip += count; // Move to the next set of records
+            skip += count;
         }
 
-        if(!allPayments?.length){
-            return res.status(404).send(errorMessage('No payments found'))
+        // **Filter payments based on OrganizerUkeyId and EventUkeyId**
+        const filteredPayments = allPayments.filter(payment => 
+            payment.notes?.OrganizerUkeyId === OrganizerUkeyId && 
+            payment.notes?.EventUkeyId === EventUkeyId
+        );
+
+        if (!filteredPayments.length) {
+            return res.status(404).send(errorMessage('No payments found for the given OrganizerUkeyId and EventUkeyId'));
         }
-        return res.status(200).json({ Success: true, data: allPayments, count: allPayments.length });
+
+        return res.status(200).json({ Success: true, data: filteredPayments, count: filteredPayments.length });
     } catch (error) {
-        console.log('error :', error);
+        console.error('Error:', error);
         return res.status(500).send(errorMessage(error?.message || error?.error?.description));
     }
-}
+};
 
 module.exports = { getPaymentDetails, createRazorpayOrderId, getAllPayments, capturePayment, fetchOrderDetails };
