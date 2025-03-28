@@ -262,7 +262,7 @@ router.get('/fetch_booking_master_by_id', auth, BookingController.fetchBookingIn
 router.post('/booking_master', auth, BookingController.BookingMaster);
 router.delete('/delete_bookings', auth, BookingController.RemoveBookings);
 
-
+router.get('/verify_ticket', auth, BookingController.VerifyTicket);
 //#endregion
 
 //#region CONTECT apiS
