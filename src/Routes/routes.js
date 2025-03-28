@@ -292,11 +292,12 @@ router.post("/mob_sms_master", auth, MobileSMSMasterController.ManageMobSMSMast)
 router.delete('/delete_mob_sms_master', auth, MobileSMSMasterController.RemoveMobSMSMast);
 //#endregion
 
-//#region  DASBOARD apis
+//#region  DASBOARD and REPORTS apis
 router.get('/super_admin_dashboard_list', auth, SuperAdminDashboardController.SuperAdminDashoardList);
 router.get('/admin_dashboard_count_list', auth, AdminDashboardController.AdminDashboardList);
 router.get('/ticket_register_report', auth, AdminDashboardController.TicketRegisterReport);
 router.get('/admin_dashboard_chart_list', auth, AdminDashboardController.AdminDashboadChartList);
+router.get('/transaction_report',auth, AdminDashboardController.TransactionReport);
 //#endregion
 
 //#region RAZORPAY apis 

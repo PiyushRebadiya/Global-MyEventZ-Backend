@@ -202,8 +202,46 @@ const TicketRegisterReport = async (req, res) => {
     }
 }
 
+const TransactionReport = async (req, res)=> {
+    try{
+        const {OrganizerUkeyId, EventUkeyId, StartDate, EndDate} = req.query;
+        let whereConditions = [];
+
+        if (OrganizerUkeyId) {
+            whereConditions.push(`OrganizerUkeyId = ${setSQLStringValue(OrganizerUkeyId)}`);
+        }
+        if (EventUkeyId) {
+            whereConditions.push(`EventUkeyId = ${setSQLStringValue(EventUkeyId)}`);
+        }
+        if(StartDate && EndDate){
+            whereConditions.push(`${StartDate && EndDate ? ` CONVERT(DATE, BookingDate) BETWEEN '${StartDate}' AND '${EndDate}'` : ''}`);
+        }
+        whereConditions.push(`IsPayment = 1`);
+
+        const whereString = whereConditions.length > 0 ? `WHERE ${whereConditions.join(' AND ')}` : '';
+        const TransactionReport = {
+            getQuery: `
+                select * from TransactionReport
+                ${whereString} order by BookingDate desc
+            `,
+            countQuery: `
+                select COUNT(*) AS totalCount  from TransactionReport
+                ${whereString}
+            `,
+        };
+        console.log(TransactionReport);
+        // Execute the query and return results
+        const result = await getCommonAPIResponse(req, res, TransactionReport);
+        return res.json(result);
+    }catch(error) {
+        console.log('transaction report error : ', error);
+        return res.status(500).json(errorMessage(error.message))
+    }
+}
+
 module.exports = {
     AdminDashboardList,
     AdminDashboadChartList,
     TicketRegisterReport,
+    TransactionReport
 }
