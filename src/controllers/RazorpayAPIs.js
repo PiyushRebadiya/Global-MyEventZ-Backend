@@ -77,7 +77,8 @@ const createRazorpayOrderId = async (req, res) => {
                 DiscountAmt : `${DiscountAmt}`, 
                 TotalNetAmount : `${TotalNetAmount}`,
                 TotalNumberOfTicket : `${TotalNumberOfTicket}`,
-                CouponAmount : `${CouponAmount}`
+                CouponAmount : `${CouponAmount}`,
+                ProjectName : `GLOBAL_MYEVENTZ`
             }
         });
 
