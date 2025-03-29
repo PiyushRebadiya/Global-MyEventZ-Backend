@@ -13,7 +13,7 @@ const SuperAdminDashoardList = async (req, res) => {
             select COUNT(*) as totalUsers from UserMaster
         `)
         
-        res.status(200).json({
+        return res.status(200).json({
             TotalOrganizers : totalOrganizer?.recordset[0]?.TotalOrganizers,
             TotalEvents : totalEvents?.recordset[0]?.TotalEvents,
             TotalUsers : totalUsers?.recordset[0]?.totalUsers,
@@ -23,6 +23,30 @@ const SuperAdminDashoardList = async (req, res) => {
     }
 }
 
+const SuperAdminDashboardChartView = async (req,res) => {
+    try{
+        const {StartDate = null, EndDate = null, FetchType} = req.query;
+
+        const missingKeys = checkKeysAndRequireValues(['FetchType'], req.query)
+        if (missingKeys.length > 0) {
+            return res.status(400).send(errorMessage(`${missingKeys.join(', ')} is required`));
+        }
+
+        const result = await pool.request().query(`
+            exec SP_UserChartReport
+            @FetchType = ${setSQLStringValue(FetchType)},
+            @StartDate = '${StartDate}',
+            @EndDate = '${EndDate}'
+        `)
+
+        return res.status(200).json({data : result?.recordset})
+    }catch(error) {
+        console.log(`Fetch Booking List error : `, error);
+        return res.status(500).json(errorMessage(error.message));
+    }
+}
+
 module.exports = {
-    SuperAdminDashoardList
+    SuperAdminDashoardList,
+    SuperAdminDashboardChartView
 }

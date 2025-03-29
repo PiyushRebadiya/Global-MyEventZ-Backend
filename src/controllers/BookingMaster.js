@@ -9,7 +9,8 @@ const fetchBookings = async (req, res) => {
             BookingUkeyID,
             EventUkeyId,
             OrganizerUkeyId,
-            UserUkeyID
+            UserUkeyID,
+            IsVerify
         } = req.query;
 
         let whereConditions = [];
@@ -26,6 +27,9 @@ const fetchBookings = async (req, res) => {
         }
         if (UserUkeyID) {
             whereConditions.push(`UserUkeyID = ${setSQLStringValue(UserUkeyID)}`);
+        }
+        if (IsVerify) {
+            whereConditions.push(`IsVerify = ${setSQLBooleanValue(IsVerify)}`);
         }
 
         // Combine the WHERE conditions into a single string
