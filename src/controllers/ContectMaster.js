@@ -54,7 +54,7 @@ const fetchContects = async (req, res) => {
 };
 
 const ContectMaster = async(req, res)=>{
-    const { ContactUkeyId, Name, Mobile, Email, Message, flag = 'A', FormType = '', QueryType = ''} = req.body;
+    const { ContactUkeyId, Name, Mobile, Email, Message, flag = 'A', FormType = '', QueryType = '', EventUkeyId = '', OrganizerUkeyId = ''} = req.body;
     let {Image} = req.body;
     Image = req?.files?.Image?.length ? `${req?.files?.Image[0]?.filename}` : Image;
     const {IPAddress, ServerName, EntryTime} = getCommonKeys(req);
@@ -66,9 +66,9 @@ const ContectMaster = async(req, res)=>{
         }
         const insertQuery = `
             INSERT INTO ContactMaster (
-                ContactUkeyId, Name, Mobile, Email, Message, flag, IpAddress, HostName, EntryDate, FormType, QueryType, Image
+                ContactUkeyId, Name, Mobile, Email, Message, flag, IpAddress, HostName, EntryDate, FormType, QueryType, Image, EventUkeyId, OrganizerUkeyId
             ) VALUES (
-                ${setSQLStringValue(ContactUkeyId)}, ${setSQLStringValue(Name)}, ${setSQLStringValue(Mobile)}, ${setSQLStringValue(Email)}, ${setSQLStringValue(Message)}, ${setSQLStringValue(flag)}, ${setSQLStringValue(IPAddress)}, ${setSQLStringValue(ServerName)}, ${setSQLStringValue(EntryTime)}, ${setSQLStringValue(FormType)}, ${setSQLStringValue(QueryType)}, ${setSQLStringValue(Image)}
+                ${setSQLStringValue(ContactUkeyId)}, ${setSQLStringValue(Name)}, ${setSQLStringValue(Mobile)}, ${setSQLStringValue(Email)}, ${setSQLStringValue(Message)}, ${setSQLStringValue(flag)}, ${setSQLStringValue(IPAddress)}, ${setSQLStringValue(ServerName)}, ${setSQLStringValue(EntryTime)}, ${setSQLStringValue(FormType)}, ${setSQLStringValue(QueryType)}, ${setSQLStringValue(Image)}, ${setSQLStringValue(EventUkeyId)}, ${setSQLStringValue(OrganizerUkeyId)}
             );
         `
         const deleteQuery = `
@@ -116,14 +116,14 @@ const ContectMaster = async(req, res)=>{
 
 const RemoveContect = async(req, res)=>{
     try{
-        const {ContactUkeyId} = req.query;
+        const {ContactUkeyId, OrganizerUkeyId} = req.query;
 
         const missingKeys = checkKeysAndRequireValues(['ContactUkeyId'], req.query);
 
         if(missingKeys.length > 0){
             return res.status(400).json(errorMessage(`${missingKeys.join(', ')} is Required`));
         }
-        const oldImageResult = await pool.request().query(`SELECT Image FROM ContactMaster WHERE ContactUkeyId = '${ContactUkeyId}'`);
+        const oldImageResult = await pool.request().query(`SELECT Image FROM ContactMaster WHERE ContactUkeyId = '${ContactUkeyId}' and OrganizerUkeyId = ${setSQLStringValue(OrganizerUkeyId)}`);
         const oldImage = oldImageResult.recordset?.[0]?.Image; // Safely access the first record
 
 
