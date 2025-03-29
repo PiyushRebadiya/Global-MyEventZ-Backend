@@ -68,7 +68,7 @@ const AdminDashboardList = async (req, res) => {
         const TotalTicketsBooked = await pool.request().query(`
             SELECT 
                 COUNT(BD.BookingUkeyID) AS TotalTicketsBooked, 
-                TCM.Category
+                TCM.Category, TCM.TicketLimits
             FROM 
                 TicketCategoryMaster TCM WITH (NOLOCK)
             LEFT JOIN 
@@ -80,13 +80,13 @@ const AdminDashboardList = async (req, res) => {
                 AND BM.OrganizerUkeyId = ${setSQLStringValue(OrganizerUkeyId)}
                 ${StartDate && EndDate ? `AND CONVERT(DATE, BD.EntryDate) BETWEEN '${StartDate}' AND '${EndDate}'` : ''}
             GROUP BY 
-                TCM.Category
+                TCM.Category, TCM.TicketLimits
         
             UNION ALL
         
             SELECT 
                 0 AS TotalTicketsBooked, 
-                TCM.Category
+                TCM.Category, TCM.TicketLimits
             FROM 
                 TicketCategoryMaster TCM WITH (NOLOCK)
             WHERE 
