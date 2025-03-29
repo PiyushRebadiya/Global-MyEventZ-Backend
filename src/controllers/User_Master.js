@@ -5,7 +5,7 @@ const jwt = require('jsonwebtoken');
 
 const fetchUserMaster = async (req, res) => {
     try {
-        const { UserUkeyId, Mobile1, Role, IsActive, IsLogin } = req.query;
+        const { UserUkeyId, Mobile1, Role, IsActive, IsLogin , StartDate, EndDate} = req.query;
         let whereConditions = [];
 
         if (UserUkeyId) {
@@ -22,6 +22,9 @@ const fetchUserMaster = async (req, res) => {
         }
         if(IsLogin){
             whereConditions.push(`UM.IsLogin = ${setSQLBooleanValue(IsLogin)}`);
+        }
+        if(StartDate && EndDate){
+            whereConditions.push(`UM.EntryDate >= ${setSQLDateTime(StartDate)} and UM.EntryDate <= ${setSQLDateTime(EndDate)}`);
         }
         
         const whereString = whereConditions.length > 0 ? `WHERE ${whereConditions.join(' AND ')}` : '';
