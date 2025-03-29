@@ -116,14 +116,14 @@ const ContectMaster = async(req, res)=>{
 
 const RemoveContect = async(req, res)=>{
     try{
-        const {ContactUkeyId, OrganizerUkeyId} = req.query;
+        const {ContactUkeyId} = req.query;
 
         const missingKeys = checkKeysAndRequireValues(['ContactUkeyId'], req.query);
 
         if(missingKeys.length > 0){
             return res.status(400).json(errorMessage(`${missingKeys.join(', ')} is Required`));
         }
-        const oldImageResult = await pool.request().query(`SELECT Image FROM ContactMaster WHERE ContactUkeyId = '${ContactUkeyId}' and OrganizerUkeyId = ${setSQLStringValue(OrganizerUkeyId)}`);
+        const oldImageResult = await pool.request().query(`SELECT Image FROM ContactMaster WHERE ContactUkeyId = '${ContactUkeyId}'`);
         const oldImage = oldImageResult.recordset?.[0]?.Image; // Safely access the first record
 
 
