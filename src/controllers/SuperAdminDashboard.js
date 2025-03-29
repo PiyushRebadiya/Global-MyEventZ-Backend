@@ -35,8 +35,8 @@ const SuperAdminDashboardChartView = async (req,res) => {
         const result = await pool.request().query(`
             exec SP_UserChartReport
             @FetchType = ${setSQLStringValue(FetchType)},
-            @StartDate = '${StartDate}',
-            @EndDate = '${EndDate}'
+            @StartDate = ${setSQLStringValue(StartDate)},
+            @EndDate = ${setSQLStringValue(EndDate)}
         `)
 
         return res.status(200).json({data : result?.recordset})
