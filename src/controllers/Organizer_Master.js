@@ -22,7 +22,9 @@ const FetchOrganizerDetails = async (req, res)=>{
             getQuery: `SELECT om.*, oum.Password FROM OrganizerMaster om
             left join OrgUserMaster oum on om.OrganizerUkeyId = oum.OrganizerUkeyId
             ${whereString} ORDER BY OrganizerId DESC`,
-            countQuery: `SELECT COUNT(*) AS totalCount FROM OrganizerMaster om ${whereString}`,
+            countQuery: `SELECT COUNT(*) AS totalCount FROM OrganizerMaster om
+            left join OrgUserMaster oum on om.OrganizerUkeyId = oum.OrganizerUkeyId
+            ${whereString}`,
         };
         const result = await getCommonAPIResponse(req, res, getUserList);
         return res.json(result);
