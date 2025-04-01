@@ -126,6 +126,18 @@ const BookingMaster = async (req, res) => {
         const { IPAddress, ServerName, EntryTime } = getCommonKeys(req);
         let query = ''
 
+        const fetchEventTicketLimit = await pool.request().query(`select TicketLimit from EventMaster where EventUkeyId = ${setSQLStringValue(EventUkeyId)} and OrganizerUkeyId = ${setSQLStringValue(OrganizerUkeyId)}`)
+
+        const fetchCountOfBookedTickets = await pool.request().query(`select COUNT(BD.BookingdetailID) AS TotalTicketsBooked from Bookingdetails BD
+        left join Bookingmast BM on BD.BookingUkeyID = BM.BookingUkeyID
+        where BM.EventUkeyId = ${setSQLStringValue(EventUkeyId)} and BM.OrganizerUkeyId = ${setSQLStringValue(OrganizerUkeyId)}
+        `)
+
+        if(fetchEventTicketLimit?.recordset[0]?.TicketLimit < (fetchCountOfBookedTickets?.recordset?.[0]?.TotalTicketsBooked + bookingdetails.length)){
+            return res.status(400).json(errorMessage(`Available number of tickets are ${fetchEventTicketLimit?.recordset[0]?.TicketLimit - fetchCountOfBookedTickets?.recordset?.[0]?.TotalTicketsBooked}, you cannot book tickets more then available number of tickets.`))
+        }
+
+
         if(flag === 'U'){
             query += `
             delete from Bookingmast where BookingUkeyID = ${setSQLStringValue(BookingUkeyID)} and  EventUkeyId = ${setSQLStringValue(EventUkeyId)};
