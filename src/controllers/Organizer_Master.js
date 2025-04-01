@@ -11,7 +11,7 @@ const FetchOrganizerDetails = async (req, res)=>{
             whereConditions.push(`om.OrganizerUkeyId = '${OrganizerUkeyId}'`);
         }
         if (Role) {
-            whereConditions.push(`om.Role = '${Role}'`);
+            whereConditions.push(`oum.Role = '${Role}'`);
         }
         if(IsActive){
             whereConditions.push(`om.IsActive = ${setSQLBooleanValue(IsActive)}`);

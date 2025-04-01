@@ -36,13 +36,15 @@ const FetchSpeakerMasterDetails = async (req, res) => {
         };
 
         const result = await getCommonAPIResponse(req, res, getUserList);
-        result.data.forEach(event => {
-            if(event.FileNames){
-                event.FileNames = JSON.parse(event?.FileNames)
-            } else {
-                event.FileNames = []
-            }
-        });
+        if(result?.data?.length > 0){
+            result?.data?.forEach(event => {
+                if(event.FileNames){
+                    event.FileNames = JSON.parse(event?.FileNames)
+                } else {
+                    event.FileNames = []
+                }
+            });
+        }
         return res.json(result);
 
     } catch (error) {
