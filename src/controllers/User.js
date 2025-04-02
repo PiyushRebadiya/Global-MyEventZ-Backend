@@ -107,13 +107,19 @@ const AddOrginizer = async (req, res) => {
                 
         const InsertEvent = `
         INSERT INTO EventMaster ( 
-            EventUKeyId, OrganizerUkeyId, EventName, EventCode, IsActive, IpAddress, HostName, EntryDate, StartEventDate, EndEventDate, UserID, AddressUkeyID, flag, IsDefault
+            EventUKeyId, OrganizerUkeyId, EventName, EventCode, IsActive, IpAddress, HostName, EntryDate, StartEventDate, EndEventDate, UserID, AddressUkeyID, flag
         ) OUTPUT INSERTED.* VALUES (
-            ${setSQLStringValue(EventUkeyId)}, ${setSQLStringValue(OrganizerUkeyId)}, 'Default Event', ${setSQLStringValue(EventCode)}, 0, ${setSQLStringValue(IPAddress)}, ${setSQLStringValue(ServerName)}, ${setSQLStringValue(EntryTime)}, GETDATE(), GETDATE(), ${resultOrgUserMst.recordset[0].UserId}, ${setSQLStringValue(AddressUkeyID)}, 'A', 1
+            ${setSQLStringValue(EventUkeyId)}, ${setSQLStringValue(OrganizerUkeyId)}, 'Default Event', ${setSQLStringValue(EventCode)}, 0, ${setSQLStringValue(IPAddress)}, ${setSQLStringValue(ServerName)}, ${setSQLStringValue(EntryTime)}, GETDATE(), GETDATE(), ${resultOrgUserMst.recordset[0].UserId}, ${setSQLStringValue(AddressUkeyID)}, 'A'
             );
         `;
     
         const resultEvent = await pool.request().query(InsertEvent);
+
+        const InsertPaymentGategory = await pool.request().query(`insert into PaymentGatewayMaster (
+            GatewayUkeyId, EventUkeyId, OrganizerUkeyId, ShortName, GatewayName, KeyId, SecretKey, ConvenienceFee, GST, IsActive, UserId, UserName, IpAddress, HostName, EntryDate, flag
+        ) values (
+            ${setSQLStringValue(GatewayUkeyId)}, ${setSQLStringValue(EventUkeyId)}, ${setSQLStringValue(OrganizerUkeyId)}, ${setSQLStringValue(ShortName)}, ${setSQLStringValue(GatewayName)}, ${setSQLStringValue(KeyId)}, ${setSQLStringValue(SecretKey)}, ${setSQLStringValue(ConvenienceFee)}, ${setSQLStringValue(GST)}, ${setSQLStringValue(IsActive)}, ${setSQLStringValue(UserId)}, ${setSQLStringValue(UserName)}, ${setSQLStringValue(IpAddress)}, ${setSQLStringValue(HostName)}, ${setSQLStringValue(EntryDate)}, 'A'}
+        )`)
 
         if(resultOrgUsrMst.rowsAffected[0] === 0 && resultEvent.rowsAffected[0] === 0 && resultOrgUserMst.rowsAffected[0] === 0 && resulAddress.rowsAffected[0] === 0){
             return res.status(400).json({...errorMessage('User Not Registerd Successfully.')})
@@ -170,9 +176,8 @@ const Loginorganizer = async (req, res) => {
 
         const result = await pool.request().query(`
 
-        SELECT om.*, em.EventName FROM OrguserMaster om
-        left join EventMaster em on om.OrganizerUkeyId = em.OrganizerUkeyId
-        WHERE om.Mobile1 = '${Mobile1}' AND om.Password = '${Password}' AND om.IsActive = 1 AND em.IsDefault = 1
+        select om.*,em.EventName from OrgUserMaster om left join EventMaster em on em.EventUkeyId=om.EventUkeyId
+where om.Mobile1 = ${setSQLStringValue(Mobile1)} AND om.Password = ${setSQLStringValue(Password)} AND om.IsActive = 1
         `);
 
         if(result.rowsAffected[0] === 0){
