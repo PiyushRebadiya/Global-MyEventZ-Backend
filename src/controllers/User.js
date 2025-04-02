@@ -107,9 +107,9 @@ const AddOrginizer = async (req, res) => {
                 
         const InsertEvent = `
         INSERT INTO EventMaster ( 
-            EventUKeyId, OrganizerUkeyId, EventName, EventCode, IsActive, IpAddress, HostName, EntryDate, StartEventDate, EndEventDate, UserID, AddressUkeyID, flag
+            EventUKeyId, OrganizerUkeyId, EventName, EventCode, IsActive, IpAddress, HostName, EntryDate, StartEventDate, EndEventDate, UserID, AddressUkeyID, flag, IsDefault
         ) OUTPUT INSERTED.* VALUES (
-            ${setSQLStringValue(EventUkeyId)}, ${setSQLStringValue(OrganizerUkeyId)}, 'Default Event', ${setSQLStringValue(EventCode)}, 1, ${setSQLStringValue(IPAddress)}, ${setSQLStringValue(ServerName)}, ${setSQLStringValue(EntryTime)}, GETDATE(), GETDATE(), ${resultOrgUserMst.recordset[0].UserId}, ${setSQLStringValue(AddressUkeyID)}, 'A'
+            ${setSQLStringValue(EventUkeyId)}, ${setSQLStringValue(OrganizerUkeyId)}, 'Default Event', ${setSQLStringValue(EventCode)}, 0, ${setSQLStringValue(IPAddress)}, ${setSQLStringValue(ServerName)}, ${setSQLStringValue(EntryTime)}, GETDATE(), GETDATE(), ${resultOrgUserMst.recordset[0].UserId}, ${setSQLStringValue(AddressUkeyID)}, 'A', 1
             );
         `;
     
@@ -172,7 +172,7 @@ const Loginorganizer = async (req, res) => {
 
         SELECT om.*, em.EventName FROM OrguserMaster om
         left join EventMaster em on om.OrganizerUkeyId = em.OrganizerUkeyId
-        WHERE om.Mobile1 = '${Mobile1}' AND om.Password = '${Password}' AND om.IsActive = 1
+        WHERE om.Mobile1 = '${Mobile1}' AND om.Password = '${Password}' AND om.IsActive = 1 AND em.IsDefault = 1
         `);
 
         if(result.rowsAffected[0] === 0){
