@@ -116,7 +116,7 @@ const RemoveTicketCategory = async(req, res)=>{
             return res.status(400).json(errorMessage(`${missingKeys.join(', ')} is Required`));
         }
         const CountOfBookedTicketOnCategory = await pool.request().query(`select COUNT(*) AS BookedTickets from Bookingdetails where TicketCateUkeyId = ${setSQLStringValue(TicketCateUkeyId)}`)
-        console.log(CountOfBookedTicketOnCategory?.recordset?.[0]?.BookedTickets> 0);
+
         if(CountOfBookedTicketOnCategory?.recordset?.[0]?.BookedTickets > 0){
             return res.status(200).json(errorMessage('Ticket category cannot be deleted as tickets have already been booked under this category.'))
         }
