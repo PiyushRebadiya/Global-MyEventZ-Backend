@@ -40,7 +40,7 @@ const EventList = async (req, res) => {
                 FOR JSON PATH
             ) AS FileNames
         FROM EventMaster em 
-        LEFT JOIN AddressMaster am ON am.AddressUkeyID = em.AddressUkeyID 
+        LEFT JOIN AddressMaster am ON am.EventUkeyId = em.EventUkeyId 
         LEFT JOIN OrganizerMaster om ON om.OrganizerUkeyId = em.OrganizerUkeyId
                         ${whereString} 
                 ORDER BY em.EntryDate DESC

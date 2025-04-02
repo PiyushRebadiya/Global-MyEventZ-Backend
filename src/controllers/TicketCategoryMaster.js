@@ -41,18 +41,27 @@ const TicketCategoryMaster = async(req, res)=>{
         if(missingKeys.length > 0){
             return res.status(200).json(errorMessage(`${missingKeys.join(', ')} is required`));
         }
-
+        
+        // Exclude the current category in case of update
         const EventCategoryLimits = await pool.request().query(`
-        select SUM(TicketLimits) AS TotalLimits from TicketCategoryMaster where EventUkeyId = ${setSQLStringValue(EventUkeyId)}
-        `)
+            SELECT SUM(TicketLimits) AS TotalLimits 
+            FROM TicketCategoryMaster 
+            WHERE EventUkeyId = ${setSQLStringValue(EventUkeyId)}
+            ${flag === 'U' ? `AND TicketCateUkeyId != ${setSQLStringValue(TicketCateUkeyId)}` : ''}
+        `);
+        
         const EventLimits = await pool.request().query(`
-            select TicketLimit from EventMaster where EventUkeyId = ${setSQLStringValue(EventUkeyId)}
-        `)
-        if(EventCategoryLimits.recordset?.[0].TotalLimits >= EventLimits.recordset?.[0]?.TicketLimit){
-            return res.status(400).json({
-                ...errorMessage(`Event Seat Limit: ${EventLimits.recordset?.[0]?.TicketLimit}. The total seat limit across all ticket categories is ${EventCategoryLimits.recordset?.[0].TotalLimits}, leaving ${EventLimits.recordset?.[0]?.TicketLimit - EventCategoryLimits.recordset?.[0].TotalLimits} seats available. To add a new ticket category, please adjust the seat limits of existing categories.`)
-              });
-            }
+            SELECT TicketLimit FROM EventMaster WHERE EventUkeyId = ${setSQLStringValue(EventUkeyId)}
+        `);
+        
+        const totalExistingLimits = EventCategoryLimits.recordset?.[0]?.TotalLimits || 0;
+        const eventSeatLimit = EventLimits.recordset?.[0]?.TicketLimit || 0;
+        
+        if (totalExistingLimits + TicketLimits > eventSeatLimit) {
+            return res.status(400).json(errorMessage(
+                `Event Seat Limit: ${eventSeatLimit}. The current total seat allocation is ${totalExistingLimits}. Adding ${TicketLimits} seats will exceed the event's limit. Please adjust seat allocations.`
+            ));
+        }
 
         const insertQuery = `
             INSERT INTO TicketCategoryMaster (
@@ -106,10 +115,10 @@ const RemoveTicketCategory = async(req, res)=>{
         if(missingKeys.length > 0){
             return res.status(400).json(errorMessage(`${missingKeys.join(', ')} is Required`));
         }
-        const CountOfBookedTicketOnCategory = await pool.request().query(`select COUNT(*) AS BookedTickets from Bookingdetails where TicketCateUkeyId = ${setSQLStringValue(TicketCateUkeyId)} and EventUkeyId = ${setSQLStringValue(EventUkeyId)}`)
-
+        const CountOfBookedTicketOnCategory = await pool.request().query(`select COUNT(*) AS BookedTickets from Bookingdetails where TicketCateUkeyId = ${setSQLStringValue(TicketCateUkeyId)}`)
+        console.log(CountOfBookedTicketOnCategory?.recordset?.[0]?.BookedTickets> 0);
         if(CountOfBookedTicketOnCategory?.recordset?.[0]?.BookedTickets > 0){
-            successMessage('Ticket category cannot be deleted as tickets have already been booked under this category.')
+            return res.status(200).json(errorMessage('Ticket category cannot be deleted as tickets have already been booked under this category.'))
         }
 
         const query = `
