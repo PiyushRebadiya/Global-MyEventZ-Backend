@@ -1,4 +1,4 @@
-const { errorMessage, successMessage, checkKeysAndRequireValues, generateUUID, getCommonKeys, getCommonAPIResponse, deleteImage, setSQLStringValue, setSQLNumberValue, setSQLBooleanValue, CommonLogFun } = require("../common/main");
+const { errorMessage, successMessage, checkKeysAndRequireValues, generateUUID, getCommonKeys, getCommonAPIResponse, deleteImage, setSQLStringValue, setSQLNumberValue, setSQLBooleanValue, CommonLogFun, setSQLDateTime } = require("../common/main");
 const { pool } = require("../sql/connectToDatabase");
 
 const FetchOrgUserMasterDetails = async (req, res) => {
@@ -45,7 +45,7 @@ const OrgUserMaster = async (req, res) => {
                 StateCode, StateName, CityName, Pincode, DOB, Email, Gender, Role, IsActive, IpAddress, HostName, EntryDate
             ) VALUES (
                 N'${UserUkeyId}', N'${EventUkeyId}', N'${OrganizerUkeyId}', N'${Password}', N'${FirstName}', N'${Image}', N'${Mobile1}', N'${Mobile2}',
-                N'${Add1}', N'${Add2}', N'${StateCode}', N'${StateName}', N'${CityName}', ${setSQLNumberValue(Pincode)}, ${setSQLStringValue(DOB)},
+                N'${Add1}', N'${Add2}', N'${StateCode}', N'${StateName}', N'${CityName}', ${setSQLNumberValue(Pincode)}, ${setSQLDateTime(DOB)},
                 N'${Email}', N'${Gender}', N'${Role}', ${setSQLBooleanValue(IsActive)}, N'${IPAddress}', N'${ServerName}', N'${EntryTime}'
             );
         `;
@@ -73,8 +73,8 @@ const OrgUserMaster = async (req, res) => {
                 ReferenceUkeyId : UserUkeyId, 
                 MasterName : FirstName,  
                 TableName : "OrgUserMaster", 
-                UserId : req.user.UserId, 
-                UserName : req.user.FirstName, 
+                UserId : req?.user?.UserId, 
+                UserName : req?.user?.FirstName, 
                 IsActive : IsActive,
                 flag : flag, 
                 IPAddress : IPAddress, 
@@ -107,7 +107,8 @@ const OrgUserMaster = async (req, res) => {
                 WHERE OrganizerUkeyId = ${setSQLStringValue(OrganizerUkeyId)}
                 `;
             }
-            
+            console.log('delete query :', deleteQuery);
+            console.log('insert query :', insertQuery);
             const deleteResult = await pool.request().query(deleteQuery);
             const insertResult = await pool.request().query(insertQuery);
 
@@ -126,7 +127,7 @@ const OrgUserMaster = async (req, res) => {
                 ReferenceUkeyId : UserUkeyId, 
                 MasterName : FirstName,  
                 TableName : "OrgUserMaster", 
-                UserId : req.user.UserId, 
+                UserId : req?.user?.UserId, 
                 UserName : req.user.FirstName, 
                 IsActive : IsActive,
                 flag : flag, 
