@@ -217,7 +217,7 @@ const VerifyTicket = async (req, res)=> {
             exec SP_VerifyTicket
             @BookingUkeyID = ${setSQLStringValue(BookingUkeyID)}, @EventUkeyId = ${setSQLStringValue(EventUkeyId)}, @OrganizerUkeyId = ${setSQLStringValue(OrganizerUkeyId)}, @UserUkeyID = ${setSQLStringValue(UserUkeyID)}, @IsWhatsapp = ${setSQLBooleanValue(IsWhatsapp )}, @IsVerify = ${setSQLBooleanValue(IsVerify)}, @BookingCode = ${setSQLStringValue(BookingCode)}
         `)
-        console.log('verify ticket result :', result);
+        
         return res.status(200).json(successMessage('Ticket Verifed successfully.'));
     }catch(error){
         console.log('verify user ticket :', error);
