@@ -213,12 +213,19 @@ const VerifyTicket = async (req, res)=> {
         if (missingKeys.length > 0) {
             return res.status(400).json(errorMessage(`${missingKeys.join(', ')} is Required`));
         }
+
+        const IsTicketBooked = await pool.request().query(`select IsVerify from Bookingmast where BookingUkeyID = ${setSQLStringValue(BookingUkeyID)} and EventUkeyId = ${setSQLStringValue(EventUkeyId)} and OrganizerUkeyId = ${setSQLStringValue(OrganizerUkeyId)} and UserUkeyID = ${setSQLStringValue(UserUkeyID)} and BookingCode = ${setSQLStringValue(BookingCode)}`)
+
+        if(IsTicketBooked.recordset[0].IsVerify){
+            return res.status(400).json({...errorMessage(`Ticket already verifed`), verify : false})
+        }
+
         const result = await pool.request().query(`
             exec SP_VerifyTicket
             @BookingUkeyID = ${setSQLStringValue(BookingUkeyID)}, @EventUkeyId = ${setSQLStringValue(EventUkeyId)}, @OrganizerUkeyId = ${setSQLStringValue(OrganizerUkeyId)}, @UserUkeyID = ${setSQLStringValue(UserUkeyID)}, @IsWhatsapp = ${setSQLBooleanValue(IsWhatsapp )}, @IsVerify = ${setSQLBooleanValue(IsVerify)}, @BookingCode = ${setSQLStringValue(BookingCode)}
         `)
         
-        return res.status(200).json(successMessage('Ticket Verifed successfully.'));
+        return res.status(200).json({...successMessage('Ticket Verifed successfully.'), verify : true});
     }catch(error){
         console.log('verify user ticket :', error);
         return res.status(500).json(errorMessage(error.message))
