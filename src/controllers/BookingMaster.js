@@ -121,31 +121,62 @@ const BookingMaster = async (req, res) => {
         }
         const missingKeys = checkKeysAndRequireValues(['flag', 'BookingMast', 'bookingdetails'], { ...req.body });
         if (missingKeys.length > 0) {
-            return res.status(400).send(errorMessage(`${missingKeys.join(', ')} is required`));
+            return res.status(400).json(errorMessage(`${missingKeys.join(', ')} is required`));
         }
         const { IPAddress, ServerName, EntryTime } = getCommonKeys(req);
-        let query = ''
+        let sqlQuery = '';
 
-        // const fetchEventTicketLimit = await pool.request().query(`select TicketLimit from EventMaster where EventUkeyId = ${setSQLStringValue(EventUkeyId)} and OrganizerUkeyId = ${setSQLStringValue(OrganizerUkeyId)}`)
+        // ✅ Fetch ticket category limits and already booked tickets
+        const ticketCategoryData = await pool.request().query(`
+            SELECT COUNT(bd.BookingdetailID) AS TotalBookedTickets, 
+                   bd.TicketCateUkeyId, 
+                   tm.TicketLimits, 
+                   tm.Category 
+            FROM Bookingdetails bd
+            LEFT JOIN Bookingmast bm ON bd.BookingUkeyID = bm.BookingUkeyID
+            LEFT JOIN TicketCategoryMaster tm ON tm.TicketCateUkeyId = bd.TicketCateUkeyId
+            WHERE bm.EventUkeyId = ${setSQLStringValue(EventUkeyId)} 
+                  AND bm.OrganizerUkeyId = ${setSQLStringValue(OrganizerUkeyId)} 
+            GROUP BY bd.TicketCateUkeyId, tm.TicketLimits, tm.Category
+        `);
 
-        // const fetchCountOfBookedTickets = await pool.request().query(`select COUNT(BD.BookingdetailID) AS TotalTicketsBooked from Bookingdetails BD
-        // left join Bookingmast BM on BD.BookingUkeyID = BM.BookingUkeyID
-        // where BM.EventUkeyId = ${setSQLStringValue(EventUkeyId)} and BM.OrganizerUkeyId = ${setSQLStringValue(OrganizerUkeyId)}
-        // `)
+        const categoryLimitExceeded = [];
+        const categoryTicketCount = {};
 
-        // if(fetchEventTicketLimit?.recordset[0]?.TicketLimit < (fetchCountOfBookedTickets?.recordset?.[0]?.TotalTicketsBooked + bookingdetails.length)){
-        //     return res.status(400).json(errorMessage(`Available number of tickets are ${fetchEventTicketLimit?.recordset[0]?.TicketLimit - fetchCountOfBookedTickets?.recordset?.[0]?.TotalTicketsBooked}, you cannot book tickets more then available number of tickets.`))
-        // }
+        // ✅ Count new ticket requests per category
+        bookingdetails.forEach(ticket => {
+            const categoryId = ticket.TicketCateUkeyId;
+            categoryTicketCount[categoryId] = (categoryTicketCount[categoryId] || 0) + 1;
+        });
 
+        // ✅ Check if any category exceeds its limit
+        ticketCategoryData.recordset.forEach(category => {
+            const requestedCount = categoryTicketCount[category.TicketCateUkeyId] || 0;
+            const availableTickets = category.TicketLimits - category.TotalBookedTickets;
 
-        if(flag === 'U'){
-            query += `
-            delete from Bookingmast where BookingUkeyID = ${setSQLStringValue(BookingUkeyID)} and  EventUkeyId = ${setSQLStringValue(EventUkeyId)};
-            delete from bookingdetails where BookingUkeyID = ${setSQLStringValue(BookingUkeyID)};
-            `
+            if (requestedCount > availableTickets) {
+                categoryLimitExceeded.push({
+                    CategoryId: category.TicketCateUkeyId,
+                    AvailableTickets: availableTickets,
+                    CategoryName : category.Category
+                });
+            }
+        });
+
+        if (categoryLimitExceeded.length > 0) {
+            const errorMsg = `Ticket limit exceeded for: ${categoryLimitExceeded.map(c => `${c.CategoryName} ${c.AvailableTickets} left`).join(', ')}`;
+            return res.status(400).json({ ...errorMessage(errorMsg), categoryLimitExceeded });
+        }
+                        
+        // ✅ Handle Update Scenario (flag === 'U')
+        if (flag === 'U') {
+            sqlQuery += `
+                DELETE FROM Bookingmast WHERE BookingUkeyID = ${setSQLStringValue(BookingUkeyID)} AND EventUkeyId = ${setSQLStringValue(EventUkeyId)};
+                DELETE FROM bookingdetails WHERE BookingUkeyID = ${setSQLStringValue(BookingUkeyID)};
+            `;
         }
 
-        query += `
+        sqlQuery += `
         INSERT INTO Bookingmast (
             BookingUkeyID, UserUkeyID, BookingDate, BookingAmt, TotalGST, TotalConviencefee, DiscountPer, DiscountAmt, flag, IpAddress, HostName, EntryDate, EventUkeyId, OrganizerUkeyId, TotalNetAmount, CouponUkeyId, RazorpayPaymentId, RazorpayOrderId, RazorpaySignatureId, IsWhatsapp, IsVerify, IsPayment, BookingCode
         ) VALUES ( 
@@ -156,17 +187,19 @@ const BookingMaster = async (req, res) => {
         if(typeof bookingdetails === 'object' && bookingdetails.length > 0){
             for (const Detail of bookingdetails) {
                 const {BookingdetailUkeyID, BookingUkeyID, Name, Mobile, GST, Conviencefee, TicketCateUkeyId, Amount, DiscAmt} = Detail
-                query +=`insert into bookingdetails (
+                sqlQuery +=`insert into bookingdetails (
                     BookingdetailUkeyID, BookingUkeyID, Name, Mobile, GST, Conviencefee, TicketCateUkeyId, flag, IpAddress, HostName, EntryDate, Amount, DiscAmt
                 ) values (
                     ${setSQLStringValue(BookingdetailUkeyID)}, ${setSQLStringValue(BookingUkeyID)}, ${setSQLStringValue(Name)}, ${setSQLStringValue(Mobile)}, ${setSQLDecimalValue(GST)}, ${setSQLDecimalValue(Conviencefee)}, ${setSQLStringValue(TicketCateUkeyId)}, ${setSQLStringValue(flag)}, ${setSQLStringValue(IPAddress)}, ${setSQLStringValue(ServerName)}, ${setSQLStringValue(EntryTime)}, ${setSQLDecimalValue(Amount)}, ${setSQLDecimalValue(DiscAmt)}
                 );`
             }
         }
-        const result = await pool.request().query(query)
+
+        // ✅ Execute Query
+        const result = await pool.request().query(sqlQuery);
 
         if (result?.rowsAffected?.[0] === 0) {
-            return res.status(400).json(errorMessage('No Booking Entry Created.'));
+            return res.status(400).json(errorMessage('No booking entry created.'));
         }
         return res.status(200).json({ 
             ...successMessage('New Booking Entry Created Successfully.'), 
