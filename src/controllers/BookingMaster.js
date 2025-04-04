@@ -65,21 +65,28 @@ const fetchBookings = async (req, res) => {
 const fetchBookingInfoById = async( req, res)=> {
     try{
         const { 
-            BookingUkeyID
+            BookingUkeyID, BookingCode, EventUkeyId
         } = req.query;
 
-        const missingKeys = checkKeysAndRequireValues(['BookingUkeyID'], req.query)
-        if (missingKeys.length > 0) {
-            return res.status(400).send(errorMessage(`${missingKeys.join(', ')} is required`));
-        }
 
         let whereConditions = [];
+        let whereConditions2 = [];
 
         if (BookingUkeyID) {
             whereConditions.push(`BookingUkeyID = ${setSQLStringValue(BookingUkeyID)}`);
         }
 
+        if (BookingCode) {
+            whereConditions.push(`BookingCode = ${setSQLStringValue(BookingCode)}`);
+            whereConditions2.push(`BM.BookingCode = ${setSQLStringValue(BookingCode)}`);
+        }
+
+        if (EventUkeyId) {
+            whereConditions2.push(`BM.EventUkeyId = ${setSQLStringValue(EventUkeyId)}`);
+        }
+
         const whereString = whereConditions.length > 0 ? `WHERE ${whereConditions.join(' AND ')}` : '';
+        const whereString2 = whereConditions2.length > 0 ? `WHERE ${whereConditions.join(' AND ')}` : '';
         const getAutoSentNotificationList = {
             getQuery: `
             select * from bookinglistview ${whereString}
@@ -89,7 +96,7 @@ const fetchBookingInfoById = async( req, res)=> {
             `,
         };
 
-        const bookingDetails = await pool.request().query(`select BD.*, TCM.Category from Bookingdetails BD  left join TicketCategoryMaster TCM on BD.TicketCateUkeyId = TCM.TicketCateUkeyId where BD.BookingUkeyID = ${setSQLStringValue(BookingUkeyID)}`)
+        const bookingDetails = await pool.request().query(`select BD.*, TCM.Category from Bookingdetails BD  left join TicketCategoryMaster TCM on BD.TicketCateUkeyId = TCM.TicketCateUkeyId left join Bookingmast BM on BD.BookingUkeyID =  BM.BookingUkeyID ${whereString2}`)
 
         // Execute the query and return results
         const result = await getCommonAPIResponse(req, res, getAutoSentNotificationList);
@@ -150,19 +157,31 @@ const BookingMaster = async (req, res) => {
         });
 
         // ✅ Check if any category exceeds its limit
-        ticketCategoryData.recordset.forEach(category => {
+        for (const category of ticketCategoryData.recordset) {
             const requestedCount = categoryTicketCount[category.TicketCateUkeyId] || 0;
-            const availableTickets = category.TicketLimits - category.TotalBookedTickets;
-
+            let availableTickets = category.TicketLimits - category.TotalBookedTickets;
+        
+            if (flag === 'U') {
+                // ✅ If updating, add back the user's current booking count before checking
+                const userPreviousBooking = await pool.request().query(`
+                    SELECT COUNT(*) AS PreviousBookedTickets
+                    FROM Bookingdetails 
+                    WHERE BookingUkeyID = ${setSQLStringValue(BookingUkeyID)}
+                      AND TicketCateUkeyId = ${setSQLStringValue(category.TicketCateUkeyId)}
+                `);
+                const previousBookingCount = userPreviousBooking.recordset?.[0]?.PreviousBookedTickets || 0;
+        
+                availableTickets += previousBookingCount;
+            }
+        
             if (requestedCount > availableTickets) {
                 categoryLimitExceeded.push({
-                    CategoryId: category.TicketCateUkeyId,
-                    AvailableTickets: availableTickets,
-                    CategoryName : category.Category
+                    CategoryName: category.Category,
+                    AvailableTickets: availableTickets
                 });
             }
-        });
-
+        };
+        
         if (categoryLimitExceeded.length > 0) {
             const errorMsg = `Ticket limit exceeded for: ${categoryLimitExceeded.map(c => `${c.CategoryName} ${c.AvailableTickets} left`).join(', ')}`;
             return res.status(400).json({ ...errorMessage(errorMsg), categoryLimitExceeded });
@@ -186,11 +205,11 @@ const BookingMaster = async (req, res) => {
 
         if(typeof bookingdetails === 'object' && bookingdetails.length > 0){
             for (const Detail of bookingdetails) {
-                const {BookingdetailUkeyID, BookingUkeyID, Name, Mobile, GST, Conviencefee, TicketCateUkeyId, Amount, DiscAmt} = Detail
+                const {BookingdetailUkeyID, BookingUkeyID, Name, Mobile, GST, Conviencefee, TicketCateUkeyId, Amount, DiscAmt, IsVerify} = Detail
                 sqlQuery +=`insert into bookingdetails (
                     BookingdetailUkeyID, BookingUkeyID, Name, Mobile, GST, Conviencefee, TicketCateUkeyId, flag, IpAddress, HostName, EntryDate, Amount, DiscAmt, IsVerify
                 ) values (
-                    ${setSQLStringValue(BookingdetailUkeyID)}, ${setSQLStringValue(BookingUkeyID)}, ${setSQLStringValue(Name)}, ${setSQLStringValue(Mobile)}, ${setSQLDecimalValue(GST)}, ${setSQLDecimalValue(Conviencefee)}, ${setSQLStringValue(TicketCateUkeyId)}, ${setSQLStringValue(flag)}, ${setSQLStringValue(IPAddress)}, ${setSQLStringValue(ServerName)}, ${setSQLStringValue(EntryTime)}, ${setSQLDecimalValue(Amount)}, ${setSQLDecimalValue(DiscAmt)}, 0
+                    ${setSQLStringValue(BookingdetailUkeyID)}, ${setSQLStringValue(BookingUkeyID)}, ${setSQLStringValue(Name)}, ${setSQLStringValue(Mobile)}, ${setSQLDecimalValue(GST)}, ${setSQLDecimalValue(Conviencefee)}, ${setSQLStringValue(TicketCateUkeyId)}, ${setSQLStringValue(flag)}, ${setSQLStringValue(IPAddress)}, ${setSQLStringValue(ServerName)}, ${setSQLStringValue(EntryTime)}, ${setSQLDecimalValue(Amount)}, ${setSQLDecimalValue(DiscAmt)}, ${setSQLStringValue(IsVerify)}
                 );`
             }
         }
@@ -261,6 +280,28 @@ const VerifyTicket = async (req, res)=> {
         return res.status(200).json({...successMessage('Ticket Verifed successfully.'), verify : true});
     }catch(error){
         console.log('verify user ticket :', error);
+        return res.status(500).json(errorMessage(error.message))
+    }
+}
+
+const verifyTicketOnBookingDetailsUKkeyId = async (req, res) => {
+    try{
+        const {BookingdetailUkeyIDs, VerifiedByUkeyId} = req.body;
+
+        const missingKeys = checkKeysAndRequireValues(['BookingdetailUkeyIDs', 'VerifiedByUkeyId'], req.query);
+        if (missingKeys.length > 0) {
+            return res.status(400).json(errorMessage(`${missingKeys.join(', ')} is Required`));
+        }
+
+        const BookingdetailUkeyIDsArray = BookingdetailUkeyIDs?.split(',')
+
+        for (const iterator of object) {
+            await pool.request().query(`update Bookingdetails `)
+        }
+
+        return res.status(200).json({...successMessage('Ticket Verifed successfully.')});
+    }catch(error){
+        console.log('verify user ticket by booking detial UkeyId error :', error);
         return res.status(500).json(errorMessage(error.message))
     }
 }
