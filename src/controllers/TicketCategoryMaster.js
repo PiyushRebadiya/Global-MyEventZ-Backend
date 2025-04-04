@@ -59,10 +59,10 @@ const TicketCategoryMaster = async(req, res)=>{
         
         if (totalExistingLimits + TicketLimits > eventSeatLimit) {
             return res.status(400).json(errorMessage(
-                `Event Seat Limit: ${eventSeatLimit}. The current total seat allocation is ${totalExistingLimits}. Adding ${TicketLimits} seats will exceed the event's limit. Please adjust seat allocations.`
+                `Event limit exceeded! Max: ${eventSeatLimit}, Assigned: ${totalExistingLimits}.`
             ));
         }
-
+        
         const insertQuery = `
             INSERT INTO TicketCategoryMaster (
                 TicketCateUkeyId, TicketLimits, Category, TicketPrice, IsActive, OrganizerUkeyId, EventUkeyId, flag, IpAddress, HostName, EntryDate, DiscPer, DiscAmt, ConvenienceFee
