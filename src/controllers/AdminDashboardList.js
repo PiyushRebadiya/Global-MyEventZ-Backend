@@ -13,8 +13,7 @@ const AdminDashboardList = async (req, res) => {
         const totalEvents = await pool.request().query(`
             SELECT COUNT(*) AS TotalEvents 
             FROM EventMaster WITH (NOLOCK) 
-            WHERE EventUkeyId = ${setSQLStringValue(EventUkeyId)} 
-            AND OrganizerUkeyId = ${setSQLStringValue(OrganizerUkeyId)}
+            WHERE OrganizerUkeyId = ${setSQLStringValue(OrganizerUkeyId)}
         `);
 
         const totalUsers = await pool.request().query(`
