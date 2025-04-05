@@ -74,6 +74,7 @@ const fetchBookingInfoById = async( req, res)=> {
 
         if (BookingUkeyID) {
             whereConditions.push(`BookingUkeyID = ${setSQLStringValue(BookingUkeyID)}`);
+            whereConditions2.push(`BM.BookingUkeyID = ${setSQLStringValue(BookingUkeyID)}`);
         }
 
         if (BookingCode) {
@@ -86,7 +87,7 @@ const fetchBookingInfoById = async( req, res)=> {
         }
 
         const whereString = whereConditions.length > 0 ? `WHERE ${whereConditions.join(' AND ')}` : '';
-        const whereString2 = whereConditions2.length > 0 ? `WHERE ${whereConditions.join(' AND ')}` : '';
+        const whereString2 = whereConditions2.length > 0 ? `WHERE ${whereConditions2.join(' AND ')}` : '';
         const getAutoSentNotificationList = {
             getQuery: `
             select * from bookinglistview ${whereString}
@@ -95,8 +96,8 @@ const fetchBookingInfoById = async( req, res)=> {
             select COUNT(*) AS totalCount from bookinglistview ${whereString}
             `,
         };
-
-        const bookingDetails = await pool.request().query(`select BD.*, TCM.Category from Bookingdetails BD  left join TicketCategoryMaster TCM on BD.TicketCateUkeyId = TCM.TicketCateUkeyId left join Bookingmast BM on BD.BookingUkeyID =  BM.BookingUkeyID ${whereString2}`)
+        const childQuery = `select BD.*, TCM.Category from Bookingdetails BD  left join TicketCategoryMaster TCM on BD.TicketCateUkeyId = TCM.TicketCateUkeyId left join Bookingmast BM on BD.BookingUkeyID =  BM.BookingUkeyID ${whereString2}`
+        const bookingDetails = await pool.request().query(childQuery)
 
         // Execute the query and return results
         const result = await getCommonAPIResponse(req, res, getAutoSentNotificationList);
