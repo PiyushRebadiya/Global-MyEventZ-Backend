@@ -289,15 +289,15 @@ const verifyTicketOnBookingDetailsUKkeyId = async (req, res) => {
     try{
         const {BookingdetailUkeyIDs, VerifiedByUkeyId} = req.body;
 
-        const missingKeys = checkKeysAndRequireValues(['BookingdetailUkeyIDs', 'VerifiedByUkeyId'], req.query);
+        const missingKeys = checkKeysAndRequireValues(['BookingdetailUkeyIDs', 'VerifiedByUkeyId'], req.body);
         if (missingKeys.length > 0) {
             return res.status(400).json(errorMessage(`${missingKeys.join(', ')} is Required`));
         }
 
         const BookingdetailUkeyIDsArray = BookingdetailUkeyIDs?.split(',')
 
-        for (const iterator of object) {
-            await pool.request().query(`update Bookingdetails `)
+        for (const BookingdetailUkeyID of BookingdetailUkeyIDsArray) {
+            await pool.request().query(`update Bookingdetails set IsVerify = 1, VerifiedByUkeyId = ${setSQLStringValue(VerifiedByUkeyId)} where BookingdetailUkeyID = ${setSQLStringValue(BookingdetailUkeyID)}`)
         }
 
         return res.status(200).json({...successMessage('Ticket Verifed successfully.')});
@@ -312,5 +312,6 @@ module.exports = {
     fetchBookingInfoById,
     BookingMaster,
     RemoveBookings,
-    VerifyTicket
+    VerifyTicket,
+    verifyTicketOnBookingDetailsUKkeyId,
 }

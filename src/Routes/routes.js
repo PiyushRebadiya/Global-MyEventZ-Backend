@@ -252,7 +252,7 @@ router.delete('/delete_document', auth, DocumentUploadController.RemoveDocumnet)
 
 //#endregion
 
-//#region NEW TICKET APIs
+//#region NEW BOOKING TICKET APIs
 router.get('/fetch_ticket_category', auth, TicketCategoryController.FetchTicketCategory);
 router.post('/ticket_category_master', auth, TicketCategoryController.TicketCategoryMaster);
 router.delete('/delete_ticket_category', auth, TicketCategoryController.RemoveTicketCategory);
@@ -263,6 +263,7 @@ router.post('/booking_master', auth, BookingController.BookingMaster);
 router.delete('/delete_bookings', auth, BookingController.RemoveBookings);
 
 router.get('/verify_ticket', auth, BookingController.VerifyTicket);
+router.post('/multiple_ticket_verify', auth, BookingController.verifyTicketOnBookingDetailsUKkeyId);
 //#endregion
 
 //#region CONTECT apiS

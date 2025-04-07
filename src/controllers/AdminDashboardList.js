@@ -126,7 +126,7 @@ const AdminDashboardList = async (req, res) => {
 
 const AdminDashboadChartList = async (req, res)=> {
     try{
-        const { FetchType = 'DAY', EventUkeyId, OrganizerUkeyId, StartDate = null, EndDate = null} = req.query
+        const { FetchType = 'DAY', EventUkeyId, OrganizerUkeyId, StartDate = null, EndDate = null, Month = null, Year = null} = req.query
 
         const query = `
             exec SP_TicketChartReport 
@@ -134,7 +134,9 @@ const AdminDashboadChartList = async (req, res)=> {
             @OrganizerUkeyId = ${setSQLStringValue(OrganizerUkeyId)},
             @EventUkeyId= ${setSQLStringValue(EventUkeyId)},
             @StartDate = ${StartDate && EndDate ? `'${StartDate}'` : null},
-            @EndDate = ${EndDate && StartDate ? `'${EndDate}'` : null}
+            @EndDate = ${EndDate && StartDate ? `'${EndDate}'` : null},
+            @Month = ${Month},
+            @Year = ${Year}
         `
         const result = await pool.request().query(query)
 
