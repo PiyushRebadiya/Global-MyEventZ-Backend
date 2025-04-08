@@ -30,8 +30,10 @@ const fetchCarouselList = async (req, res) => {
                 FROM DocumentUpload dm 
                 WHERE dm.UkeyId = cc.CarouselUkeyId 
                 FOR JSON PATH 
-            ) AS FileNames
+            ) AS FileNames,
+            om.OrganizerName, om.Mobile1
         FROM Carousel AS cc 
+        left join OrganizerMaster om on om.OrganizerUkeyId = cc.OrganizerUkeyId
         ${whereString}
         ORDER BY 
             CASE 
@@ -67,6 +69,13 @@ const CarouserMaster = async (req, res) => {
         }
     
         const { IPAddress, ServerName, EntryTime } = getCommonKeys(req);
+        
+        const ActiveImagesCount = await pool.request().query(`select COUNT(*) ActiveCarouselCount from Carousel where IsActive = 1 `)
+        const ActiveImageCount = IsActive && IsActive == 'true' ? ActiveImagesCount.recordset[0]?.ActiveCarouselCount + 1 : ActiveImagesCount.recordset[0]?.ActiveCarouselCount
+        if(ActiveImageCount >= 10){
+            return res.status(400).json(errorMessage('Max 10 Active images allowed in the carousel!'))
+        }
+
         let query = ''
 
         if (flag === 'U') {
