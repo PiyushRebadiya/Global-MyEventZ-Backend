@@ -13,7 +13,7 @@ const sendNotificationOnSetTime = async () => {
     try {
         // Fetch pending notifications
         const Notifications = await pool.query(`
-            select * from ReminderMaster WHERE IsActive = 1
+            select * from ReminderMaster WHERE IsActive = 1 AND SentTime < getdate()
         `);
 
         // Fetch users with active status

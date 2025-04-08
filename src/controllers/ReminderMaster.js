@@ -1,4 +1,4 @@
-const { errorMessage, successMessage, checkKeysAndRequireValues, generateCODE, setSQLBooleanValue, getCommonKeys, generateJWTT, generateUUID, getCommonAPIResponse, toFloat, setSQLStringValue, setSQLNumberNullValue, deleteImage } = require("../common/main");
+const { errorMessage, successMessage, checkKeysAndRequireValues, generateCODE, setSQLBooleanValue, getCommonKeys, generateJWTT, generateUUID, getCommonAPIResponse, toFloat, setSQLStringValue, setSQLNumberNullValue, deleteImage, setSQLDateTime } = require("../common/main");
 const {pool} = require('../sql/connectToDatabase');
 
 const fetchReminderMaster = async(req, res)=>{
@@ -34,7 +34,7 @@ const fetchReminderMaster = async(req, res)=>{
 }
 
 const ReminderMaster = async(req, res)=>{
-    const { EventUkeyId = '', OrganizerUkeyId = '', ReminderUkeyId = '', Title = '', Description = '', Link = '', LinkType = '', IsActive = false, StartDate = null, EndDate = null, flag = ''} = req.body;
+    const { EventUkeyId = '', OrganizerUkeyId = '', ReminderUkeyId = '', Title = '', Description = '', Link = '', LinkType = '', IsActive = false, SentTime = null, flag = ''} = req.body;
     let {Image} = req.body
     Image = req?.files?.Image?.length ? `${req?.files?.Image[0]?.filename}` : Image;
     try{
@@ -46,9 +46,9 @@ const ReminderMaster = async(req, res)=>{
         const {IPAddress, ServerName, EntryTime} = getCommonKeys(req);
         const insertQuery = `
             INSERT INTO ReminderMaster (
-                OrganizerUkeyId, EventUkeyId, ReminderUkeyId, Image, Title, Description, Link, LinkType, IsActive, StartDate, EndDate, flag, IpAddress, HostName, EntryDate, UserID, UserName
+                OrganizerUkeyId, EventUkeyId, ReminderUkeyId, Image, Title, Description, Link, LinkType, IsActive, SentTime, flag, IpAddress, HostName, EntryDate, UserID, UserName
             ) VALUES (
-                ${setSQLStringValue(OrganizerUkeyId)}, ${setSQLStringValue(EventUkeyId)}, ${setSQLStringValue(ReminderUkeyId)}, ${setSQLStringValue(Image)}, ${setSQLStringValue(Title)}, ${setSQLStringValue(Description)}, ${setSQLStringValue(Link)}, ${setSQLStringValue(LinkType)}, ${setSQLStringValue(IsActive)}, ${setSQLStringValue(StartDate)}, ${setSQLStringValue(EndDate)}, ${setSQLStringValue(flag)}, ${setSQLStringValue(IPAddress)}, ${setSQLStringValue(ServerName)}, ${setSQLStringValue(EntryTime)}, ${setSQLNumberNullValue(req.user.UserId)}, ${setSQLStringValue(req.user.FirstName)}
+                ${setSQLStringValue(OrganizerUkeyId)}, ${setSQLStringValue(EventUkeyId)}, ${setSQLStringValue(ReminderUkeyId)}, ${setSQLStringValue(Image)}, ${setSQLStringValue(Title)}, ${setSQLStringValue(Description)}, ${setSQLStringValue(Link)}, ${setSQLStringValue(LinkType)}, ${setSQLStringValue(IsActive)}, ${setSQLDateTime(SentTime)}, ${setSQLStringValue(flag)}, ${setSQLStringValue(IPAddress)}, ${setSQLStringValue(ServerName)}, ${setSQLStringValue(EntryTime)}, ${setSQLNumberNullValue(req.user.UserId)}, ${setSQLStringValue(req.user.FirstName)}
             );
         `
         const deleteQuery = `
