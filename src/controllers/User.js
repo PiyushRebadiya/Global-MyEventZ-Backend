@@ -37,14 +37,29 @@ const VerifyOrganizerMobileNumber = async (req, res) => {
             return res.status(200).json(errorMessage('Mobile1 is required'))
         }
 
-        const result = await pool.request().query(`select * from OrganizerMaster where Mobile1 = ${setSQLStringValue(Mobile1)} and IsActive = 1`)
+        const result = await pool.request().query(`select om.*,em.EventName from OrgUserMaster om left join EventMaster em on em.EventUkeyId = om.EventUkeyId
+        where om.Mobile1 = ${setSQLStringValue(Mobile1)} and om.IsActive = 1`)
 
         if(!result.recordset[0]){
             return res.status(200).json({...successMessage("there is no user register found with the given mobile number."), verify : false })
         }
-
-        return res.status(200).json({...successMessage("given mobile number is valid"), verify : true, FullName : result.recordset[0].FullName, 
-        ...result.recordset?.[0]})
+        return res.status(200).json({...successMessage("given mobile number is valid"), verify : true, token : generateJWTT({
+            Role: result?.recordset[0]?.Role
+            , OrganizerUKeyId : result?.recordset[0]?.OrganizerUkeyId
+            , EventUkeyId : result?.recordset[0]?.EventUkeyId
+            , UserId : result?.recordset[0]?.UserId
+            , FirstName : result?.recordset[0]?.FirstName
+        }),
+        UserId: result?.recordset[0]?.UserId,
+        UserUkeyId: result?.recordset[0]?.UserUkeyId,
+        EventUkeyId: result?.recordset[0]?.EventUkeyId,
+        OrganizerUkeyId: result?.recordset[0]?.OrganizerUkeyId,
+        OrganizerName: result?.recordset[0]?.FirstName,
+        Mobile1: result?.recordset[0]?.Mobile1,
+        Role: result?.recordset[0]?.Role,
+        IsActive: result?.recordset[0]?.IsActive,
+        EventName : result?.recordset?.[0]?.EventName
+})
     }catch(error){
         return res.status(400).send(errorMessage(error?.message));
     }
