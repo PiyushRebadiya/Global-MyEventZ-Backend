@@ -26,16 +26,18 @@ const fetchContects = async (req, res) => {
 
         const getUserList = {
             getQuery: `
-                SELECT CM.*, 
-                (SELECT JSON_QUERY(
-                    (SELECT FileName, Label 
-                    FROM DocumentUpload 
-                    WHERE UkeyId = CM.ContactUkeyId 
-                    FOR JSON PATH)
-                )) AS FileNames
-                FROM ContactMaster CM
-                ${whereString}
-                ORDER BY CM.EntryDate DESC
+            SELECT CM.*, 
+            (SELECT JSON_QUERY(
+            (SELECT FileName, Label 
+            FROM DocumentUpload 
+            WHERE UkeyId = CM.ContactUkeyId 
+            FOR JSON PATH)
+            )) AS FileNames,
+            UM.FullName
+            FROM ContactMaster CM
+            left join UserMaster UM on UM.UserUkeyId = CM.UserUkeyId
+            ${whereString}
+            ORDER BY CM.EntryDate DESC
             `,
             countQuery: `SELECT COUNT(*) AS totalCount FROM ContactMaster CM ${whereString}`,
         };
@@ -54,7 +56,7 @@ const fetchContects = async (req, res) => {
 };
 
 const ContectMaster = async(req, res)=>{
-    const { ContactUkeyId, Name, Mobile, Email, Message, flag = 'A', FormType = '', QueryType = '', EventUkeyId = '', OrganizerUkeyId = ''} = req.body;
+    const { ContactUkeyId, Name, Mobile, Email, Message, flag = 'A', FormType = '', QueryType = '', EventUkeyId = '', OrganizerUkeyId = '', UserUkeyId = ''} = req.body;
     let {Image} = req.body;
     Image = req?.files?.Image?.length ? `${req?.files?.Image[0]?.filename}` : Image;
     const {IPAddress, ServerName, EntryTime} = getCommonKeys(req);
@@ -66,9 +68,9 @@ const ContectMaster = async(req, res)=>{
         }
         const insertQuery = `
             INSERT INTO ContactMaster (
-                ContactUkeyId, Name, Mobile, Email, Message, flag, IpAddress, HostName, EntryDate, FormType, QueryType, Image, EventUkeyId, OrganizerUkeyId
+                ContactUkeyId, Name, Mobile, Email, Message, flag, IpAddress, HostName, EntryDate, FormType, QueryType, Image, EventUkeyId, OrganizerUkeyId, UserUkeyId
             ) VALUES (
-                ${setSQLStringValue(ContactUkeyId)}, ${setSQLStringValue(Name)}, ${setSQLStringValue(Mobile)}, ${setSQLStringValue(Email)}, ${setSQLStringValue(Message)}, ${setSQLStringValue(flag)}, ${setSQLStringValue(IPAddress)}, ${setSQLStringValue(ServerName)}, ${setSQLStringValue(EntryTime)}, ${setSQLStringValue(FormType)}, ${setSQLStringValue(QueryType)}, ${setSQLStringValue(Image)}, ${setSQLStringValue(EventUkeyId)}, ${setSQLStringValue(OrganizerUkeyId)}
+                ${setSQLStringValue(ContactUkeyId)}, ${setSQLStringValue(Name)}, ${setSQLStringValue(Mobile)}, ${setSQLStringValue(Email)}, ${setSQLStringValue(Message)}, ${setSQLStringValue(flag)}, ${setSQLStringValue(IPAddress)}, ${setSQLStringValue(ServerName)}, ${setSQLStringValue(EntryTime)}, ${setSQLStringValue(FormType)}, ${setSQLStringValue(QueryType)}, ${setSQLStringValue(Image)}, ${setSQLStringValue(EventUkeyId)}, ${setSQLStringValue(OrganizerUkeyId)}, ${setSQLStringValue(UserUkeyId)}
             );
         `
         const deleteQuery = `
