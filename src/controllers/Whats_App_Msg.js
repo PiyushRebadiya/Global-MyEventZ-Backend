@@ -17,8 +17,8 @@ const fetchWhatAppMsg = async (req, res) => {
         // Combine the WHERE conditions into a single string
         const whereString = whereConditions.length > 0 ? `WHERE ${whereConditions.join(' AND ')}` : '';
         const getUserList = {
-            getQuery: `select * from WhatsAppMsg ${whereString} ORDER BY Id DESC`,
-            countQuery: `SELECT COUNT(*) AS totalCount FROM WhatsAppMsg ${whereString}`,
+            getQuery: `select * from WhatsAppMessages ${whereString} ORDER BY Id DESC`,
+            countQuery: `SELECT COUNT(*) AS totalCount FROM WhatsAppMessages ${whereString}`,
         };
         const result = await getCommonAPIResponse(req, res, getUserList);
         return res.json(result);
@@ -30,13 +30,12 @@ const fetchWhatAppMsg = async (req, res) => {
 
 const addWhatsAppMsg = async (req, res) => {
     try {
-        const { Message = '', Mobile = '', SentWhatsApp = false, Email = '', SentEmail = false } = req.body;
-        const fieldCheck = checkKeysAndRequireValues(['Message', 'Mobile'], req.body);
+        const { Message = '', Mobile = '', EmailId = '', OrganizerUkeyId = '', TransMode = '' } = req.body;
+        const fieldCheck = checkKeysAndRequireValues(['Message', 'Mobile', 'OrganizerUkeyId', 'TransMode', 'EmailId'], req.body);
         if (fieldCheck.length !== 0) {
             return res.status(400).send(errorMessage(`${fieldCheck} is required`));
         }
-        const { IPAddress, ServerName, EntryTime } = getCommonKeys(req);
-        const insertQuery = `INSERT INTO WhatsAppMsg (Message, Mobile, SentWhatsApp, Email, SentEmail, IpAddress, ServerName, EntryTime) VALUES (${setSQLStringValue(Message)}, ${setSQLStringValue(Mobile)}, ${setSQLNumberValue(SentWhatsApp)}, ${setSQLStringValue(Email)}, ${setSQLBooleanValue(SentEmail)}, '${IPAddress}', '${ServerName}', '${EntryTime}')`;
+        const insertQuery = `INSERT INTO WhatsAppMessages (OrganizerUkeyId, Message, EmailId, Mobile, WhatsApp, Email, Msg, TransMode, Status, EntryTime) VALUES (${setSQLStringValue(OrganizerUkeyId)}, ${setSQLStringValue(Message)}, ${setSQLStringValue(EmailId)}, ${setSQLStringValue(Mobile)}, 0, 0, 0, ${setSQLStringValue(TransMode)}, 0, getdate())`;
         const result = await pool.query(insertQuery);
         if (result?.rowsAffected[0] === 0) {
             return res.status(400).send({ ...errorMessage('No rows inserted of Ticket Master')});
@@ -55,7 +54,7 @@ const deleteWhatAppMsg = async (req, res) => {
         if (fieldCheck.length !== 0) {
             return res.status(400).send(errorMessage(`${fieldCheck} is required`));
         }
-        const deleteQuery = `DELETE FROM WhatsAppMsg WHERE Id = ${Id}`;
+        const deleteQuery = `DELETE FROM WhatsAppMessages WHERE Id = ${Id}`;
         const result = await pool.query(deleteQuery);
         if (result?.rowsAffected[0] === 0) {
             return res.status(400).send(errorMessage('No rows deleted of WhatApp Master'));

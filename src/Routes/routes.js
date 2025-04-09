@@ -202,7 +202,7 @@ router.delete('/delete_reminder', auth, ReminderMasterController.RemoveReminderM
 router.post("/bell_notification_by_user", auth, bellNotificationByUserController.verifyBellNotificationByUser);
 
 router.get('/fetch_what_app_msg', auth, WhatsAppMsgController.fetchWhatAppMsg);
-router.post('/add_what_app_msg', auth, WhatsAppMsgController.addWhatsAppMsg);
+router.post('/send_what_app_msg', WhatsAppMsgController.addWhatsAppMsg);
 router.delete('/delete_what_app_msg', auth, WhatsAppMsgController.deleteWhatAppMsg);
 //#endregion
 //#region OTHER APIs
