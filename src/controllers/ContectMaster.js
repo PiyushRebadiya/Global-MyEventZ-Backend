@@ -3,7 +3,7 @@ const {pool} = require('../sql/connectToDatabase');
 
 const fetchContects = async (req, res) => {
     try {
-        const { ContactUkeyId, OrganizerUkeyId, EventUkeyId, FormType, QueryType } = req.query;
+        const { ContactUkeyId, OrganizerUkeyId, EventUkeyId, FormType, QueryType, UserUkeyId } = req.query;
         let whereConditions = [];
 
         if (ContactUkeyId) {
@@ -20,6 +20,9 @@ const fetchContects = async (req, res) => {
         }
         if (QueryType) {
             whereConditions.push(`CM.QueryType = ${setSQLStringValue(QueryType)}`);
+        }
+        if (UserUkeyId) {
+            whereConditions.push(`CM.UserUkeyId = ${setSQLStringValue(UserUkeyId)}`);
         }
 
         const whereString = whereConditions.length > 0 ? `WHERE ${whereConditions.join(' AND ')}` : '';
