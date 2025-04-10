@@ -53,6 +53,7 @@ const CouponMasterController = require('../controllers/CouponMaster');
 const MobileSMSMasterController = require('../controllers/MobileSMSMaster');
 const SuperAdminDashboardController = require('../controllers/SuperAdminDashboard');
 const AdminDashboardController = require('../controllers/AdminDashboardList');
+const EventCategoryNasterController = require('../controllers/EventCategoryMaster');
 // const carouselController = require('../controllers/carousel');
 
 const auth = require("../middleware/auth");
@@ -97,11 +98,15 @@ router.delete('/delete_orginizer_master', auth, OrginizerMasterController.Remove
 //#endregion
 router.get('/fetch_state', StateController.fetchStateData);
 router.get('/fetch_city', CityController.fetchCityData);
-//#region EVENTMASTER 
+//#region EVENTMASTER , EVENT CATEGORY MASTER
 router.get('/fetch_event_list', auth, EventMasterController.EventList);
 router.get('/fetch_event_by_id', auth, EventMasterController.fetchEventById);
 router.post('/event_master', auth, EventController.addEvent);
 router.delete('/delete_event', auth, EventController.RemoveEvent);
+
+router.get('/fetch_event_category', auth, EventCategoryNasterController.fetchEventCategory);
+router.post('/event_category_master', auth, EventCategoryNasterController.EventCategoryMaster);
+router.delete('/delete_event_category', auth, EventCategoryNasterController.RemoveEventCategory);
 //#endregion
 
 //#region old TICKET APIS
