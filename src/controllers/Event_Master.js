@@ -33,6 +33,7 @@ const EventList = async (req, res) => {
             am.IsPrimaryAddress, 
             am.IsActive AS IsActiveAddress, 
             om.OrganizerName, 
+            ecm.CategoryName AS EventCategoryName,
             (
                 SELECT du.FileName, du.Label
                 FROM DocumentUpload du 
@@ -42,6 +43,7 @@ const EventList = async (req, res) => {
         FROM EventMaster em 
         LEFT JOIN AddressMaster am ON am.EventUkeyId = em.EventUkeyId 
         LEFT JOIN OrganizerMaster om ON om.OrganizerUkeyId = em.OrganizerUkeyId
+        LEFT JOIN EventCategoryMaster ecm on em.EventCategoryUkeyId = ecm.EventCategoryUkeyId
                         ${whereString} 
                 ORDER BY em.EntryDate DESC
             `,
@@ -95,7 +97,7 @@ const fetchEventById = async (req, res)=> {
                 SELECT 
                     em.*, 
                     am.Address1, am.Address2, am.Pincode, am.StateName, am.CityName, 
-                    am.IsPrimaryAddress, am.IsActive AS IsActiveAddress, am.StateCode, om.OrganizerName 
+                    am.IsPrimaryAddress, am.IsActive AS IsActiveAddress, am.StateCode, om.OrganizerName, ecm.CategoryName AS EventCategoryName
                 FROM EventMaster em 
                 LEFT JOIN 
                     AddressMaster am 
@@ -104,7 +106,11 @@ const fetchEventById = async (req, res)=> {
 				LEFT JOIN 
                     OrganizerMaster om 
                 ON 
-                    om.OrganizerUkeyId = em.OrganizerUkeyId  
+                    om.OrganizerUkeyId = em.OrganizerUkeyId 
+                LEFT JOIN
+                    EventCategoryMaster ecm
+                on
+                    em.EventCategoryUkeyId = ecm.EventCategoryUkeyId
                 ${whereString} 
                 ORDER BY em.EntryDate DESC
             `,
@@ -127,7 +133,7 @@ const addEvent = async (req, res) => {
     const { flag, Event, Addresses } = req.body;
     const {
         EventUkeyId, OrganizerUkeyId, EventName, Alias, StartEventDate, EventDetails, IsActive = false, TicketLimit,
-        EventCode = generateCODE(EventName), Location, PaymentGateway, Longitude, Latitude, EndEventDate
+        EventCode = generateCODE(EventName), Location, PaymentGateway, Longitude, Latitude, EndEventDate, EventCategoryUkeyId
     } = Event;
 
     let transaction;
@@ -162,9 +168,9 @@ const addEvent = async (req, res) => {
         // INSERT into EventMaster
         await transaction.request().query(`
             INSERT INTO EventMaster (
-                EventUkeyId, OrganizerUkeyId, EventName, Alias, StartEventDate, EventCode, EventDetails, IsActive, IpAddress, HostName, EntryDate, flag, TicketLimit, Location, PaymentGateway, UserName, UserID, AddressUkeyId, Longitude, Latitude, EndEventDate
+                EventUkeyId, OrganizerUkeyId, EventName, Alias, StartEventDate, EventCode, EventDetails, IsActive, IpAddress, HostName, EntryDate, flag, TicketLimit, Location, PaymentGateway, UserName, UserID, AddressUkeyId, Longitude, Latitude, EndEventDate, EventCategoryUkeyId
             ) VALUES (
-                ${setSQLStringValue(EventUkeyId)}, ${setSQLStringValue(OrganizerUkeyId)}, ${setSQLStringValue(EventName)}, ${setSQLStringValue(Alias)}, ${setSQLDateTime(StartEventDate)}, ${setSQLStringValue(EventCode)}, ${setSQLStringValue(EventDetails)}, ${setSQLBooleanValue(IsActive)}, '${IPAddress}', '${ServerName}', '${EntryTime}', '${flag}', ${setSQLNumberValue(TicketLimit)}, ${setSQLStringValue(Location)}, ${setSQLStringValue(PaymentGateway)}, ${setSQLStringValue(req.user.FirstName)}, ${setSQLNumberValue(req.user.UserId)}, ${setSQLStringValue(primaryAddress.AddressUkeyId)}, ${setSQLStringValue(Longitude)}, ${setSQLStringValue(Latitude)}, ${setSQLDateTime(EndEventDate)}
+                ${setSQLStringValue(EventUkeyId)}, ${setSQLStringValue(OrganizerUkeyId)}, ${setSQLStringValue(EventName)}, ${setSQLStringValue(Alias)}, ${setSQLDateTime(StartEventDate)}, ${setSQLStringValue(EventCode)}, ${setSQLStringValue(EventDetails)}, ${setSQLBooleanValue(IsActive)}, '${IPAddress}', '${ServerName}', '${EntryTime}', '${flag}', ${setSQLNumberValue(TicketLimit)}, ${setSQLStringValue(Location)}, ${setSQLStringValue(PaymentGateway)}, ${setSQLStringValue(req.user.FirstName)}, ${setSQLNumberValue(req.user.UserId)}, ${setSQLStringValue(primaryAddress.AddressUkeyId)}, ${setSQLStringValue(Longitude)}, ${setSQLStringValue(Latitude)}, ${setSQLDateTime(EndEventDate)}, ${setSQLStringValue(EventCategoryUkeyId)}
             );
         `);
 
