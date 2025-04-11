@@ -31,7 +31,7 @@ const fetchWhatAppMsg = async (req, res) => {
 const addWhatsAppMsg = async (req, res) => {
     try {
         const { Message = '', Mobile = '', EmailId = '', OrganizerUkeyId = '', TransMode = '' } = req.body;
-        const fieldCheck = checkKeysAndRequireValues(['Message', 'Mobile', 'OrganizerUkeyId', 'TransMode', 'EmailId'], req.body);
+        const fieldCheck = checkKeysAndRequireValues(['Message', 'Mobile', 'OrganizerUkeyId', 'TransMode'], req.body);
         if (fieldCheck.length !== 0) {
             return res.status(400).send(errorMessage(`${fieldCheck} is required`));
         }
