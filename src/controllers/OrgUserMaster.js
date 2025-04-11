@@ -39,6 +39,14 @@ const OrgUserMaster = async (req, res) => {
     try {
         const { IPAddress, ServerName, EntryTime } = getCommonKeys();
 
+        const AdminUserCount = await pool.request().query(`
+            select COUNT(*) AS AdminUserCount from OrgUserMaster where OrganizerUkeyId = ${setSQLStringValue(OrganizerUkeyId)} and EventUkeyId = ${setSQLStringValue(EventUkeyId)} and Role <> 'Admin'
+        `)
+
+        if(AdminUserCount?.recordset?.[0]?.AdminUserCount >= 5){
+            return res.status(400).json(errorMessage(`Max 5 users allowed as Subadmins and Volunteers combined. Remove one to add new.`));
+        }
+
         let insertQuery = `
             INSERT INTO OrgUserMaster (
                 UserUkeyId, EventUkeyId, OrganizerUkeyId, Password, FirstName, Image, Mobile1, Mobile2, Add1, Add2,
