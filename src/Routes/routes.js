@@ -84,6 +84,7 @@ router.delete('/delete_user_category_master', auth, userCategoryMaster.removeUse
 router.get('/list_organizer', auth, UserController.fetchOrganizer);
 router.get('/verify_organizer_mobile_number', UserController.VerifyOrganizerMobileNumber);
 router.post('/organizer_login', UserController.Loginorganizer);
+router.post('/organizer_login_with_email', UserController.Loginorganizerwithemail);
 router.post('/organizer_signup', UserController.AddOrginizer);
 router.post('/forget_passwrod', UserController.ForgetPasswordForOrganizer);
 router.put('/update_organizer', auth, OrginizerUpload, UserController.updateOrginizer);

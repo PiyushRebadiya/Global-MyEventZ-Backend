@@ -266,6 +266,51 @@ where om.Mobile1 = ${setSQLStringValue(Mobile1)} AND om.Password = ${setSQLStrin
 
 //#endregion
 
+//#region Login with Email Id
+const Loginorganizerwithemail = async (req, res) => {
+    try{
+        const {Email} = req.body;
+
+        const missingKeys = checkKeysAndRequireValues(['Email'], req.body);
+
+        if(missingKeys.length > 0){
+            return res.status(400).json(errorMessage(`${missingKeys.join(', ')} is required`))
+        }
+
+
+        const result = await pool.request().query(`
+
+        select om.*,em.EventName from OrgUserMaster om left join EventMaster em on em.EventUkeyId=om.EventUkeyId
+        where om.Email = ${setSQLStringValue(Email)} AND om.IsActive = 1
+        `);
+
+        if(result.rowsAffected[0] === 0){
+            return res.status(400).json({...errorMessage('Invelit credentials'), IsVerified : false});
+        }
+        return res.status(200).json({
+            ...successMessage('User Verified Successfully.'), IsVerified : true, token : generateJWTT({
+                Role: result?.recordset[0]?.Role
+                , OrganizerUKeyId : result?.recordset[0]?.OrganizerUkeyId
+                , EventUkeyId : result?.recordset[0]?.EventUkeyId
+                , UserId : result?.recordset[0]?.UserId
+                , FirstName : result?.recordset[0]?.FirstName
+            }),
+            UserId: result?.recordset[0]?.UserId,
+            UserUkeyId: result?.recordset[0]?.UserUkeyId,
+            EventUkeyId: result?.recordset[0]?.EventUkeyId,
+            OrganizerUkeyId: result?.recordset[0]?.OrganizerUkeyId,
+            OrganizerName: result?.recordset[0]?.FirstName,
+            Mobile1: result?.recordset[0]?.Mobile1,
+            Role: result?.recordset[0]?.Role,
+            IsActive: result?.recordset[0]?.IsActive,
+            EventName : result?.recordset?.[0]?.EventName
+    });
+    }catch(error){
+        console.log('Login User Error :', error);
+        return res.status(500).json({...errorMessage(error)})
+    }
+}
+//#endregion
 //#region update orginizer
 const updateOrginizer = async (req, res) => {
     try {
@@ -375,5 +420,6 @@ module.exports = {
     updateOrginizer,
     fetchOrganizer,
     VerifyOrganizerMobileNumber,
-    ForgetPasswordForOrganizer
+    ForgetPasswordForOrganizer,
+    Loginorganizerwithemail
 }
