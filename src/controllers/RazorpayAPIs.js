@@ -213,4 +213,62 @@ const getAllPayments = async (req, res) => {
     }
 };
 
-module.exports = { getPaymentDetails, createRazorpayOrderId, getAllPayments, capturePayment, fetchOrderDetails };
+const paymentRefund = async (req, res) => {
+    try {
+        const { orderId, OrganizerUkeyId, EventUkeyId } = req.query;
+
+        if (!orderId) {
+            return res.status(400).json(errorMessage("orderId is required"));
+        }
+
+        // Fetch Razorpay credentials from your database
+        const razorpayQuery = await pool.query(`SELECT * FROM PaymentGatewayMaster WHERE OrganizerUkeyId = ${setSQLStringValue(OrganizerUkeyId)} AND EventUkeyId = ${setSQLStringValue(EventUkeyId)}`);
+
+        if (!razorpayQuery?.recordset?.length) {
+            return res.status(404).json(errorMessage("Razorpay credentials not found"));
+        }
+
+        const { KeyId, SecretKey } = razorpayQuery?.recordset[0];
+        const razorpay = new Razorpay({
+            key_id: KeyId,
+            key_secret: SecretKey
+        });
+        // ✅ Now fetch order details using the instance
+        const orderDetails = await razorpay.orders.fetchPayments(orderId);
+
+        if (orderDetails?.count !== 1 && orderDetails?.items[0]?.order_id !== orderId) {
+            return res.status(404).json(errorMessage("Order not found"));
+        }
+        const PaymentId = orderDetails?.items[0]?.id;
+        const Amount = orderDetails?.items[0]?.amount;
+
+        // Check if the payment is already refunded
+        const isRefunded = orderDetails?.items[0]?.status === 'refunded';
+        const isPartiallyRefunded = orderDetails?.items[0]?.amount_refunded > 0;
+        if (isRefunded || isPartiallyRefunded) {
+            return res.status(400).json(errorMessage("Payment has already been refunded."));
+        }
+
+        // Refund the payment
+        const refundResponse = await razorpay.payments.refund(`${PaymentId}`, {
+            amount: Number(((Amount / 100) * 0.97).toFixed(2)) * 100, // Amount in paise
+            currency: 'INR',
+            notes: {
+                reason: 'Refund for order ID: ' + orderId
+            }
+        });
+        console.log("Refund Response:", refundResponse);
+
+        if (!refundResponse) {
+            return res.status(404).send(errorMessage('Refund failed'));
+        }
+
+        return res.status(200).json({ Success: true, data: refundResponse });
+    }
+    catch (error) {
+        console.log('error :', error);
+        return res.status(500).send(errorMessage(error?.message || error?.error?.description));
+    }
+}
+
+module.exports = { getPaymentDetails, createRazorpayOrderId, getAllPayments, capturePayment, fetchOrderDetails, paymentRefund };
