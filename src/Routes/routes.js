@@ -85,6 +85,7 @@ router.get('/list_organizer', auth, UserController.fetchOrganizer);
 router.get('/verify_organizer_mobile_number', UserController.VerifyOrganizerMobileNumber);
 router.post('/organizer_login', UserController.Loginorganizer);
 router.post('/organizer_signup', UserController.AddOrginizer);
+router.post('/forget_passwrod', UserController.ForgetPasswordForOrganizer);
 router.put('/update_organizer', auth, OrginizerUpload, UserController.updateOrginizer);
 
 router.get('/fetch_org_user_master', auth, OrgUserController.FetchOrgUserMasterDetails);

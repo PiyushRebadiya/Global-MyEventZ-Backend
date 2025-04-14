@@ -28,7 +28,7 @@ const fetchOrganizer = async (req, res) => {
     }
 }
 //#endregion
-
+//#region verify mobile 
 const VerifyOrganizerMobileNumber = async (req, res) => {
     try{
         const {Mobile1} = req.query
@@ -64,7 +64,7 @@ const VerifyOrganizerMobileNumber = async (req, res) => {
         return res.status(400).send(errorMessage(error?.message));
     }
 }
-
+//#endregion
 //#region Signup API
 
 const AddOrginizer = async (req, res) => {
@@ -344,10 +344,36 @@ const updateOrginizer = async (req, res) => {
 };
 //#endregion
 
+//#region forgent password
+const ForgetPasswordForOrganizer = async (req, res) => {
+    try{
+        const {Mobile1, Password} = req.body
+        
+        const missingKeys = checkKeysAndRequireValues(['Mobile1', 'Password'], req.body);
+
+        if(missingKeys.length > 0){
+            return res.status(400).json(errorMessage(`${missingKeys.join(', ')} is required`))
+        }
+
+        const result = await pool.request().query(`update OrgUserMaster set Password = ${setSQLStringValue(Password)} where Mobile1 = ${setSQLStringValue(Mobile1)}`)
+
+        if(result.rowsAffected[0] === 0){
+            return res.status(400).json({...errorMessage('Account not found for this mobile number')});
+        }
+
+        return res.status(200).json({...successMessage(`password updated successfully`)})
+    }catch(error){
+        console.log('Forget Password for organizer error :', error);
+        return res.status(500).json(errorMessage(error.message))
+    }
+}
+//#endregion
+
 module.exports = {
     AddOrginizer,
     Loginorganizer,
     updateOrginizer,
     fetchOrganizer,
-    VerifyOrganizerMobileNumber
+    VerifyOrganizerMobileNumber,
+    ForgetPasswordForOrganizer
 }
