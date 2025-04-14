@@ -79,7 +79,7 @@ const addOrUpdateUserMaster = async (req, res) => {
         if (flag === 'A') {
             const userMobile = await pool.query(`SELECT * FROM UserMaster WHERE Mobile1 = '${Mobile1}'`);
 
-            if(!userMobile?.recordset?.[0]?.IsActive){
+            if(userMobile?.recordset?.[0]?.IsActive){
                 return res.status(400).json(errorMessage('Account already exists with this mobile number. To activate, contact customer care: 919904016789.'));
             }
 
