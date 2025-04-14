@@ -3,7 +3,7 @@ const {pool} = require('../sql/connectToDatabase');
 
 const EventList = async (req, res) => {
     try {
-        const { EventUkeyId, IsActive, OrganizerUkeyId } = req.query;
+        const { EventUkeyId, IsActive, OrganizerUkeyId, EventCategoryUkeyId } = req.query;
         let whereConditions = [];
 
         // Build the WHERE clause based on the Status
@@ -12,6 +12,9 @@ const EventList = async (req, res) => {
         }
         if (OrganizerUkeyId) {
             whereConditions.push(`em.OrganizerUkeyId = '${OrganizerUkeyId}'`); // Specify alias 'em' for EventMaster
+        }
+        if (EventCategoryUkeyId) {
+            whereConditions.push(`em.EventCategoryUkeyId = ${setSQLStringValue(EventCategoryUkeyId)}`); // Specify alias 'em' for EventMaster
         }
         if (IsActive) {
             whereConditions.push(`em.IsActive = ${setSQLBooleanValue(IsActive)}`); // Specify alias 'em' for EventMaster
