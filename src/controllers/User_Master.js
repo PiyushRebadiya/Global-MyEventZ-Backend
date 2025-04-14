@@ -146,8 +146,10 @@ const verifyHandler = async (req, res) => {
         if (!Mobile1) return res.status(200).send(errorMessage("Mobile1 is required"));
 
         // user mobile check if OTP implemented
-        const userMaster = await pool.query(`SELECT * FROM UserMaster WHERE Mobile1 = '${Mobile1}' AND IsActive = 1`);
+        const userMaster = await pool.query(`SELECT * FROM UserMaster WHERE Mobile1 = '${Mobile1}'`);
         if (!userMaster?.recordset?.length) return res.status(200).send(errorMessage("there is no user register found with the given mobile number"));
+        
+        if (!userMaster?.recordset?.[0]?.IsActive) return res.status(200).send(errorMessage("This account is inactive. To activate it, please contact customer support at +91-9040016789."));
 
         // user mobile and password check if manual login
         const userMaterPassword = userMaster?.recordset?.[0]?.Password;
