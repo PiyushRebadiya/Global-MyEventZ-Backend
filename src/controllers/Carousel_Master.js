@@ -76,6 +76,12 @@ const CarouserMaster = async (req, res) => {
             return res.status(400).json(errorMessage('Max 10 Active images allowed in the carousel!'))
         }
 
+        const getCarouselCountOnEvent = await pool.request().query(`select COUNT(*) AS EventCarouselCount from Carousel where EventUkeyId = ${setSQLStringValue(EventUkeyId)}`)
+
+        if(getCarouselCountOnEvent.recordset?.[0].EventCarouselCount >= 1 && flag == 'A'){
+            return res.status(400).json(errorMessage(`Only one Advertisement image is allowed per event.`));
+        }
+
         let query = ''
 
         if (flag === 'U') {
