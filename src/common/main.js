@@ -120,11 +120,10 @@ const setSQLStringValue = (value) => {
 }
 
 const setSQLDateTime = (date) => {
-    const parsedDate = moment(date);
-    if (parsedDate.isValid()) {
-        return `'${parsedDate.format('YYYY-MM-DD HH:mm:ss')}'`;
-    }
-    return null;
+    if (!date || isNaN(new Date(date))) return null;
+    const d = new Date(date);
+    const pad = (n) => n.toString().padStart(2, '0');
+    return `'${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}'`;
 };
 
 const checkKeysAndRequireValues = (allKeys, matchKeys) => {
