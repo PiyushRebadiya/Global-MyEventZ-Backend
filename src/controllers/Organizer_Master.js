@@ -1,4 +1,4 @@
-const { errorMessage, successMessage, checkKeysAndRequireValues, generateCODE, setSQLBooleanValue, getCommonKeys, generateJWTT, generateUUID, getCommonAPIResponse, setSQLStringValue, CommonLogFun } = require("../common/main");
+const { errorMessage, successMessage, checkKeysAndRequireValues, generateCODE, setSQLBooleanValue, getCommonKeys, generateJWTT, generateUUID, getCommonAPIResponse, setSQLStringValue, CommonLogFun, deleteImage } = require("../common/main");
 const {pool} = require('../sql/connectToDatabase');
 
 const FetchOrganizerDetails = async (req, res)=>{
@@ -148,6 +148,8 @@ const RemoveOrginazer = async (req, res) => {
             return res.status(400).json({...errorMessage('Admin cannot be deleted.')})
         }
 
+        const allDocument = await pool.request().query(`select * from DocumentUpload where OrganizerUkeyId = ${setSQLStringValue(OrganizerUkeyId)}`)
+
         const query = `
             DELETE FROM OrganizerMaster WHERE OrganizerUkeyId = ${setSQLStringValue(OrganizerUkeyId)}
             DELETE FROM EventMaster WHERE OrganizerUkeyId = ${setSQLStringValue(OrganizerUkeyId)}
@@ -157,7 +159,12 @@ const RemoveOrginazer = async (req, res) => {
             DELETE FROM SpeakerMaster WHERE OrganizerUkeyId = ${setSQLStringValue(OrganizerUkeyId)}
             DELETE FROM SponsorCatMaster WHERE OrganizerUkeyId = ${setSQLStringValue(OrganizerUkeyId)}
             DELETE FROM SponsorMaster WHERE OrganizerUkeyId = ${setSQLStringValue(OrganizerUkeyId)}
+            DELETE FROM DocumentUpload WHERE OrganizerUkeyId = ${setSQLStringValue(OrganizerUkeyId)}
         `
+
+        for (const doc of allDocument.recordset) {
+            deleteImage('./media/DocumentUpload/' + doc);
+        }
 
         const result = await pool.request().query(query);
 
