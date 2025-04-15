@@ -315,6 +315,7 @@ router.post('/create_razorpay_order_id', auth, PaymentController.createRazorpayO
 router.get('/fetch_razorpay_order_details_by_id', auth, PaymentController.fetchOrderDetails);
 // router.post('/payment/capture', PaymentController.capturePayment);
 router.get('/fetch_razorpay_payments', auth, PaymentController.getAllPayments);
+router.get('/payment_refund', auth, PaymentController.paymentRefund);
 //#endregion
 
 module.exports = router;
