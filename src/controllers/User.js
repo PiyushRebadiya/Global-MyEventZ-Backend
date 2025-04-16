@@ -414,6 +414,33 @@ const ForgetPasswordForOrganizer = async (req, res) => {
 }
 //#endregion
 
+//#region verify email
+
+const verifyOrganizerEmail = async (req, res) => {
+    try{
+        const {Email} = req.query;
+
+        const missingKeys = checkKeysAndRequireValues(['Email'], req.query);
+
+        if(missingKeys.length > 0){
+            return res.status(400).json(errorMessage(`${missingKeys.join(', ')} is required`))
+        }
+
+        const result = await pool.request().query(`select * from OrgUserMaster where Email = ${setSQLStringValue(Email)}`)
+
+        if(result.recordset?.length > 0){
+            return res.status(200).json({...errorMessage('already account exist of given Email Id')});
+        }
+
+        return res.status(200).json({...successMessage(`No account exist of given Email Id`)});
+    }catch(error){
+        console.log('verify Email of organizer error :', error);
+        return res.status(500).json(errorMessage(error.message))
+    }
+}
+
+//#endregion
+
 module.exports = {
     AddOrginizer,
     Loginorganizer,
@@ -421,5 +448,6 @@ module.exports = {
     fetchOrganizer,
     VerifyOrganizerMobileNumber,
     ForgetPasswordForOrganizer,
-    Loginorganizerwithemail
+    Loginorganizerwithemail,
+    verifyOrganizerEmail
 }
