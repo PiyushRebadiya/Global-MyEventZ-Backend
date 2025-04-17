@@ -92,9 +92,9 @@ const UserLoginWithEmail = async (req, res) => {
 
         if (!userMaster?.recordset?.length) return res.status(200).send(errorMessage("Invalid credentials"));
         
-        if (!userMaster?.recordset?.[0]?.IsActive) return res.status(200).send(errorMessage("This account is inactive. To activate it, please contact customer support at +91-9904016789."));
+        if (!userMaster?.recordset?.[0]?.IsActive) return res.status(200).send({...errorMessage("This account is inactive. To activate it, please contact customer support at +91-9904016789."), verify : false});
 
-        return res.status(200).send({...successMessage('Data inserted Successfully!'), token : generateJWTT({UserUkeyId: userMaster?.recordset?.[0]?.UserUkeyId, Role: userMaster?.recordset?.[0]?.Role}), ...userMaster?.recordset?.[0]});
+        return res.status(200).send({...successMessage('Data inserted Successfully!'), verify : true, token : generateJWTT({UserUkeyId: userMaster?.recordset?.[0]?.UserUkeyId, Role: userMaster?.recordset?.[0]?.Role}), ...userMaster?.recordset?.[0]});
     }catch(error){
         return res.status(400).send(errorMessage(error?.message));
     }
