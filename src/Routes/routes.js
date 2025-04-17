@@ -54,6 +54,7 @@ const MobileSMSMasterController = require('../controllers/MobileSMSMaster');
 const SuperAdminDashboardController = require('../controllers/SuperAdminDashboard');
 const AdminDashboardController = require('../controllers/AdminDashboardList');
 const EventCategoryNasterController = require('../controllers/EventCategoryMaster');
+const OrgtermandconditionController = require('../controllers/Org_TermsCondi');
 // const carouselController = require('../controllers/carousel');
 
 const auth = require("../middleware/auth");
@@ -319,6 +320,12 @@ router.get('/fetch_razorpay_order_details_by_id', auth, PaymentController.fetchO
 // router.post('/payment/capture', PaymentController.capturePayment);
 router.get('/fetch_razorpay_payments', auth, PaymentController.getAllPayments);
 router.get('/payment_refund', auth, PaymentController.paymentRefund);
+//#endregion
+
+//#region 
+router.get('/fetch_organizer_terms_condition', auth, OrgtermandconditionController.fetchOrgTermCond);
+router.post('/organizer_terms_condition', auth, OrgtermandconditionController.OrgTermCond);
+router.delete('/delete_organizer_terms_condition', auth, OrgtermandconditionController.RemoveOrgTermCond);
 //#endregion
 
 module.exports = router;
