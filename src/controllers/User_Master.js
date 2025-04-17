@@ -59,6 +59,26 @@ const VerifyUserMobileNumber = async (req, res) => {
     }
 }
 
+const VerifyUserEmail = async (req, res) => {
+    try{
+        const {Email} = req.query
+
+        if(!Email){
+            return res.status(200).json(errorMessage('Email is required'))
+        }
+
+        const result = await pool.request().query(`select * from UserMaster where Email = ${setSQLStringValue(Email)} and IsActive = 1`)
+
+        if(!result.recordset[0]){
+            return res.status(200).json({...successMessage("there is no user register found with the given Email ID."), verify : false})
+        }
+
+        return res.status(200).json({...successMessage("given mobile number is valid"), verify : true, FullName : result.recordset[0].FullName, UserUkeyId : result?.recordset?.[0]?.UserUkeyId})
+    }catch(error){
+        return res.status(400).send(errorMessage(error?.message));
+    }
+}
+
 const addOrUpdateUserMaster = async (req, res) => {
     let { ProfiilePic = null } = req.body;
 
@@ -165,4 +185,4 @@ const verifyHandler = async (req, res) => {
     }
 }
 
-module.exports = { fetchUserMaster, VerifyUserMobileNumber, addOrUpdateUserMaster, deleteUserMaster, verifyHandler };
+module.exports = { fetchUserMaster, VerifyUserMobileNumber, addOrUpdateUserMaster, deleteUserMaster, verifyHandler, VerifyUserEmail };
