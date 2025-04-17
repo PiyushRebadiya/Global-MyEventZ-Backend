@@ -81,10 +81,10 @@ const AddOrginizer = async (req, res) => {
         const UserUkeyId = generateUUID()
         const AddressUkeyID = generateUUID()
 
-        const checkMobile = await pool.request().query(`select * from OrguserMaster where Mobile1 = ${setSQLStringValue(Mobile1)}`)
+        const checkMobile = await pool.request().query(`select * from OrguserMaster where Mobile1 = ${setSQLStringValue(Mobile1)} or Email = ${setSQLStringValue(Email)}`)
 
         if(checkMobile.recordset.length > 0){
-            return res.status(400).json({...errorMessage('An account with this mobile number already registered.'), ErrorCode  : 2627})
+            return res.status(400).json({...errorMessage('An account with this mobile Or Email Id number already registered.'), ErrorCode  : 2627})
         }
 
         const EventCode = generateCODE(OrganizerName);
