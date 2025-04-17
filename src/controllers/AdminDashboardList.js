@@ -240,9 +240,68 @@ const TransactionReport = async (req, res)=> {
     }
 }
 
+const TicketVerifyReport = async (req, res) => {
+    try{
+        const {EventUkeyId, OrganizerUkeyId, VerifiedByUkeyId} = req.query;
+        let whereConditions = [];
+
+        if (OrganizerUkeyId) {
+            whereConditions.push(`bm.OrganizerUkeyId = ${setSQLStringValue(OrganizerUkeyId)}`);
+        }
+        if (EventUkeyId) {
+            whereConditions.push(`bm.EventUkeyId = ${setSQLStringValue(EventUkeyId)}`);
+        }
+        if (VerifiedByUkeyId) {
+            whereConditions.push(`bd.VerifiedByUkeyId = ${setSQLStringValue(VerifiedByUkeyId)}`);
+        }
+        
+        const whereString = whereConditions.length > 0 ? `WHERE ${whereConditions.join(' AND ')}` : '';
+
+        const VerifyReport = await pool.request().query(`
+            SELECT 
+                COUNT(*) AS TotalTickets,
+                COUNT(CASE WHEN bd.IsVerify = 1 THEN 1 END) AS TotalTicketVerified,
+                tcm.Category AS EventCategoryName,
+                em.EventName,
+                bm.EventUkeyId,
+                bm.OrganizerUkeyId
+            FROM Bookingdetails bd
+            LEFT JOIN Bookingmast bm ON bm.BookingUkeyID = bd.BookingUkeyID
+            LEFT JOIN TicketCategoryMaster tcm ON tcm.TicketCateUkeyId = bd.TicketCateUkeyId
+            LEFT JOIN OrgUserMaster oum ON oum.UserUkeyId = bd.VerifiedByUkeyId
+            LEFT JOIN EventMaster em ON em.EventUkeyId = bm.EventUkeyId
+            WHERE bm.EventUkeyId = ${setSQLStringValue(EventUkeyId)}
+            AND bm.OrganizerUkeyId = ${setSQLStringValue(OrganizerUkeyId)} 
+            GROUP BY tcm.Category, em.EventName, bm.EventUkeyId, bm.OrganizerUkeyId;
+        `);
+
+        const UserVerifiedTicket = await pool.request().query(`
+            select COUNT(*) AS TotalTickets,
+            COUNT(CASE WHEN bd.IsVerify = 1 THEN 1 END) AS TotalTicketVerified
+            , tcm.Category AS EventCategoryName, bd.VerifiedByUkeyId, oum.FirstName AS verifierName, em.EventName, bm.EventUkeyId, bm.OrganizerUkeyId from Bookingdetails bd
+            left join Bookingmast bm on bm.BookingUkeyID = bd.BookingUkeyID
+            left join TicketCategoryMaster tcm on tcm.TicketCateUkeyId = bd.TicketCateUkeyId
+            left join OrgUserMaster oum on oum.UserUkeyId = bd.VerifiedByUkeyId
+            left join EventMaster em on em.EventUkeyId = bm.EventUkeyId
+            WHERE bm.EventUkeyId = ${setSQLStringValue(EventUkeyId)}
+            AND bm.OrganizerUkeyId = ${setSQLStringValue(OrganizerUkeyId)} AND bd.VerifiedByUkeyId = ${setSQLStringValue(VerifiedByUkeyId)}
+            group by tcm.Category, bd.VerifiedByUkeyId, oum.FirstName, em.EventName, bm.EventUkeyId, bm.OrganizerUkeyId
+        `)
+
+        return res.status(200).json({
+            TicketVerifyReport : VerifyReport.recordset,
+            TicketVerifyReportOfUser : UserVerifiedTicket.recordset
+        })
+    }catch(error){
+        console.log('transaction report error : ', error);
+        return res.status(500).json(errorMessage(error.message));
+    }
+}
+
 module.exports = {
     AdminDashboardList,
     AdminDashboadChartList,
     TicketRegisterReport,
-    TransactionReport
+    TransactionReport,
+    TicketVerifyReport
 }

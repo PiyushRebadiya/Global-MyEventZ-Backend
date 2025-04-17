@@ -311,6 +311,7 @@ router.get('/admin_dashboard_count_list', auth, AdminDashboardController.AdminDa
 router.get('/ticket_register_report', auth, AdminDashboardController.TicketRegisterReport);
 router.get('/admin_dashboard_chart_list', auth, AdminDashboardController.AdminDashboadChartList);
 router.get('/transaction_report',auth, AdminDashboardController.TransactionReport);
+router.get('/ticket_verify_report',auth, AdminDashboardController.TicketVerifyReport);
 //#endregion
 
 //#region RAZORPAY apis 
