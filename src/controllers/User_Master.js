@@ -1,4 +1,4 @@
-const { errorMessage, getCommonAPIResponse, setSQLBooleanValue, checkKeysAndRequireValues, successMessage, getCommonKeys, generateUUID, getServerIpAddress, setSQLStringValue, deleteImage, setSQLNumberValue, setSQLDateTime, setSQLOrderId, setSQLNumberNullValue } = require("../common/main");
+const { errorMessage, getCommonAPIResponse, setSQLBooleanValue, checkKeysAndRequireValues, successMessage, getCommonKeys, generateUUID, getServerIpAddress, setSQLStringValue, deleteImage, setSQLNumberValue, setSQLDateTime, setSQLOrderId, setSQLNumberNullValue, generateJWTT } = require("../common/main");
 const { SECRET_KEY } = require("../common/variable");
 const { pool } = require("../sql/connectToDatabase");
 const jwt = require('jsonwebtoken');
@@ -74,6 +74,27 @@ const VerifyUserEmail = async (req, res) => {
         }
 
         return res.status(200).json({...successMessage("given mobile number is valid"), verify : true, FullName : result.recordset[0].FullName, UserUkeyId : result?.recordset?.[0]?.UserUkeyId})
+    }catch(error){
+        return res.status(400).send(errorMessage(error?.message));
+    }
+}
+
+const UserLoginWithEmail = async (req, res) => {
+    try{
+        const {Email} = req.body;
+
+        const fieldCheck = checkKeysAndRequireValues(['Email'], req.body);
+        if (fieldCheck.length !== 0) {
+            return res.status(200).send(errorMessage(`${fieldCheck} is required`));
+        }
+
+        const userMaster = await pool.query(`SELECT * FROM UserMaster WHERE Email = ${setSQLStringValue(Email)}`);
+
+        if (!userMaster?.recordset?.length) return res.status(200).send(errorMessage("Invalid credentials"));
+        
+        if (!userMaster?.recordset?.[0]?.IsActive) return res.status(200).send(errorMessage("This account is inactive. To activate it, please contact customer support at +91-9904016789."));
+
+        return res.status(200).send({...successMessage('Data inserted Successfully!'), token : generateJWTT({UserUkeyId: userMaster?.recordset?.[0]?.UserUkeyId, Role: userMaster?.recordset?.[0]?.Role}), ...userMaster?.recordset?.[0]});
     }catch(error){
         return res.status(400).send(errorMessage(error?.message));
     }
@@ -185,4 +206,4 @@ const verifyHandler = async (req, res) => {
     }
 }
 
-module.exports = { fetchUserMaster, VerifyUserMobileNumber, addOrUpdateUserMaster, deleteUserMaster, verifyHandler, VerifyUserEmail };
+module.exports = { fetchUserMaster, VerifyUserMobileNumber, addOrUpdateUserMaster, deleteUserMaster, verifyHandler, VerifyUserEmail, UserLoginWithEmail };

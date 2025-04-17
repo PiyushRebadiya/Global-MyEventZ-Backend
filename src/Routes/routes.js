@@ -65,6 +65,7 @@ const { Router } = require("express");
 router.get("/fetchUserMaster", auth, UserMasterController.fetchUserMaster)
 router.get("/verify_user_mobile_number", auth, UserMasterController.VerifyUserMobileNumber)
 router.get("/verify_user_email_id", UserMasterController.VerifyUserEmail)
+router.post("/user_login_with_email", UserMasterController.UserLoginWithEmail)
 router.post("/user_master", UserUpload, UserMasterController.addOrUpdateUserMaster)
 router.delete("/delete_user_master", auth, UserMasterController.deleteUserMaster)
 
