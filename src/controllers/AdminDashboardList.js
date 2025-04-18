@@ -230,7 +230,6 @@ const TransactionReport = async (req, res)=> {
                 ${whereString}
             `,
         };
-        console.log(TransactionReport);
         // Execute the query and return results
         const result = await getCommonAPIResponse(req, res, TransactionReport);
         return res.json(result);
@@ -298,10 +297,59 @@ const TicketVerifyReport = async (req, res) => {
     }
 }
 
+const TicketVerifyReportByTicketCategory = async (req, res) => {
+    try{
+        const {EventUkeyId, OrganizerUkeyId, VerifiedByUkeyId, TicketCateUkeyId} = req.query;
+        let whereConditions = [];
+
+        if (OrganizerUkeyId) {
+            whereConditions.push(`bm.OrganizerUkeyId = ${setSQLStringValue(OrganizerUkeyId)}`);
+        }
+        if (EventUkeyId) {
+            whereConditions.push(`bm.EventUkeyId = ${setSQLStringValue(EventUkeyId)}`);
+        }
+        if (VerifiedByUkeyId) {
+            whereConditions.push(`bd.VerifiedByUkeyId = ${setSQLStringValue(VerifiedByUkeyId)}`);
+        }
+        if (TicketCateUkeyId) {
+            whereConditions.push(`tcm.TicketCateUkeyId = ${setSQLStringValue(TicketCateUkeyId)}`);
+        }
+        
+        const whereString = whereConditions.length > 0 ? `WHERE ${whereConditions.join(' AND ')}` : '';
+
+        const TransactionReport = {
+            getQuery: `
+            select bd.*
+            , tcm.Category AS EventCategoryName, oum.FirstName AS verifierName, em.EventName, bm.EventUkeyId, bm.OrganizerUkeyId from Bookingdetails bd
+            left join Bookingmast bm on bm.BookingUkeyID = bd.BookingUkeyID
+            left join TicketCategoryMaster tcm on tcm.TicketCateUkeyId = bd.TicketCateUkeyId
+            left join OrgUserMaster oum on oum.UserUkeyId = bd.VerifiedByUkeyId
+            left join EventMaster em on em.EventUkeyId = bm.EventUkeyId
+                            ${whereString} order by BookingDate desc
+            `,
+            countQuery: `
+                select count(*) AS totalCount from Bookingdetails bd
+                left join Bookingmast bm on bm.BookingUkeyID = bd.BookingUkeyID
+                left join TicketCategoryMaster tcm on tcm.TicketCateUkeyId = bd.TicketCateUkeyId
+                left join OrgUserMaster oum on oum.UserUkeyId = bd.VerifiedByUkeyId
+                left join EventMaster em on em.EventUkeyId = bm.EventUkeyId
+                ${whereString}
+            `,
+        };
+        console.log(TransactionReport);
+        const result = await getCommonAPIResponse(req, res, TransactionReport);
+        return res.json(result);
+    }catch(error){
+        console.log('transaction report error : ', error);
+        return res.status(500).json(errorMessage(error.message));
+    }
+}
+
 module.exports = {
     AdminDashboardList,
     AdminDashboadChartList,
     TicketRegisterReport,
     TransactionReport,
-    TicketVerifyReport
+    TicketVerifyReport,
+    TicketVerifyReportByTicketCategory
 }
