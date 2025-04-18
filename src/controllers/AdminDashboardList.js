@@ -336,7 +336,6 @@ const TicketVerifyReportByTicketCategory = async (req, res) => {
                 ${whereString}
             `,
         };
-        console.log(TransactionReport);
         const result = await getCommonAPIResponse(req, res, TransactionReport);
         return res.json(result);
     }catch(error){
