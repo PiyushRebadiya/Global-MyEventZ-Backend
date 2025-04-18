@@ -344,11 +344,44 @@ const TicketVerifyReportByTicketCategory = async (req, res) => {
     }
 }
 
+const dashboardVolunteerCount = async (req, res) => {
+    try{
+        const {EventUkeyId, OrganizerUkeyId, } = req.query;
+        let whereConditions = [];
+
+        if (OrganizerUkeyId) {
+            whereConditions.push(`OrganizerUkeyId = ${setSQLStringValue(OrganizerUkeyId)}`);
+        }
+        if (EventUkeyId) {
+            whereConditions.push(`EventUkeyId = ${setSQLStringValue(EventUkeyId)}`);
+        }
+        
+        whereConditions.push(`Role = 'Volunteer'`);
+        const whereString = whereConditions.length > 0 ? `WHERE ${whereConditions.join(' AND ')}` : '';
+
+        const TransactionReport = {
+            getQuery: `
+                select * from OrgUserMaster ${whereString} order by EntryDate desc
+            `,
+            countQuery: `
+                select COUNT(*) AS totalCount from OrgUserMaster
+                ${whereString}
+            `,
+        };
+        const result = await getCommonAPIResponse(req, res, TransactionReport);
+        return res.json(result);
+    }catch(error){
+        console.log('transaction report error : ', error);
+        return res.status(500).json(errorMessage(error.message));
+    }
+}
+
 module.exports = {
     AdminDashboardList,
     AdminDashboadChartList,
     TicketRegisterReport,
     TransactionReport,
     TicketVerifyReport,
-    TicketVerifyReportByTicketCategory
+    TicketVerifyReportByTicketCategory,
+    dashboardVolunteerCount,
 }
