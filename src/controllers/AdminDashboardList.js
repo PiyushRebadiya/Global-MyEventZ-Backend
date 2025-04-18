@@ -314,6 +314,8 @@ const TicketVerifyReportByTicketCategory = async (req, res) => {
         if (TicketCateUkeyId) {
             whereConditions.push(`tcm.TicketCateUkeyId = ${setSQLStringValue(TicketCateUkeyId)}`);
         }
+        whereConditions.push(`bd.IsVerify = 1`);
+
         
         const whereString = whereConditions.length > 0 ? `WHERE ${whereConditions.join(' AND ')}` : '';
 
