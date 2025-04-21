@@ -207,7 +207,7 @@ const AddOrginizer = async (req, res) => {
             ...req.body,
             EventUkeyId,
             UserUkeyId,
-            EventName : 'Default Event'
+            EventName : OrganizerName
         })
     }catch(error){
         console.log('Add User Error :', error);
