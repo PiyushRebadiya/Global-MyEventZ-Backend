@@ -38,7 +38,7 @@ const EventList = async (req, res) => {
             om.OrganizerName, 
             ecm.CategoryName AS EventCategoryName,
             (
-                SELECT du.FileName, du.Label
+                SELECT du.FileName, du.Label, du.docukeyid
                 FROM DocumentUpload du 
                 WHERE du.UkeyId = em.EventUkeyId
                 FOR JSON PATH
