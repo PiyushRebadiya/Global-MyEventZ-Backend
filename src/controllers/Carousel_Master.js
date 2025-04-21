@@ -26,7 +26,7 @@ const fetchCarouselList = async (req, res) => {
             getQuery: `SELECT 
             cc.*, 
             ( 
-                SELECT dm.FileName, dm.Label, du.DocUkeyId
+                SELECT dm.FileName, dm.Label, dm.DocUkeyId
                 FROM DocumentUpload dm 
                 WHERE dm.UkeyId = cc.CarouselUkeyId 
                 FOR JSON PATH 
@@ -45,17 +45,19 @@ const fetchCarouselList = async (req, res) => {
             countQuery: `SELECT COUNT(*) AS totalCount FROM Carousel As cc ${whereString}`,
         };
         const result = await getCommonAPIResponse(req, res, getCarouselList);
-        result.data.forEach(event => {
-            if(event.FileNames){
-                event.FileNames = JSON.parse(event?.FileNames)
-            } else {
-                event.FileNames = []
-            }
-        });
+        if(result?.data?.length > 0){
+            result.data.forEach(event => {
+                if(event.FileNames){
+                    event.FileNames = JSON.parse(event?.FileNames)
+                } else {
+                    event.FileNames = []
+                }
+            });
+        }
         return res.json(result);
 
     } catch (error) {
-        return res.status(400).send(errorMessage(error?.message));
+        return res.status(500).send(errorMessage(error?.message));
     }
 };
 
