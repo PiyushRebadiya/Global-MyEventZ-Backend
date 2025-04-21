@@ -37,7 +37,7 @@ const OrgTermCond = async(req, res)=>{
     const { EventUkeyId, OrganizerUkeyId, TermsUkeyId, Remarks1, Remarks2, Remarks3, Remarks4, Remarks5, Remarks6, IsActive, flag = ''} = req.body;
     const {IPAddress, ServerName, EntryTime} = getCommonKeys(req);
     try{
-        const missingKeys = checkKeysAndRequireValues(['TermsUkeyId', 'EventUkeyId', 'OrganizerUkeyId'], req.body)
+        const missingKeys = checkKeysAndRequireValues(['TermsUkeyId', 'OrganizerUkeyId'], req.body)
         if(missingKeys.length > 0){
             return res.status(200).json(errorMessage(`${missingKeys.join(', ')} is required`));
         }
