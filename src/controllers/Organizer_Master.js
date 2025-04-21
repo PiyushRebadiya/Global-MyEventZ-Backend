@@ -118,6 +118,22 @@ const OrginazerMaster = async (req, res) => {
                 EntryTime : EntryTime
             })
 
+            if( !IsActive && IsActive == false){
+                await pool.request().query(`
+                    update OrgUserMaster set IsActive = 0 where OrganizerUkeyId = ${setSQLStringValue(OrganizerUkeyId)}
+                    update EventMaster set IsActive = 0 where OrganizerUkeyId = ${setSQLStringValue(OrganizerUkeyId)}
+                    update AddressMaster set IsActive = 0 where OrganizerUkeyId = ${setSQLStringValue(OrganizerUkeyId)}
+                    update CouponMaster set IsActive = 0 where OrganizerUkeyId = ${setSQLStringValue(OrganizerUkeyId)}
+                    update PaymentGatewayMaster set IsActive = 0 where OrganizerUkeyId = ${setSQLStringValue(OrganizerUkeyId)}
+                    update DocumentUpload set IsActive = 0 where OrganizerUkeyId = ${setSQLStringValue(OrganizerUkeyId)}
+                    update SpeakerMaster set IsActive = 0 where OrganizerUkeyId = ${setSQLStringValue(OrganizerUkeyId)}
+                    update SponsorMaster set IsActive = 0 where OrganizerUkeyId = ${setSQLStringValue(OrganizerUkeyId)}
+                    update SponsorCatMaster set IsActive = 0 where OrganizerUkeyId = ${setSQLStringValue(OrganizerUkeyId)}
+                    update TicketCategoryMaster set IsActive = 0 where OrganizerUkeyId = ${setSQLStringValue(OrganizerUkeyId)}
+                    update TemplateMaster set IsActive = 0 where OrganizerUkeyId = ${setSQLStringValue(OrganizerUkeyId)}
+                `)
+            }
+
             return res.status(200).json({ ...successMessage("Organizer Updated Successfully."), OrganizerUkeyId });
         }
 
