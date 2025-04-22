@@ -131,13 +131,13 @@ const AddOrginizer = async (req, res) => {
     
         const resultEvent = await pool.request().query(InsertEvent);
 
-        const InsertPaymentGategory = await pool.request().query(`insert into PaymentGatewayMaster (
-            GatewayUkeyId, EventUkeyId, OrganizerUkeyId, ShortName, GatewayName, KeyId, SecretKey, ConvenienceFee, GST, IsActive, UserId, UserName, IpAddress, HostName, EntryDate, flag
-        ) values (
-            ${setSQLStringValue(generateUUID())}, ${setSQLStringValue(EventUkeyId)}, ${setSQLStringValue(OrganizerUkeyId)}, 'RZP', 'TAXFILE', 'rzp_live_MN8CGpfzWT6Iqu', 'nujhlHiMeB8jb5CiuE2Wyr6t', 3, 18, 1, ${setSQLNumberValue(resultOrgUserMst.recordset[0].UserId)}, ${setSQLStringValue(OrganizerName)}, ${setSQLStringValue(IPAddress)}, ${setSQLStringValue(ServerName)}, ${setSQLStringValue(EntryTime)}, 'A'
-        )`)
+        // const InsertPaymentGategory = await pool.request().query(`insert into PaymentGatewayMaster (
+        //     GatewayUkeyId, EventUkeyId, OrganizerUkeyId, ShortName, GatewayName, KeyId, SecretKey, ConvenienceFee, GST, IsActive, UserId, UserName, IpAddress, HostName, EntryDate, flag
+        // ) values (
+        //     ${setSQLStringValue(generateUUID())}, ${setSQLStringValue(EventUkeyId)}, ${setSQLStringValue(OrganizerUkeyId)}, 'RZP', 'TAXFILE', 'rzp_live_MN8CGpfzWT6Iqu', 'nujhlHiMeB8jb5CiuE2Wyr6t', 3, 18, 1, ${setSQLNumberValue(resultOrgUserMst.recordset[0].UserId)}, ${setSQLStringValue(OrganizerName)}, ${setSQLStringValue(IPAddress)}, ${setSQLStringValue(ServerName)}, ${setSQLStringValue(EntryTime)}, 'A'
+        // )`)
 
-        if(resultOrgUsrMst.rowsAffected[0] === 0 && resultEvent.rowsAffected[0] === 0 && resultOrgUserMst.rowsAffected[0] === 0 && resulAddress.rowsAffected[0] === 0 && InsertPaymentGategory.rowsAffected[0] === 0){
+        if(resultOrgUsrMst.rowsAffected[0] === 0 && resultEvent.rowsAffected[0] === 0 && resultOrgUserMst.rowsAffected[0] === 0 && resulAddress.rowsAffected[0] === 0){
             return res.status(400).json({...errorMessage('User Not Registerd Successfully.')})
         }
 
@@ -182,19 +182,19 @@ const AddOrginizer = async (req, res) => {
             ServerName : ServerName, 
             EntryTime : EntryTime
         })
-        CommonLogFun({
-            OrganizerUkeyId : OrganizerUkeyId, 
-            ReferenceUkeyId : OrganizerUkeyId, 
-            MasterName : OrganizerName,  
-            TableName : "PaymentGatewayMaster", 
-            UserId : resultOrgUserMst.recordset?.[0]?.UserId, 
-            UserName :OrganizerName, 
-            IsActive : true,
-            flag : 'A', 
-            IPAddress : IPAddress, 
-            ServerName : ServerName, 
-            EntryTime : EntryTime
-        })
+        // CommonLogFun({
+        //     OrganizerUkeyId : OrganizerUkeyId, 
+        //     ReferenceUkeyId : OrganizerUkeyId, 
+        //     MasterName : OrganizerName,  
+        //     TableName : "PaymentGatewayMaster", 
+        //     UserId : resultOrgUserMst.recordset?.[0]?.UserId, 
+        //     UserName :OrganizerName, 
+        //     IsActive : true,
+        //     flag : 'A', 
+        //     IPAddress : IPAddress, 
+        //     ServerName : ServerName, 
+        //     EntryTime : EntryTime
+        // })
         return res.status(200).json({
             ...successMessage('User Registerd Successfully.'), 
             token : generateJWTT({
