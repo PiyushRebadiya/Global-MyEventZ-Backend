@@ -73,7 +73,7 @@ const VerifyUserEmail = async (req, res) => {
             return res.status(200).json({...successMessage("there is no user register found with the given Email ID."), verify : false})
         }
 
-        return res.status(200).json({...successMessage("given mobile number is valid"), verify : true, FullName : result.recordset[0].FullName, UserUkeyId : result?.recordset?.[0]?.UserUkeyId})
+        return res.status(200).json({...successMessage("given Emai is valid"), verify : true, FullName : result.recordset[0].FullName, UserUkeyId : result?.recordset?.[0]?.UserUkeyId})
     }catch(error){
         return res.status(400).send(errorMessage(error?.message));
     }
