@@ -34,10 +34,10 @@ const getPaymentDetails = async (req, res) => {
 
 const createRazorpayOrderId = async (req, res) => {
     try {
-        const { BookingAmt, OrganizerUkeyId, EventUkeyId, UserUkeyID, TotalGST, TotalConviencefee, DiscountAmt, TotalNetAmount, TotalNumberOfTicket, CouponUkeyId = '', CouponAmount } = req.body;
+        const { BookingAmt = null, OrganizerUkeyId = null, EventUkeyId = null, UserUkeyID = null, TotalGST = null, TotalConviencefee = null, DiscountAmt = null, TotalNetAmount = null, TotalNumberOfTicket = null, CouponUkeyId = '', CouponAmount = null } = req.body;
         
         // Check for missing required values
-        const missingKey = checkKeysAndRequireValues(['BookingAmt', 'OrganizerUkeyId', 'EventUkeyId', 'UserUkeyID', 'TotalGST', 'TotalConviencefee', 'DiscountAmt', 'TotalNetAmount', 'TotalNumberOfTicket', 'CouponAmount'], req.body);
+        const missingKey = checkKeysAndRequireValues(['BookingAmt', 'OrganizerUkeyId', 'UserUkeyID', 'TotalGST', 'TotalConviencefee', 'DiscountAmt', 'TotalNetAmount', 'TotalNumberOfTicket', 'CouponAmount'], req.body);
         if (missingKey.length > 0) {
             return res.status(400).send(errorMessage(`${missingKey} is required`));
         }
@@ -45,8 +45,7 @@ const createRazorpayOrderId = async (req, res) => {
         // Fetch Razorpay credentials from database
         const razorpayQuery = await pool.query(`
             SELECT * FROM PaymentGatewayMaster 
-            WHERE OrganizerUkeyId = ${setSQLStringValue(OrganizerUkeyId)} 
-            AND EventUkeyId = ${setSQLStringValue(EventUkeyId)}
+            WHERE OrganizerUkeyId = ${setSQLStringValue(OrganizerUkeyId)} and IsActive = 1
         `);
         
         if (!razorpayQuery?.recordset?.length) {
