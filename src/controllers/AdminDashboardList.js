@@ -274,18 +274,51 @@ const TicketVerifyReport = async (req, res) => {
             GROUP BY tcm.Category, em.EventName, bm.EventUkeyId, bm.OrganizerUkeyId;
         `);
 
-        const UserVerifiedTicket = await pool.request().query(`
-            select COUNT(*) AS TotalTickets,
-            COUNT(CASE WHEN bd.IsVerify = 1 THEN 1 END) AS TotalTicketVerified
-            , tcm.Category AS EventCategoryName, bd.VerifiedByUkeyId, oum.FirstName AS verifierName, em.EventName, bm.EventUkeyId, bm.OrganizerUkeyId from Bookingdetails bd
-            left join Bookingmast bm on bm.BookingUkeyID = bd.BookingUkeyID
-            left join TicketCategoryMaster tcm on tcm.TicketCateUkeyId = bd.TicketCateUkeyId
-            left join OrgUserMaster oum on oum.UserUkeyId = bd.VerifiedByUkeyId
-            left join EventMaster em on em.EventUkeyId = bm.EventUkeyId
-            WHERE bm.EventUkeyId = ${setSQLStringValue(EventUkeyId)}
-            AND bm.OrganizerUkeyId = ${setSQLStringValue(OrganizerUkeyId)} AND bd.VerifiedByUkeyId = ${setSQLStringValue(VerifiedByUkeyId)}
-            group by tcm.Category, bd.VerifiedByUkeyId, oum.FirstName, em.EventName, bm.EventUkeyId, bm.OrganizerUkeyId
-        `)
+        const UserVerifiedTicketquery = `
+        SELECT
+            COUNT(*) AS TotalTickets,
+            COUNT(CASE WHEN bd.IsVerify = 1 THEN 1 END) AS TotalTicketVerified,
+            tcm.Category AS EventCategoryName,
+            tcm.TicketCateUkeyId,
+            bd.VerifiedByUkeyId,
+            oum.FirstName AS verifierName,
+            em.EventName,
+            bm.EventUkeyId,
+            bm.OrganizerUkeyId
+        FROM Bookingdetails bd
+        LEFT JOIN Bookingmast bm ON bm.BookingUkeyID = bd.BookingUkeyID
+        LEFT JOIN TicketCategoryMaster tcm ON tcm.TicketCateUkeyId = bd.TicketCateUkeyId
+        LEFT JOIN OrgUserMaster oum ON oum.UserUkeyId = bd.VerifiedByUkeyId
+        LEFT JOIN EventMaster em ON em.EventUkeyId = bm.EventUkeyId
+        WHERE bm.EventUkeyId = ${setSQLStringValue(EventUkeyId)}
+        AND bm.OrganizerUkeyId = ${setSQLStringValue(OrganizerUkeyId)}
+        and bd.IsVerify=1
+        AND (
+            bd.VerifiedByUkeyId = ${VerifiedByUkeyId ? `'${VerifiedByUkeyId}'` : null}
+            OR ${VerifiedByUkeyId ? `'${VerifiedByUkeyId}'` : null} IS NULL
+        )
+        GROUP BY
+            tcm.Category,
+            bd.VerifiedByUkeyId,
+            oum.FirstName,
+            em.EventName,
+            bm.EventUkeyId,
+            bm.OrganizerUkeyId,
+            tcm.TicketCateUkeyId;
+        `
+        const UserVerifiedTicket = await pool.request().query(UserVerifiedTicketquery)
+        // const UserVerifiedTicket = await pool.request().query(`
+        //     select COUNT(*) AS TotalTickets,
+        //     COUNT(CASE WHEN bd.IsVerify = 1 THEN 1 END) AS TotalTicketVerified
+        //     , tcm.Category AS EventCategoryName, bd.VerifiedByUkeyId, oum.FirstName AS verifierName, em.EventName, bm.EventUkeyId, bm.OrganizerUkeyId from Bookingdetails bd
+        //     left join Bookingmast bm on bm.BookingUkeyID = bd.BookingUkeyID
+        //     left join TicketCategoryMaster tcm on tcm.TicketCateUkeyId = bd.TicketCateUkeyId
+        //     left join OrgUserMaster oum on oum.UserUkeyId = bd.VerifiedByUkeyId
+        //     left join EventMaster em on em.EventUkeyId = bm.EventUkeyId
+        //     WHERE bm.EventUkeyId = ${setSQLStringValue(EventUkeyId)}
+        //     AND bm.OrganizerUkeyId = ${setSQLStringValue(OrganizerUkeyId)} AND bd.VerifiedByUkeyId = ${setSQLStringValue(VerifiedByUkeyId)}
+        //     group by tcm.Category, bd.VerifiedByUkeyId, oum.FirstName, em.EventName, bm.EventUkeyId, bm.OrganizerUkeyId
+        // `)
 
         return res.status(200).json({
             TicketVerifyReport : VerifyReport.recordset,
