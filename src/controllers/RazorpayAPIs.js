@@ -82,7 +82,7 @@ const createRazorpayOrderId = async (req, res) => {
         });
 
 
-        return res.status(200).json({ Success: true, data: response });
+        return res.status(200).json({ success: true, data: response });
     } catch (error) {   
         console.log('Error:', error);
         return res.status(500).send(errorMessage(error?.message || error?.error?.description));
