@@ -25,7 +25,7 @@ const FetchSponsorMasterDetails = async (req, res) => {
             getQuery: `
                 SELECT SM.*, SCM.Name AS SponsorCategoryName,
                 (SELECT JSON_QUERY(
-                    (SELECT FileName, Label 
+                    (SELECT FileName, Label , DocUkeyId
                     FROM DocumentUpload 
                     WHERE UkeyId = SM.SponsorUkeyId 
                     FOR JSON PATH)
