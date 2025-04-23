@@ -19,23 +19,14 @@ const SponsorCategoryMasterController = require('../controllers/Sponsor_Category
 const carouselController = require('../controllers/Carousel_Master');
 const galleryMasterController = require('../controllers/Gallery_Master');
 // const TicketViewController = require('../controllers/TicketView_Master');
-const firebaseSentNotification = require('../controllers/firebaseSentNotification');
 // const AutoSentNotificationController = require('../controllers/Auto_Sent_Notification');
-const ContactMasterController = require('../controllers/Contact_Master');
 // const TicketLimitMasterController = require('../controllers/Ticket_Limit_Master');
-const MemberTypeMasterController = require('../controllers/Member_Type_Master');
-const DashbordController = require('../controllers/dashbord');
 const ReminderMasterController = require('../controllers/ReminderMaster');
-const bellNotificationByUserController = require('../controllers/bellNotificationByUser');
 // const LogTableController = require('../controllers/VerifyLog');
 const TemplateMasterController = require('../controllers/Template_Master');
 const WhatsAppMsgController = require('../controllers/Whats_App_Msg');
 const FeedbackMasterController = require('../controllers/FeedBack_Master');
-const GateNoListController = require('../controllers/Gate_No_List');
-const ComplaintMasterController = require('../controllers/ComplaintMaster');
-const LiveStreamController = require('../controllers/Live_Stream');
 // const IsTicketUserList = require('../controllers/IsTicketUserList');
-const ReactDeployController = require('../controllers/React_Deploy_IIS');
 const professionCategoryMaster = require('../controllers/professionCategory.js');
 const userCategoryMaster = require('../controllers/userCategory');
 const StateController = require('../controllers/State');
@@ -115,59 +106,6 @@ router.post('/event_category_master', auth, EventCategoryNasterController.EventC
 router.delete('/delete_event_category', auth, EventCategoryNasterController.RemoveEventCategory);
 //#endregion
 
-//#region old TICKET APIS
-// router.get("/fetch_payment_master", auth, PaymentMasterController.fetchPaymentMaster)
-// router.get("/set_payment_flag", PaymentMasterController.setPaymentFlag)
-// router.get("/fetch_payment_and_tickets", auth, PaymentMasterController.fetchPaymentAndTickets)
-// router.post("/add_payment_master", auth, PaymentUpload, PaymentMasterController.addPaymentMaster)
-// router.put("/update_payment_master", auth, PaymentUpload, PaymentMasterController.updatePaymentMaster)
-// router.put("/update_payment_statusr", auth, PaymentMasterController.updatePaymentStatus)
-// router.delete("/delete_payment_master", auth, PaymentMasterController.deletePaymentMaster)
-
-// router.get("/fetch_ticket_master", auth, TicketMasterController.fetchTicketMaster)
-// router.get("/fetch_ticket_list_by_usercode", auth, TicketMasterController.fetchTicketListOnUserCode)
-// router.get("/fetch_ticket_gate_no", auth, TicketMasterController.fetchTicketGateNo)
-// router.post("/add_ticket_master", auth, TicketMasterController.addTicketMaster)
-// router.put("/update_ticket_master", auth, TicketMasterController.updateTicketMaster)
-// router.delete("/delete_ticket_master", auth, TicketMasterController.deleteTicketMaster)
-
-
-// router.get('/fetch_ticket_price_master', auth, TicketPriceMasterController.TicketPriceMasterList);
-// router.post('/ticket_price_master', auth, TicketPriceMasterController.addTicketPriceMaster);
-// router.delete('/delete_ticket_price_master', auth, TicketPriceMasterController.RemoveTicketPriceMaster);
-
-// router.get('/fetch_volunteer_master', auth, VolunteerMasterController.FetchVolunteerMasterDetails);
-// router.get('/fetch_volunteer_dashboard_view', auth, VolunteerMasterController.VolunteerDashboardView);
-// router.get('/verify_volunteer', VolunteerMasterController.LoginVolunteer);
-// router.post('/volunteer_master', auth, VolunteerMasterUpload, VolunteerMasterController.VolunteerMaster);
-// router.delete('/delete_volunteer_master', auth, VolunteerMasterController.RemoveVolunteer);
-
-// router.get('/fetch_sponsor_category_master', auth, SponsorCategoryMasterController.FetchSponsorCategoryMasterDetails);
-// router.post('/sponsor_category_master', auth, SponsorCategoryMasterController.SponsorCategoryMaster);
-// router.delete('/delete_sponsor_category_master', auth, SponsorCategoryMasterController.RemoveSponsorCategory);
-
-// router.get("/gallery_list", auth, galleryMasterController.FetchGalleryMasterDetails);
-// router.post("/gallery_master", auth, galleryMasterUpload, galleryMasterController.GalleryMaster);
-// router.delete('/delete_gallery_master', auth, galleryMasterController.RemoveGalleryMaster);
-
-// router.get("/ticketview_list", auth, TicketViewController.fetchTicketViewList)
-// router.post("/ticketview_master", auth, ticketViewUpload, TicketViewController.TicketViewMaster)
-// router.delete('/delete_ticketview_master', auth, TicketViewController.RemoveTicketView);
-
-// router.get('/fetch_ticket_limit', auth, TicketLimitMasterController.FetchTicketLimitMasterDetails);
-// router.post('/ticket_limit_master', auth, TicketLimitMasterController.TicketLimitMaster);
-// router.delete('/delete_ticket_limit', auth, TicketLimitMasterController.RemoveTicketLimit);
-
-router.get('/fetch_payment_gateway', auth, PaymentGatewayMaster.FetchPaymentGatewayMasterDetails);
-router.post('/payment_gateway_master', auth, PaymentGatewayMaster.PaymentGatewayMaster);
-router.delete('/delete_payment_gateway', auth, PaymentGatewayMaster.RemovePaymentGateway);
-
-// router.get('/Fetch_verify_ticket_log', auth, LogTableController.fetchLogTable);
-
-// router.get('/fetch_ticket_user_list', auth, IsTicketUserList.Ticket_User_List);
-
-// router.post('/verify_ticket', auth, VerifyTicketController.verifyTicket);
-//#endregion
 //#region SPEAKER APIs
 router.get('/fetch_speaker_master', auth, SpeakerMasterController.FetchSpeakerMasterDetails);
 router.post('/speaker_master', auth, SpeakerMasterController.SpeakerMaster);
@@ -182,70 +120,26 @@ router.get('/fetch_sponsor_category_master', auth, SponsorCategoryMasterControll
 router.post('/sponsor_category_master', auth, SponsorCategoryMasterController.SponsorCategoryMaster);
 router.delete('/delete_sponsor_category_master', auth, SponsorCategoryMasterController.RemoveSponsorCategory);
 //#endregion
-//#region VOLUNTEER APIs
-// router.get('/fetch_volunteer_master', auth, VolunteerMasterController.FetchVolunteerMasterDetails);
-// router.get('/fetch_volunteer_dashboard_view', auth, VolunteerMasterController.VolunteerDashboardView);
-// router.get('/verify_volunteer', VolunteerMasterController.LoginVolunteer);
-// router.post('/volunteer_master', auth, VolunteerMasterUpload, VolunteerMasterController.VolunteerMaster);
-// router.delete('/delete_volunteer_master', auth, VolunteerMasterController.RemoveVolunteer);
-//#endregion
 //#region carousel
 router.get("/carousel_list", carouselController.fetchCarouselList)
 router.post("/carousel_master", auth, DocumentUploadUpload, carouselController.CarouserMaster)
 router.delete('/delete_carousel_master', auth, carouselController.RemoveCarousel);
 //#endregion
-//#region gallery master
-router.get("/gallery_list", auth, galleryMasterController.FetchGalleryMasterDetails);
-router.post("/gallery_master", auth, galleryMasterUpload, galleryMasterController.GalleryMaster);
-router.delete('/delete_gallery_master', auth, galleryMasterController.RemoveGalleryMaster);
-//#endregion
 //#region NOTIFICATION APIs MESSAGE
-router.post('/send_notification_in_background', auth, firebaseSentNotification.sendNotificationInBackground);
-
-// router.get("/auto_sent_notification_list", auth, AutoSentNotificationController.fetchAutoSentNotificationList)
-// router.post("/auto_sent_notification_master", auth, AutoSentNotificationController.AutoSentNotificationHandler)
-// router.delete('/delete_auto_sent_notification', auth, AutoSentNotificationController.removeAutoSentNotification);
-
 router.get('/fetch_reminder', auth, ReminderMasterController.fetchReminderMaster);
 router.post('/reminder_master', auth, ReminderUpload, ReminderMasterController.ReminderMaster);
 router.delete('/delete_reminder', auth, ReminderMasterController.RemoveReminderMaster);
 
-router.post("/bell_notification_by_user", auth, bellNotificationByUserController.verifyBellNotificationByUser);
-
-router.get('/fetch_what_app_msg', auth, WhatsAppMsgController.fetchWhatAppMsg);
 router.post('/send_what_app_msg', WhatsAppMsgController.addWhatsAppMsg);
-router.delete('/delete_what_app_msg', auth, WhatsAppMsgController.deleteWhatAppMsg);
 //#endregion
 //#region OTHER APIs
-// router.get('/fetch_contact_master', auth, ContactMasterController.FetchContactMasterDetails);
-// router.post('/add_contact_master', ContactMasterController.AddContactMasterMaster);
-
-router.get('/fetch_member_type_master', auth, MemberTypeMasterController.FetchMemberTypeMasterDetails);
-router.post('/member_type_master', auth, MemberTypeMasterController.MemberTypeMaster);
-router.delete('/delete_member_type_master', auth, MemberTypeMasterController.RemoveMemberTypeMaster);
-
-router.get('/dashboard_list', auth, DashbordController.DashbordList);
-
 router.get('/fetch_template_master', auth, TemplateMasterController.FetchTemplateMasterDetails);
 router.post('/template_master', auth, TemplateMasterController.ManageTemplateMaster);
 router.delete('/delete_template_master', auth, TemplateMasterController.RemoveTemplateMaster);
 
-
-router.get('/fetch_gate_no_list', auth, GateNoListController.list_Of_Gate_No);
-
 router.get('/fetch_feedback_master', auth, FeedbackMasterController.FetchFeedbackMasterDetails);
 router.post('/feedback_master', auth, FeedbackMasterController.FeedbackMaster);
 router.delete('/delete_feedback', auth, FeedbackMasterController.RemoveFeedbackMaster);
-
-router.get("/fetch_complaint_list", auth, ComplaintMasterController.fetchComplaintList)
-router.post("/manage_complaint_master", auth, complaintUpload, ComplaintMasterController.manageComplaintMaster)
-router.delete('/delete_complaint', auth, ComplaintMasterController.removeComplaintMaster);
-
-router.get('/fetch_live_stream', auth, LiveStreamController.FetchLiveStreamMasterDetails);
-router.post('/manage_live_stream', auth, LiveStreamController.ManageLiveStreamMaster);
-router.delete('/delete_live_stream', auth, LiveStreamController.RemoveLiveStreamMaster);
-
-router.post('/testing', ReactDeployController.setupIISForSubdomain);
 
 router.get('/generate_qr_code', QRCodeMasterController.generateQRCode);
 router.get('/generate_qr_code_image', QRCodeMasterController.generateQRCodeImageView);
@@ -255,12 +149,10 @@ router.put('/razorpay/credentials', auth, RazorpayController.updateRazorpayCrede
 //#endregion
 
 //#region DOCUMENT UPLOAD MASTER
-
 router.get('/list_document', auth, DocumentUploadController.FetchDocumentUploadDetails);
 router.post('/document_upload_master', auth, DocumentUploadUpload, DocumentUploadController.DocumentUpload);
 router.put('/document_status_update', auth, DocumentUploadController.updateIsActiveStatusOfDocument);
 router.delete('/delete_document', auth, DocumentUploadController.RemoveDocumnet);
-
 //#endregion
 
 //#region NEW BOOKING TICKET APIs
@@ -272,6 +164,10 @@ router.get('/fetch_booking_master', auth, BookingController.fetchBookings);
 router.get('/fetch_booking_master_by_id', auth, BookingController.fetchBookingInfoById);
 router.post('/booking_master', auth, BookingController.BookingMaster);
 router.delete('/delete_bookings', auth, BookingController.RemoveBookings);
+
+router.get('/fetch_coupons', auth, CouponMasterController.FetchCoupons);
+router.post('/coupon_master', auth, CouponMasterController.CouponMaster);
+router.delete('/delete_coupon', auth, CouponMasterController.RemoveCoupon);
 
 router.get('/verify_ticket', auth, BookingController.VerifyTicket);
 router.post('/multiple_ticket_verify', auth, BookingController.verifyTicketOnBookingDetailsUKkeyId);
@@ -294,10 +190,6 @@ router.get('/fetch_sub_menu', auth, RoleRightsControler.fetcSubMenu);
 router.post('/add_role_rights', auth, RoleRightsControler.addRoleRighys);
 //#endregion
 
-router.get('/fetch_coupons', auth, CouponMasterController.FetchCoupons);
-router.post('/coupon_master', auth, CouponMasterController.CouponMaster);
-router.delete('/delete_coupon', auth, CouponMasterController.RemoveCoupon);
-
 //#region MOBILE SMS MASTER
 router.get("/fetch_mob_sms_master", auth, MobileSMSMasterController.FetchMobSMSMastDetails);
 router.post("/mob_sms_master", auth, MobileSMSMasterController.ManageMobSMSMast);
@@ -319,10 +211,14 @@ router.get('/dashboard_volunteer_master', auth, AdminDashboardController.dashboa
 //#region RAZORPAY apis 
 // router.get('/payment', auth, PaymentController.getPaymentDetails);
 router.post('/create_razorpay_order_id', auth, PaymentController.createRazorpayOrderId);
-router.get('/fetch_razorpay_order_details_by_id', auth, PaymentController.fetchOrderDetails);
+// router.get('/fetch_razorpay_order_details_by_id', auth, PaymentController.fetchOrderDetails);
 // router.post('/payment/capture', PaymentController.capturePayment);
-router.get('/fetch_razorpay_payments', auth, PaymentController.getAllPayments);
-router.get('/payment_refund', auth, PaymentController.paymentRefund);
+// router.get('/fetch_razorpay_payments', auth, PaymentController.getAllPayments);
+// router.get('/payment_refund', auth, PaymentController.paymentRefund);
+
+router.get('/fetch_payment_gateway', auth, PaymentGatewayMaster.FetchPaymentGatewayMasterDetails);
+router.post('/payment_gateway_master', auth, PaymentGatewayMaster.PaymentGatewayMaster);
+router.delete('/delete_payment_gateway', auth, PaymentGatewayMaster.RemovePaymentGateway);
 //#endregion
 
 //#region 

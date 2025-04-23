@@ -69,6 +69,14 @@ setInterval(() => {
     sendNotificationOnSetTime()
 }, 300000);
 
+let i = 0
+
+routes.stack.map(()=>{
+    i++
+})
+
+console.log('number of apis in myeventz :',i);
+
 // Start the server
 app.listen(PORT, () => {
     console.log(`Server is running on http://localhost:${PORT}`);
