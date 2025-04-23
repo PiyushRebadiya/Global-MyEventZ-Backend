@@ -69,13 +69,13 @@ setInterval(() => {
     sendNotificationOnSetTime()
 }, 300000);
 
-let i = 0
+// let i = 0
 
-routes.stack.map(()=>{
-    i++
-})
+// routes.stack.map(()=>{
+//     i++
+// })
 
-console.log('number of apis in myeventz :',i);
+// console.log('number of apis in myeventz :',i);
 
 // Start the server
 app.listen(PORT, () => {
