@@ -4,7 +4,7 @@ const {pool} = require('../sql/connectToDatabase');
 const SuperAdminDashoardList = async (req, res) => {
     try{
         const totalOrganizer = await pool.request().query(`
-            select COUNT(*) as TotalOrganizers from OrganizerMaster
+            select COUNT(*) as TotalOrganizers from OrgUserMaster where Role = 'Admin'
         `) 
         const totalEvents = await pool.request().query(`
             select COUNT(*) as TotalEvents from EventMaster

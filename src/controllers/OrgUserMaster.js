@@ -43,7 +43,7 @@ const OrgUserMaster = async (req, res) => {
             select COUNT(*) AS checkUserMobileandEmail from OrgUserMaster where Mobile1 = ${setSQLStringValue(Mobile1)} OR Email = ${setSQLStringValue(Email)} and IsActive = 1 
         `)
         
-        if(checkUserMobileandEmail?.recordset?.[0]?.checkUserMobileandEmail > 0){
+        if(checkUserMobileandEmail?.recordset?.[0]?.checkUserMobileandEmail > 0 && flag == 'A'){
             return res.status(400).json(errorMessage(`User already exists with the provided mobile number or email address.`));
         }
 
@@ -123,8 +123,6 @@ const OrgUserMaster = async (req, res) => {
                 WHERE OrganizerUkeyId = ${setSQLStringValue(OrganizerUkeyId)}
                 `;
             }
-            console.log('delete query :', deleteQuery);
-            console.log('insert query :', insertQuery);
             const deleteResult = await pool.request().query(deleteQuery);
             const insertResult = await pool.request().query(insertQuery);
 
