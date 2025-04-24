@@ -256,6 +256,7 @@ where om.Mobile1 = ${setSQLStringValue(Mobile1)} AND om.Password = ${setSQLStrin
             Mobile1: result?.recordset[0]?.Mobile1,
             Role: result?.recordset[0]?.Role,
             IsActive: result?.recordset[0]?.IsActive,
+            Image: result?.recordset[0]?.Image,
             EventName : result?.recordset?.[0]?.EventName
     });
     }catch(error){
