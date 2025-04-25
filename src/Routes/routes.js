@@ -46,6 +46,7 @@ const SuperAdminDashboardController = require('../controllers/SuperAdminDashboar
 const AdminDashboardController = require('../controllers/AdminDashboardList');
 const EventCategoryNasterController = require('../controllers/EventCategoryMaster');
 const OrgtermandconditionController = require('../controllers/Org_TermsCondi');
+const PricingMasterController = require('../controllers/priceMaster');
 // const carouselController = require('../controllers/carousel');
 
 const auth = require("../middleware/auth");
@@ -225,6 +226,12 @@ router.delete('/delete_payment_gateway', auth, PaymentGatewayMaster.RemovePaymen
 router.get('/fetch_organizer_terms_condition', auth, OrgtermandconditionController.fetchOrgTermCond);
 router.post('/organizer_terms_condition', auth, OrgtermandconditionController.OrgTermCond);
 router.delete('/delete_organizer_terms_condition', auth, OrgtermandconditionController.RemoveOrgTermCond);
+//#endregion
+
+//#region Pricing Master
+router.get('/fetch_pricing', auth, PricingMasterController.FetchPricing);
+router.post('/pricing_master', auth, PricingMasterController.PricingMaster);
+router.delete('/delete_pricing', auth, PricingMasterController.RemovePricing);
 //#endregion
 
 module.exports = router;
