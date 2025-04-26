@@ -8,18 +8,22 @@ const FetchPricing = async (req, res) => {
 
         // Build the WHERE clause based on the Status
         if (PriceUkeyId) {
-            whereConditions.push(`PriceUkeyId = ${setSQLStringValue(PriceUkeyId)}`);
+            whereConditions.push(`pm.PriceUkeyId = ${setSQLStringValue(PriceUkeyId)}`);
         }
         if (IsActive) {
-            whereConditions.push(`IsActive = ${setSQLStringValue(IsActive)}`);
+            whereConditions.push(`pm.IsActive = ${setSQLStringValue(IsActive)}`);
         }
 
         // Combine the WHERE conditions into a single string
         const whereString = whereConditions.length > 0 ? `WHERE ${whereConditions.join(' AND ')}` : '';
 
         const getUserList = {
-            getQuery: `SELECT * FROM PriceMaster ${whereString} ORDER BY EntryDate DESC`,
-            countQuery: `SELECT COUNT(*) AS totalCount FROM PriceMaster ${whereString}`,
+            getQuery: `SELECT pm.*, cm.CouponCode FROM PriceMaster pm
+            left join CouponMaster cm on pm.CouponukeyId = cm.CouponUkeyId
+            ${whereString} ORDER BY pm.EntryDate DESC`,
+            countQuery: `SELECT COUNT(*) AS totalCount FROM PriceMaster pm
+            left join CouponMaster cm on pm.CouponukeyId = cm.CouponUkeyId
+            ${whereString}`,
         };
 
         const result = await getCommonAPIResponse(req, res, getUserList);
