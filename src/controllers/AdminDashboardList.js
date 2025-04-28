@@ -355,7 +355,7 @@ const TicketVerifyReportByTicketCategory = async (req, res) => {
         const TransactionReport = {
             getQuery: `
             select bd.*
-            , tcm.Category AS EventCategoryName, oum.FirstName AS verifierName, em.EventName, bm.EventUkeyId, bm.OrganizerUkeyId from Bookingdetails bd
+            , tcm.Category AS EventCategoryName, oum.FirstName AS verifierName, em.EventName, bm.EventUkeyId, bm.OrganizerUkeyId, bm.TotalNetAmount from Bookingdetails bd
             left join Bookingmast bm on bm.BookingUkeyID = bd.BookingUkeyID
             left join TicketCategoryMaster tcm on tcm.TicketCateUkeyId = bd.TicketCateUkeyId
             left join OrgUserMaster oum on oum.UserUkeyId = bd.VerifiedByUkeyId
