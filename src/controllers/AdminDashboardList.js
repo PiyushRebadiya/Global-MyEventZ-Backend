@@ -179,7 +179,7 @@ const TicketRegisterReport = async (req, res) => {
         const whereString = whereConditions.length > 0 ? `WHERE ${whereConditions.join(' AND ')}` : '';
         const getAutoSentNotificationList = {
             getQuery: `
-                select BD.Name, BD.Mobile, BD.Amount, BD.DiscAmt, BD.TicketCateUkeyId, BD.EntryDate, BD.BookingUkeyID, TCM.Category, BM.UserUkeyID, UM.FullName from Bookingdetails BD
+                select BD.Name, BD.Mobile, BD.Amount, BD.DiscAmt, BD.TicketCateUkeyId, BD.EntryDate, BD.BookingUkeyID, TCM.Category, BM.UserUkeyID, UM.FullName, BM.TotalNetAmount from Bookingdetails BD
                 left join TicketCategoryMaster TCM on BD.TicketCateUkeyId = TCM.TicketCateUkeyId
                 left join Bookingmast BM on BD.BookingUkeyID = BM.BookingUkeyID 
                 left join UserMaster UM on BM.UserUkeyID = UM.UserUkeyId
