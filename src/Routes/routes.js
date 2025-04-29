@@ -48,6 +48,7 @@ const EventCategoryNasterController = require('../controllers/EventCategoryMaste
 const OrgtermandconditionController = require('../controllers/Org_TermsCondi');
 const PricingMasterController = require('../controllers/priceMaster');
 const whatsnewcontroller = require('../controllers/WhatsNew');
+const OrganizerEmail = require('../controllers/sendEmail');
 // const carouselController = require('../controllers/carousel');
 
 const auth = require("../middleware/auth");
@@ -239,6 +240,10 @@ router.delete('/delete_pricing', auth, PricingMasterController.RemovePricing);
 router.get('/fetch_whats_new', auth, whatsnewcontroller.Fetchwhatsnew);
 router.post('/whats_new_master', auth, whatsnewcontroller.whatsnew);
 router.delete('/delete_whats_new', auth, whatsnewcontroller.removewhatsnew);
+//#endregion
+
+//#region send email.
+router.get('/send_organizer_email', OrganizerEmail.sendOrganizerRegisterMail);
 //#endregion
 
 module.exports = router;
