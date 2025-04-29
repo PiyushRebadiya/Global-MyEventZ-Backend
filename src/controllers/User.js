@@ -70,7 +70,7 @@ const VerifyOrganizerMobileNumber = async (req, res) => {
 
 const AddOrginizer = async (req, res) => {
     try{
-        const { OrganizerUkeyId, OrganizerName, Mobile1, Mobile2, Email, AliasName, Description, Add1, City, StateCode, StateName, Password, FirstName  } = req.body;
+        const { OrganizerUkeyId, OrganizerName, Mobile1, Mobile2, Email, AliasName, Description, Add1, City, StateCode, StateName, Password, FirstName, AppleUserId  } = req.body;
 
         const missingKeys = checkKeysAndRequireValues(['OrganizerName', 'Mobile1', 'Add1', 'Password', 'Email', 'OrganizerUkeyId'], req.body);
 
@@ -104,9 +104,9 @@ const AddOrginizer = async (req, res) => {
 
         const InsertOrgUserMst = `
             INSERT INTO OrguserMaster ( 
-                UserUkeyId, EventUKeyId, OrganizerUkeyId, Password, IsActive, IpAddress, HostName, EntryDate, FirstName, Mobile1, Mobile2, StateCode, StateName, CityName, Role, flag, Add1, Email
+                UserUkeyId, EventUKeyId, OrganizerUkeyId, Password, IsActive, IpAddress, HostName, EntryDate, FirstName, Mobile1, Mobile2, StateCode, StateName, CityName, Role, flag, Add1, Email, AppleUserId
             ) OUTPUT INSERTED.* VALUES (
-                ${setSQLStringValue(UserUkeyId)}, ${setSQLStringValue(EventUkeyId)}, ${setSQLStringValue(OrganizerUkeyId)}, ${setSQLStringValue(Password)}  , 1, ${setSQLStringValue(IPAddress)}, ${setSQLStringValue(ServerName)}, ${setSQLStringValue(EntryTime)}, ${setSQLStringValue(FirstName)}, ${setSQLStringValue(Mobile1)}, ${setSQLStringValue(Mobile2)}, ${setSQLNumberValue(StateCode)}, ${setSQLStringValue(StateName)}, ${setSQLStringValue(City)}, 'Admin', 'A', ${setSQLStringValue(Add1)}, ${setSQLStringValue(Email)}
+                ${setSQLStringValue(UserUkeyId)}, ${setSQLStringValue(EventUkeyId)}, ${setSQLStringValue(OrganizerUkeyId)}, ${setSQLStringValue(Password)}  , 1, ${setSQLStringValue(IPAddress)}, ${setSQLStringValue(ServerName)}, ${setSQLStringValue(EntryTime)}, ${setSQLStringValue(FirstName)}, ${setSQLStringValue(Mobile1)}, ${setSQLStringValue(Mobile2)}, ${setSQLNumberValue(StateCode)}, ${setSQLStringValue(StateName)}, ${setSQLStringValue(City)}, 'Admin', 'A', ${setSQLStringValue(Add1)}, ${setSQLStringValue(Email)}, ${setSQLStringValue(AppleUserId)}
             );
         `;
 
@@ -225,9 +225,8 @@ const Loginorganizer = async (req, res) => {
         const {IPAddress, ServerName, EntryTime} = getCommonKeys(req); 
 
         const result = await pool.request().query(`
-
         select om.*,em.EventName from OrgUserMaster om left join EventMaster em on em.EventUkeyId=om.EventUkeyId
-where om.Mobile1 = ${setSQLStringValue(Mobile1)} AND om.Password = ${setSQLStringValue(Password)} AND om.IsActive = 1
+        where om.Mobile1 = ${setSQLStringValue(Mobile1)} AND om.Password = ${setSQLStringValue(Password)} AND om.IsActive = 1
         `);
 
         if(result.rowsAffected[0] === 0){
@@ -263,19 +262,19 @@ where om.Mobile1 = ${setSQLStringValue(Mobile1)} AND om.Password = ${setSQLStrin
 //#region Login with Email Id
 const Loginorganizerwithemail = async (req, res) => {
     try{
-        const {Email} = req.body;
+        const {Email, AppleUserId} = req.body;
 
-        const missingKeys = checkKeysAndRequireValues(['Email'], req.body);
+        // const missingKeys = checkKeysAndRequireValues(['Email'], req.body);
 
-        if(missingKeys.length > 0){
-            return res.status(400).json(errorMessage(`${missingKeys.join(', ')} is required`))
-        }
+        // if(missingKeys.length > 0){
+        //     return res.status(400).json(errorMessage(`${missingKeys.join(', ')} is required`))
+        // }
 
 
         const result = await pool.request().query(`
 
         select om.*,em.EventName from OrgUserMaster om left join EventMaster em on em.EventUkeyId=om.EventUkeyId
-        where om.Email = ${setSQLStringValue(Email)} AND om.IsActive = 1
+        where (om.Email = ${setSQLStringValue(Email)} OR om.AppleUserId = ${setSQLStringValue(AppleUserId)}) AND om.IsActive = 1
         `);
 
         if(result.rowsAffected[0] === 0){
