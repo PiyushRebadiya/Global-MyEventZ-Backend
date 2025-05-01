@@ -135,8 +135,65 @@ const RemoveReminderMaster = async(req, res)=>{
     }
 }
 
+const addReminderRead = async (req, res)=>{
+    try{
+        const {
+            UserUkeyId
+            ,ReminderUkeyId
+        } = req.body
+        const missingKeys = checkKeysAndRequireValues(['UserUkeyId' ,'ReminderUkeyId'], req.body)
+        if (missingKeys.length !== 0) {
+            return res.status(400).send(errorMessage(`${missingKeys} is required`));
+        }
+        const { IPAddress, ServerName, EntryTime } = getCommonKeys();
+
+        const alreadyAddedNottification = await pool.request().query(`SELECT * FROM ReminderRead WHERE UserUkeyId = '${UserUkeyId}' AND ReminderUkeyId = '${ReminderUkeyId}'`);
+        if(alreadyAddedNottification.recordset.length > 0){
+            return res.status(400).send(successMessage('Notification Already Added'));
+        }
+        const insertQuery = `INSERT INTO ReminderRead (UserUkeyId ,ReminderUkeyId, IPAddress, ServerName, EntryTime) values ('${UserUkeyId}' ,'${ReminderUkeyId}', '${IPAddress}', '${ServerName}', '${EntryTime}')`;
+        const result = pool.request().query(insertQuery);
+        if (result.rowsAffected && result.rowsAffected[0] === 0) {
+            return res.status(400).send(errorMessage('No row Inserted in Notification User'));
+        }
+        return res.status(200).send(successMessage('Data Inserted successfully'));
+    }catch(error){
+        console.log('Add notification user Error :', error);
+        return res.status(500).send(errorMessage(error?.message));
+    }
+}
+
+const fetchReminderRead = async (req, res) => {
+    try{
+        const { UserUkeyId } = req.query;
+        const missingKey = checkKeysAndRequireValues(['UserUkeyId'], req.query);
+        if (missingKey.length > 0) {
+            return res.status(400).send(errorMessage(`${missingKey} is required`));
+        }
+        const notification = await pool.request().query(`SELECT * FROM ReminderMaster WHERE IsActive = 0 ORDER BY NotificationId DESC`);
+        const userNotification = await pool.request().query(`SELECT * FROM ReminderRead WHERE UserUkeyId = '${UserUkeyId}'`);
+        const updateNotification = notification.recordset.map(notification => {
+            const user = userNotification.recordset.find(user => user.ReminderUkeyId === notification.ReminderUkeyId);
+            if (!user) return {
+                ...notification,
+                read: false
+            };
+            return { ...notification, read: true };
+        })
+        res.json({
+            Success: true,
+            data: updateNotification
+        });
+    }catch(error){
+        console.log( 'fetch reminder read error : ', error);
+        return res.status(500).json({Success: false})
+    }
+}
+
 module.exports = {
     fetchReminderMaster,
     ReminderMaster,
-    RemoveReminderMaster
+    RemoveReminderMaster,
+    addReminderRead,
+    fetchReminderRead
 }

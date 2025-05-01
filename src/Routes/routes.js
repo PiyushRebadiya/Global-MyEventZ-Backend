@@ -133,6 +133,9 @@ router.get('/fetch_reminder', auth, ReminderMasterController.fetchReminderMaster
 router.post('/reminder_master', auth, ReminderUpload, ReminderMasterController.ReminderMaster);
 router.delete('/delete_reminder', auth, ReminderMasterController.RemoveReminderMaster);
 
+router.get('/fetch_reminder_read', auth, ReminderMasterController.fetchReminderRead);
+router.post('/add_reminder_read', auth, ReminderMasterController.addReminderRead);
+
 router.post('/send_what_app_msg', WhatsAppMsgController.addWhatsAppMsg);
 //#endregion
 //#region OTHER APIs
