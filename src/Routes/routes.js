@@ -231,7 +231,7 @@ router.delete('/delete_organizer_terms_condition', auth, OrgtermandconditionCont
 //#endregion
 
 //#region Pricing Master
-router.get('/fetch_pricing', auth, PricingMasterController.FetchPricing);
+router.get('/fetch_pricing', PricingMasterController.FetchPricing);
 router.post('/pricing_master', auth, PricingMasterController.PricingMaster);
 router.delete('/delete_pricing', auth, PricingMasterController.RemovePricing);
 //#endregion
