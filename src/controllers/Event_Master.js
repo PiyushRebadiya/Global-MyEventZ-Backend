@@ -37,16 +37,24 @@ const EventList = async (req, res) => {
             am.IsActive AS IsActiveAddress, 
             om.OrganizerName, 
             ecm.CategoryName AS EventCategoryName,
+            pgm.GatewayName,
             (
                 SELECT du.FileName, du.Label, du.docukeyid
                 FROM DocumentUpload du 
                 WHERE du.UkeyId = em.EventUkeyId
                 FOR JSON PATH
-            ) AS FileNames
+            ) AS FileNames,
+			 (
+                SELECT pgm.ShortName, pgm.GatewayName, pgm.ConvenienceFee, pgm.GST, pgm.DonationAmt, pgm.AdditionalCharges, pgm.IsActive, pgm.KeyId, pgm.SecretKey
+                FROM PaymentGatewayMaster pgm 
+                WHERE em.PaymentGateway = pgm.GatewayUkeyId
+                FOR JSON PATH
+            ) AS PaymentGatewayDetails
         FROM EventMaster em 
         LEFT JOIN AddressMaster am ON am.EventUkeyId = em.EventUkeyId 
         LEFT JOIN OrganizerMaster om ON om.OrganizerUkeyId = em.OrganizerUkeyId
         LEFT JOIN EventCategoryMaster ecm on em.EventCategoryUkeyId = ecm.EventCategoryUkeyId
+        LEFT JOIN PaymentGatewayMaster pgm on em.PaymentGateway = pgm.GatewayUkeyId
                         ${whereString} 
                 ORDER BY em.EntryDate DESC
             `,
@@ -58,11 +66,16 @@ const EventList = async (req, res) => {
         };
 
         const result = await getCommonAPIResponse(req, res, getUserList);
-        result.data.forEach(event => {
+        result.data?.forEach(event => {
             if(event.FileNames){
                 event.FileNames = JSON.parse(event?.FileNames)
             } else {
                 event.FileNames = []
+            }
+            if(event.PaymentGatewayDetails){
+                event.PaymentGatewayDetails = JSON.parse(event?.PaymentGatewayDetails)
+            } else {
+                event.PaymentGatewayDetails = []
             }
         });
         return res.json(result);
