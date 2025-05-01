@@ -51,7 +51,7 @@ const fetchBookings = async (req, res) => {
         // Execute the query and return results
         const result = await getCommonAPIResponse(req, res, getAutoSentNotificationList);
 
-        result.data.forEach(contact => {
+        result.data?.forEach(contact => {
             contact.FileNames = contact.FileNames ? JSON.parse(contact.FileNames) : [];
         });
 
@@ -152,7 +152,7 @@ const BookingMaster = async (req, res) => {
         const categoryTicketCount = {};
 
         // ✅ Count new ticket requests per category
-        bookingdetails.forEach(ticket => {
+        bookingdetails?.forEach(ticket => {
             const categoryId = ticket.TicketCateUkeyId;
             categoryTicketCount[categoryId] = (categoryTicketCount[categoryId] || 0) + 1;
         });
