@@ -33,15 +33,15 @@ const FetchPaymentGatewayMasterDetails = async (req, res)=>{
 
 const PaymentGatewayMaster = async (req, res) => {
     const { 
-        GatewayUkeyId, ShortName, GatewayName, KeyId, SecretKey, ConvenienceFee, EventUkeyId, OrganizerUkeyId, flag, IsActive, DonationAmt, AdditionalCharges} = req.body;
+        GatewayUkeyId, ShortName, GatewayName, KeyId, SecretKey, ConvenienceFee, EventUkeyId, OrganizerUkeyId, flag, IsActive, DonationAmt, AdditionalCharges, GST} = req.body;
     try {
         const { IPAddress, ServerName, EntryTime } = getCommonKeys(req);
 
         const insertQuery = `
             INSERT INTO PaymentGatewayMaster (
-                GatewayUkeyId, ShortName, GatewayName, KeyId, SecretKey, ConvenienceFee, UserId, UserName, IpAddress, HostName, EntryDate, EventUkeyId, OrganizerUkeyId, flag, IsActive, DonationAmt, AdditionalCharges
+                GatewayUkeyId, ShortName, GatewayName, KeyId, SecretKey, ConvenienceFee, UserId, UserName, IpAddress, HostName, EntryDate, EventUkeyId, OrganizerUkeyId, flag, IsActive, DonationAmt, AdditionalCharges, GST
             ) VALUES (
-                ${setSQLStringValue(GatewayUkeyId)}, ${setSQLStringValue(ShortName)}, ${setSQLStringValue(GatewayName)}, ${setSQLStringValue(KeyId)}, ${setSQLStringValue(SecretKey)}, ${setSQLStringValue(ConvenienceFee)}, ${setSQLStringValue(req.user.UserId)},${setSQLStringValue(req.user.firstName)}, ${setSQLStringValue(IPAddress)}, ${setSQLStringValue(ServerName)}, ${setSQLStringValue(EntryTime)}, ${setSQLStringValue(EventUkeyId)}, ${setSQLStringValue(OrganizerUkeyId)}, ${setSQLStringValue(flag)}, ${setSQLStringValue(IsActive)}, ${setSQLStringValue(DonationAmt)}, ${setSQLStringValue(AdditionalCharges)}
+                ${setSQLStringValue(GatewayUkeyId)}, ${setSQLStringValue(ShortName)}, ${setSQLStringValue(GatewayName)}, ${setSQLStringValue(KeyId)}, ${setSQLStringValue(SecretKey)}, ${setSQLStringValue(ConvenienceFee)}, ${setSQLStringValue(req.user.UserId)},${setSQLStringValue(req.user.firstName)}, ${setSQLStringValue(IPAddress)}, ${setSQLStringValue(ServerName)}, ${setSQLStringValue(EntryTime)}, ${setSQLStringValue(EventUkeyId)}, ${setSQLStringValue(OrganizerUkeyId)}, ${setSQLStringValue(flag)}, ${setSQLStringValue(IsActive)}, ${setSQLStringValue(DonationAmt)}, ${setSQLStringValue(AdditionalCharges)}, ${setSQLStringValue(GST)}
             );
         `;
 
