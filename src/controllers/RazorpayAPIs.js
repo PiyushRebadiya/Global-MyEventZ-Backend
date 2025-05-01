@@ -34,7 +34,7 @@ const getPaymentDetails = async (req, res) => {
 
 const createRazorpayOrderId = async (req, res) => {
     try {
-        const { BookingAmt = null, OrganizerUkeyId = null, EventUkeyId = null, UserUkeyID = null, TotalGST = null, TotalConviencefee = null, DiscountAmt = null, TotalNetAmount = null, TotalNumberOfTicket = null, CouponUkeyId = '', CouponAmount = null } = req.body;
+        const { BookingAmt = null, OrganizerUkeyId = null, EventUkeyId = null, UserUkeyID = null, TotalGST = null, TotalConviencefee = null, DiscountAmt = null, TotalNetAmount = null, TotalNumberOfTicket = null, CouponUkeyId = '', CouponAmount = null, AdditionalCharges, DonationAmt, RoundAmount } = req.body;
         
         // Check for missing required values
         const missingKey = checkKeysAndRequireValues(['BookingAmt', 'OrganizerUkeyId', 'UserUkeyID', 'TotalGST', 'TotalConviencefee', 'DiscountAmt', 'TotalNetAmount', 'TotalNumberOfTicket', 'CouponAmount'], req.body);
@@ -77,6 +77,9 @@ const createRazorpayOrderId = async (req, res) => {
                 TotalNetAmount : `${TotalNetAmount}`,
                 TotalNumberOfTicket : `${TotalNumberOfTicket}`,
                 CouponAmount : `${CouponAmount}`,
+                DonationAmt : `${DonationAmt}`,
+                AdditionalCharges : `${AdditionalCharges}`,
+                RoundAmount : `${RoundAmount}`,
                 ProjectName : `GLOBAL_MYEVENTZ`
             }
         });
