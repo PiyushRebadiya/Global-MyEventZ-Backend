@@ -123,7 +123,7 @@ const setSQLDateTime = (date) => {
     if (!date || date === null || date === undefined || date === '' || !moment(date).isValid()) {
         return null;
     }
-    return `'${moment(date).format('YYYY-MM-DD HH:mm:ss')}'`;
+    return `'${moment.utc(date).format('YYYY-MM-DD HH:mm:ss')}'`;
 };
 
 const checkKeysAndRequireValues = (allKeys, matchKeys) => {
