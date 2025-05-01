@@ -6,7 +6,7 @@ const { pool } = require('../sql/connectToDatabase');
 // Fetch TemplateMaster Details
 const FetchTemplateMasterDetails = async (req, res) => {
     try {
-        const { TemplateUkeyId, Name, IsActive, Category} = req.query;
+        const { TemplateUkeyId, Name, IsActive, Category, Role} = req.query;
         let whereConditions = [];
 
         if (TemplateUkeyId) {
@@ -20,6 +20,9 @@ const FetchTemplateMasterDetails = async (req, res) => {
         }
         if (Category) {
             whereConditions.push(`Category = ${setSQLStringValue(Category)}`);
+        }
+        if (Role) {
+            whereConditions.push(`Role = ${setSQLStringValue(Role)}`);
         }
         const whereString = whereConditions.length > 0 ? `WHERE ${whereConditions.join(' AND ')}` : '';
         const queries = {
@@ -37,7 +40,7 @@ const FetchTemplateMasterDetails = async (req, res) => {
 // Insert or Update TemplateMaster
 const ManageTemplateMaster = async (req, res) => {
     const {
-        TemplateUkeyId, EventUkeyId, OrganizerUkeyId, Description, Name, IsActive, flag, Category
+        TemplateUkeyId, EventUkeyId, OrganizerUkeyId, Description, Name, IsActive, flag, Category, Role
     } = req.body;
 
     try {
@@ -51,9 +54,9 @@ const ManageTemplateMaster = async (req, res) => {
 
         const insertQuery = `
             INSERT INTO TemplateMaster (
-                TemplateUkeyId, EventUkeyId, OrganizerUkeyId, Description, Name, UserId, UserName, IsActive, flag, IpAddress, HostName, EntryDate, Category
+                TemplateUkeyId, EventUkeyId, OrganizerUkeyId, Description, Name, UserId, UserName, IsActive, flag, IpAddress, HostName, EntryDate, Category, Role
             ) VALUES (
-                ${setSQLStringValue(TemplateUkeyId)}, ${setSQLStringValue(EventUkeyId)}, ${setSQLStringValue(OrganizerUkeyId)}, ${setSQLStringValue(Description)}, ${setSQLStringValue(Name)}, ${setSQLNumberValue(req.user.UserId)}, ${setSQLStringValue(req.user.FirstName)}, ${setSQLBooleanValue(IsActive)}, ${setSQLStringValue(flag)}, ${setSQLStringValue(IPAddress)}, ${setSQLStringValue(ServerName)}, ${setSQLStringValue(EntryTime)}, ${setSQLStringValue(Category)}
+                ${setSQLStringValue(TemplateUkeyId)}, ${setSQLStringValue(EventUkeyId)}, ${setSQLStringValue(OrganizerUkeyId)}, ${setSQLStringValue(Description)}, ${setSQLStringValue(Name)}, ${setSQLNumberValue(req.user.UserId)}, ${setSQLStringValue(req.user.FirstName)}, ${setSQLBooleanValue(IsActive)}, ${setSQLStringValue(flag)}, ${setSQLStringValue(IPAddress)}, ${setSQLStringValue(ServerName)}, ${setSQLStringValue(EntryTime)}, ${setSQLStringValue(Category)}, ${setSQLStringValue(Role)}
             );
         `;
         
