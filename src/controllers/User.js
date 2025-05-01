@@ -412,18 +412,22 @@ const ForgetPasswordForOrganizer = async (req, res) => {
 
 const verifyOrganizerEmail = async (req, res) => {
     try{
-        const {Email} = req.query;
+        const {Email, AppleUserId} = req.query;
 
-        const missingKeys = checkKeysAndRequireValues(['Email'], req.query);
+        // const missingKeys = checkKeysAndRequireValues(['Email'], req.query);
 
-        if(missingKeys.length > 0){
-            return res.status(400).json(errorMessage(`${missingKeys.join(', ')} is required`))
+        // if(missingKeys.length > 0){
+        //     return res.status(400).json(errorMessage(`${missingKeys.join(', ')} is required`))
+        // }
+
+        if(!Email && !AppleUserId){
+            return res.status(400).json({...errorMessage('Email or AppleUserId is needed.')});
         }
 
-        const result = await pool.request().query(`select * from OrgUserMaster where Email = ${setSQLStringValue(Email)}`)
+        const result = await pool.request().query(`select * from OrgUserMaster where (Email = ${setSQLStringValue(Email)} or AppleUserId = ${setSQLStringValue(AppleUserId)})`)
 
         if(result.recordset?.length > 0){
-            return res.status(200).json({...errorMessage('already account exist of given Email Id')});
+            return res.status(200).json({...errorMessage('already account exist of given Id')});
         }
 
         return res.status(200).json({...successMessage(`No account exist of given Email Id`)});
