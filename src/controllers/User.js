@@ -214,9 +214,9 @@ const AddOrginizer = async (req, res) => {
 
 const Loginorganizer = async (req, res) => {
     try{
-        const {Mobile1, Password} = req.body;
+        const {Mobile1, Password, Role} = req.body;
 
-        const missingKeys = checkKeysAndRequireValues(['Mobile1', 'Password'], req.body);
+        const missingKeys = checkKeysAndRequireValues(['Mobile1'], req.body);
 
         if(missingKeys.length > 0){
             return res.status(400).json(errorMessage(`${missingKeys.join(', ')} is required`))
@@ -226,12 +226,18 @@ const Loginorganizer = async (req, res) => {
 
         const result = await pool.request().query(`
         select om.*,em.EventName from OrgUserMaster om left join EventMaster em on em.EventUkeyId=om.EventUkeyId
-        where om.Mobile1 = ${setSQLStringValue(Mobile1)} AND om.Password = ${setSQLStringValue(Password)} AND om.IsActive = 1
+        where om.Mobile1 = ${setSQLStringValue(Mobile1)} AND (om.Password = ${setSQLStringValue(Password)} OR Role = ${setSQLStringValue(Role)}) AND om.IsActive = 1
         `);
 
         if(result.rowsAffected[0] === 0){
             return res.status(400).json({...errorMessage('Invelit Mobile Number Or Password'), IsVerified : false});
         }
+
+        const Organizers = await pool.request().query(`
+            select om.* from OrganizerMaster om 
+            left join OrgUserMaster oum on om.OrganizerUkeyId = oum.OrganizerUkeyId
+        `)
+
         return res.status(200).json({
             ...successMessage('User Verified Successfully.'), IsVerified : true, token : generateJWTT({
                 Role: result?.recordset[0]?.Role
@@ -257,6 +263,45 @@ const Loginorganizer = async (req, res) => {
     }
 }
 
+//#endregion
+
+//#region 
+const loginWithMobileAndRole = async (req, res) => {
+    try{
+        const {Mobile1, Role} = req.body;
+
+        const missingKeys = checkKeysAndRequireValues(['Mobile1', 'Role'], req.body);
+
+        if(missingKeys.length > 0){
+            return res.status(400).json(errorMessage(`${missingKeys.join(', ')} is required`))
+        }
+
+        const result = await pool.request().query(`
+            select om.OrganizerName, oum.OrganizerUkeyId, om.IsActive AS IsActiveOrganizer, em.IsActive AS IsActiveEvent, em.EventName, oum.EventUkeyId, oum.FirstName, oum.Role from OrgUserMaster oum 
+            left join  OrganizerMaster om on om.OrganizerUkeyId = oum.OrganizerUkeyId
+            left join EventMaster em on em.OrganizerUkeyId = oum.OrganizerUkeyId        
+            where om.Mobile1 = ${setSQLStringValue(Mobile1)} and Role = ${setSQLStringValue(Role)} and oum.IsActive = 1 and om.IsActive = 1 and em.IsActive = 1
+        `);
+
+        if(result.rowsAffected[0] === 0){
+            return res.status(400).json({...errorMessage('Invalid crediantials'), IsVerified : false});
+        }
+
+        return res.status(200).json({
+            ...successMessage('User Verified Successfully.'), IsVerified : true, token : generateJWTT({
+                Role: result?.recordset[0]?.Role
+                , OrganizerUKeyId : result?.recordset[0]?.OrganizerUkeyId
+                , EventUkeyId : result?.recordset[0]?.EventUkeyId
+                , UserId : result?.recordset[0]?.UserId
+                , FirstName : result?.recordset[0]?.FirstName
+            }),
+             userData : [...result?.recordset]
+    });
+    }catch(error){
+        console.log('Login User Error :', error);
+        return res.status(500).json({...errorMessage(error)})
+    }
+}
 //#endregion
 
 //#region Login with Email Id
@@ -447,5 +492,6 @@ module.exports = {
     VerifyOrganizerMobileNumber,
     ForgetPasswordForOrganizer,
     Loginorganizerwithemail,
-    verifyOrganizerEmail
+    verifyOrganizerEmail,
+    loginWithMobileAndRole
 }
