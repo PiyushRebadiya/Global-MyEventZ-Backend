@@ -118,7 +118,7 @@ const fetchEventById = async (req, res)=> {
                 LEFT JOIN 
                     AddressMaster am 
                 ON 
-                    am.AddressUkeyID = em.AddressUkeyID 
+                    am.EventUkeyId = em.EventUkeyId 
 				LEFT JOIN 
                     OrganizerMaster om 
                 ON 

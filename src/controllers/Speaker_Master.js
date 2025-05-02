@@ -53,17 +53,19 @@ const FetchSpeakerMasterDetails = async (req, res) => {
 };
 
 const SpeakerMaster = async (req, res) => {
-    const { SpeakerUkeyId, OrganizerUkeyId, EventUkeyId, Name, Alias, Description, Email, Mobile, FB, Instagram, Youtube, Other, flag, DiscriptionHindi, DiscriptionGujarati, IsActive} = req.body;
+    const { SpeakerUkeyId, OrganizerUkeyId, EventUkeyId, Name, Alias, Description, Email, Mobile, FB, Instagram, Youtube, Other, flag, DiscriptionHindi, DiscriptionGujarati, IsActive,Type} = req.body;
     try {
         const { IPAddress, ServerName, EntryTime } = getCommonKeys(req);
         
         const insertQuery = `
             INSERT INTO SpeakerMaster (
                 SpeakerUkeyId, Name, Alias, Description, Email, Mobile, FB, Instagram, Youtube, Other, 
-                UserName, UserID, IpAddress, HostName, EntryDate, flag, OrganizerUkeyId, EventUkeyId, DiscriptionHindi, DiscriptionGujarati, IsActive
+                UserName, UserID, IpAddress, HostName, EntryDate, flag, OrganizerUkeyId, EventUkeyId, DiscriptionHindi, DiscriptionGujarati, IsActive,Type
             ) VALUES (
                 ${setSQLStringValue(SpeakerUkeyId)}, ${setSQLStringValue(Name)}, ${setSQLStringValue(Alias)}, ${setSQLStringValue(Description)}, ${setSQLStringValue(Email)}, ${setSQLStringValue(Mobile)}, ${setSQLStringValue(FB)}, 
-                ${setSQLStringValue(Instagram)}, ${setSQLStringValue(Youtube)}, ${setSQLStringValue(Other)}, ${setSQLStringValue(req.user.FirstName)}, ${setSQLNumberValue(req.user.UserId)}, ${setSQLStringValue(IPAddress)}, ${setSQLStringValue(ServerName)}, ${setSQLStringValue(EntryTime)}, ${setSQLStringValue(flag)}, ${setSQLStringValue(OrganizerUkeyId)}, ${setSQLStringValue(EventUkeyId)}, ${setSQLStringValue(DiscriptionHindi)}, ${setSQLStringValue(DiscriptionGujarati)}, ${setSQLBooleanValue(IsActive)}
+                ${setSQLStringValue(Instagram)}, ${setSQLStringValue(Youtube)}, ${setSQLStringValue(Other)}, ${setSQLStringValue(req.user.FirstName)}, ${setSQLNumberValue(req.user.UserId)}, ${setSQLStringValue(IPAddress)}, 
+                ${setSQLStringValue(ServerName)}, ${setSQLStringValue(EntryTime)}, ${setSQLStringValue(flag)}, ${setSQLStringValue(OrganizerUkeyId)}, ${setSQLStringValue(EventUkeyId)}, ${setSQLStringValue(DiscriptionHindi)}, 
+                ${setSQLStringValue(DiscriptionGujarati)}, ${setSQLBooleanValue(IsActive)},${setSQLStringValue(Type)}
             );
         `;
 
