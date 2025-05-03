@@ -314,12 +314,13 @@ const Loginorganizerwithemail = async (req, res) => {
         // if(missingKeys.length > 0){
         //     return res.status(400).json(errorMessage(`${missingKeys.join(', ')} is required`))
         // }
+        let conditionOfAppleUserId = AppleUserId ? `OR om.AppleUserId = ${setSQLStringValue(AppleUserId)}` : ''
 
 
         const result = await pool.request().query(`
 
         select om.*,em.EventName from OrgUserMaster om left join EventMaster em on em.EventUkeyId=om.EventUkeyId
-        where (om.Email = ${setSQLStringValue(Email)} OR om.AppleUserId = ${setSQLStringValue(AppleUserId)}) AND om.IsActive = 1
+        where (om.Email = ${setSQLStringValue(Email)} ${conditionOfAppleUserId}) AND om.IsActive = 1
         `);
 
         if(result.rowsAffected[0] === 0){
