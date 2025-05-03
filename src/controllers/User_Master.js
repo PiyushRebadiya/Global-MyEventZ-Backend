@@ -2,6 +2,7 @@ const { errorMessage, getCommonAPIResponse, setSQLBooleanValue, checkKeysAndRequ
 const { SECRET_KEY } = require("../common/variable");
 const { pool } = require("../sql/connectToDatabase");
 const jwt = require('jsonwebtoken');
+const { sendOrganizerRegisterMail } = require("./sendEmail");
 
 const fetchUserMaster = async (req, res) => {
     try {
@@ -134,6 +135,13 @@ const addOrUpdateUserMaster = async (req, res) => {
             }
             const options = { expiresIn: '365d' };
             const token = jwt.sign({ UserUkeyId: UserUkeyId, Mobile1, FullName, Role }, SECRET_KEY, options);
+            try {
+                if (Email) {
+                    await sendOrganizerRegisterMail(Email, FullName || "User");
+                }
+            } catch (error) {
+                console.log('error :>> ', error);
+            }
             return res.status(200).send({...successMessage('Data inserted Successfully!'), verify: true, token, ...req.body});
         } else if (flag === 'U') {
             if (!UserUkeyId) return res.status(200).send(errorMessage("UserUkeyId is required"));

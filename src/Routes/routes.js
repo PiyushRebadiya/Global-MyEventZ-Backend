@@ -247,7 +247,7 @@ router.delete('/delete_whats_new', auth, whatsnewcontroller.removewhatsnew);
 //#endregion
 
 //#region send email.
-router.get('/send_organizer_email', OrganizerEmail.sendOrganizerRegisterMail);
+// router.get('/send_organizer_email', OrganizerEmail.sendOrganizerRegisterMail);
 //#endregion
 
 module.exports = router;

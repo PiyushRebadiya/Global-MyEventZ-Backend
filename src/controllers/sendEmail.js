@@ -1,12 +1,14 @@
-const { pool } = require("mssql");
+// const { pool } = require("mssql");
 const { sendMail } = require("../common/mail");
-const { checkKeysAndRequireValues, successMessage, errorMessage } = require("../common/main");
+// const { checkKeysAndRequireValues, successMessage, errorMessage } = require("../common/main");
 
-const sendOrganizerRegisterMail = async (req, res) => {
+const sendOrganizerRegisterMail = async (Email, OrganizerName) => {
     try {
-        const { Email, OrganizerName } = req.query;
+        // const { Email, OrganizerName } = req.query;
+        console.log('Email', Email);
+        console.log('OrganizerName', OrganizerName);
 
-        const missingKeys = checkKeysAndRequireValues(['Email', 'OrganizerName'], req.query);
+        // const missingKeys = checkKeysAndRequireValues(['Email', 'OrganizerName'], req.query);
         // if (missingKeys.length > 0) {
         //     return res.status(400).send(errorMessage(`${missingKeys.join(', ')} parameters are required and must not be null or undefined`));
         // }
@@ -55,14 +57,13 @@ const sendOrganizerRegisterMail = async (req, res) => {
     </html>
     `;
 
-
         const sentMail = await sendMail(Email, 'Welcome to Myeventz', htmlContent);
+        console.log('sentMail', sentMail);
         if (sentMail) {
-            console.log();
+            console.log('Email sent successfully');
         }
     } catch (error) {
         console.error('Error:', error);
-        // res.status(500).send(errorMessagesage(error?.message));
     }
 };
 
