@@ -1,5 +1,7 @@
 const { errorMessage, successMessage, checkKeysAndRequireValues, generateCODE, setSQLBooleanValue, getCommonKeys, generateJWTT, generateUUID, getCommonAPIResponse, deleteImage, setSQLOrderId, setSQLStringValue, setSQLNumberValue, setSQLDecimalValue, setSQLDateTime, generateBookingCode } = require("../common/main");
 const {pool} = require('../sql/connectToDatabase');
+const { sendEmailUserTickets, sendEmailUserTicketsHindi } = require("./sendEmail");
+const moment = require("moment");
 
 const fetchBookings = async (req, res) => {
     try {
@@ -219,6 +221,30 @@ const BookingMaster = async (req, res) => {
 
         if (result?.rowsAffected?.[0] === 0) {
             return res.status(400).json(errorMessage('No booking entry created.'));
+        }
+
+        try {
+            const userDetailsQuery = `select * from UserMaster where UserUkeyID = ${setSQLStringValue(UserUkeyID)}`;
+            const userDetails = await pool.request().query(userDetailsQuery);
+            if (userDetails?.recordset?.length > 0) {
+                const { Email, Mobile1, FullName = 'User' } = userDetails.recordset[0];
+                if (Email) {
+                    const EventDetailsQuery = `select am.Address1, am.Address2, am.StateName, am.CityName, am.Pincode, em.EventName, em.StartEventDate from EventMaster em
+                                                left join AddressMaster am on am.AddressUkeyID = em.AddressUkeyID
+                                                where em.EventUkeyId = ${setSQLStringValue(EventUkeyId)} AND am.EventUkeyId = ${setSQLStringValue(EventUkeyId)}`;
+                    const EventDetails = await pool.request().query(EventDetailsQuery);
+                    if (EventDetails?.recordset?.length > 0) {
+                        const { EventName, StartEventDate, Address1, Address2, StateName, CityName, Pincode } = EventDetails.recordset[0];
+                        const address = [Address1, Address2, CityName, StateName, Pincode].filter(Boolean).join(', ');
+                        const ticketReport = `https://report.taxfile.co.in/report/TicketPrint?BookingUkeyID=${BookingUkeyID}&ExportMode=PDF`;
+
+                        await sendEmailUserTickets(Email, FullName || 'User', EventName, moment(StartEventDate).format("dddd, MMMM Do YYYY"), address, ticketReport)
+                        await sendEmailUserTicketsHindi(Email, FullName || 'User', EventName, moment(StartEventDate).format("dddd, MMMM Do YYYY"), address, ticketReport)
+                    }
+                }
+            }
+        } catch (error) {
+            console.error('Error in sending email:', error);
         }
         return res.status(200).json({ 
             ...successMessage('New Booking Entry Created Successfully.'), 
