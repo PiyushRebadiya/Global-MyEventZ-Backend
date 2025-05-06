@@ -108,7 +108,7 @@ router.get('/fetch_event_by_id_mob', EventMasterController.fetchEventById);
 router.post('/event_master', auth, EventController.addEvent);
 router.delete('/delete_event', auth, EventController.RemoveEvent);
 
-router.get('/fetch_event_category', auth, EventCategoryNasterController.fetchEventCategory);
+router.get('/fetch_event_category', EventCategoryNasterController.fetchEventCategory);
 router.post('/event_category_master', auth, EventCategoryNasterController.EventCategoryMaster);
 router.delete('/delete_event_category', auth, EventCategoryNasterController.RemoveEventCategory);
 //#endregion
