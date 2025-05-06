@@ -102,6 +102,8 @@ router.get('/fetch_city', CityController.fetchCityData);
 //#region EVENTMASTER , EVENT CATEGORY MASTER
 router.get('/fetch_event_list', auth, EventMasterController.EventList);
 router.get('/fetch_event_by_id', auth, EventMasterController.fetchEventById);
+router.get('/fetch_event_list_mob', EventMasterController.EventList);
+router.get('/fetch_event_by_id_mob', EventMasterController.fetchEventById);
 router.post('/event_master', auth, EventController.addEvent);
 router.delete('/delete_event', auth, EventController.RemoveEvent);
 

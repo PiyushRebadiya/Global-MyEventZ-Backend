@@ -19,7 +19,7 @@ const FetchOrganizerDetails = async (req, res)=>{
         // Combine the WHERE conditions into a single string
         const whereString = whereConditions.length > 0 ? `WHERE ${whereConditions.join(' AND ')}` : '';
         const getUserList = {
-            getQuery: `SELECT om.*, oum.Password FROM OrganizerMaster om
+            getQuery: `SELECT om.*, oum.Password, oum.UserUkeyId FROM OrganizerMaster om
             left join OrgUserMaster oum on om.OrganizerUkeyId = oum.OrganizerUkeyId
             ${whereString} ORDER BY OrganizerId DESC`,
             countQuery: `SELECT COUNT(*) AS totalCount FROM OrganizerMaster om
@@ -60,7 +60,7 @@ const OrginazerMaster = async (req, res) => {
         if (!flag) return res.status(400).json(errorMessage("Flag is required. Use 'A' for Add or 'U' for Update."));
 
         const missingKeys = checkKeysAndRequireValues([
-            "OrganizerUkeyId", "OrganizerName", "Mobile1", "StateCode", "IsActive", "UserName"
+            "OrganizerUkeyId", "OrganizerName", "Mobile1", "StateCode", "IsActive"
         ], req.body);
 
         if (missingKeys.length) return res.status(400).json(errorMessage(`${missingKeys.join(", ")} is required.`));
