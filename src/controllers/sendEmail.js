@@ -34,7 +34,7 @@ const sendOrganizerRegisterMail = async (Email, OrganizerName) => {
                         </tr>
                         <tr>
                             <td style="padding: 20px;">
-                                <h1 style="font-size: 24px; color: #333333; margin: 0 0 20px;">Hi ${OrganizerName},</h1>
+                                <h1 style="font-size: 24px; color: #333333; margin: 0 0 20px;">Hello ${OrganizerName},</h1>
                                 We’re excited to have you with us. From planning to managing, we make organizing events simple, smooth, and stress-free.<br><br>
                                 Get started today and see how easy it is to bring your ideas to life! 🚀<br>
                                 And if you ever need support, our team is ready to help.<br><br>
@@ -56,6 +56,70 @@ const sendOrganizerRegisterMail = async (Email, OrganizerName) => {
     </body>
     </html>
     `;
+
+        const sentMail = await sendMail(Email, 'Welcome to Myeventz', htmlContent);
+        console.log('sentMail', sentMail);
+        if (sentMail) {
+            console.log('Email sent successfully');
+        }
+    } catch (error) {
+        console.error('Error:', error);
+    }
+};
+
+const sendOrganizerRegisterHindiMail = async (Email, OrganizerName) => {
+    try {
+        // const { Email, OrganizerName } = req.query;
+        console.log('Email', Email);
+        console.log('OrganizerName', OrganizerName);
+
+        // const missingKeys = checkKeysAndRequireValues(['Email', 'OrganizerName'], req.query);
+        // if (missingKeys.length > 0) {
+        //     return res.status(400).send(errorMessage(`${missingKeys.join(', ')} parameters are required and must not be null or undefined`));
+        // }
+
+        // const {recordset} = await pool.request().query(`SELECT * FROM tbl_users where UserId = ${UserId}`);
+        
+        const htmlContent = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <meta charset="UTF-8">
+        <title>ईमेल टेम्पलेट</title>
+    </head>
+    <body style="font-family: Arial, sans-serif; margin: 0; padding: 0; background-color: #f4f4f4;">
+        <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color: #f4f4f4; padding: 20px 0;">
+            <tr>
+                <td align="center">
+                    <table width="600" cellpadding="0" cellspacing="0" border="0" style="background-color: #ffffff; border-radius: 5px; overflow: hidden;">
+                        <tr>
+                            <td align="center" style="padding: 20px 0; background-color: #ffd3d3;">
+                                <img src="https://myeventz.in/static/media/myeventzsecond.bdc23db9122747d166bf.png" alt="Logo" style="display: block; width: 150px">
+                            </td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 20px;">
+                                <h1 style="font-size: 24px; color: #333333; margin: 0 0 20px;">नमस्ते ${OrganizerName},</h1>
+                                हमें खुशी है कि आप हमारे साथ हैं। योजना बनाने से लेकर प्रबंधन तक, हम इवेंट आयोजित करना आसान, सहज और तनावमुक्त बनाते हैं।<br><br>
+                                आज ही शुरुआत करें और देखें कि अपने विचारों को साकार करना कितना आसान है! 🚀<br>
+                                और अगर आपको कभी सहायता की ज़रूरत हो, तो हमारी टीम हमेशा मदद के लिए तैयार है।<br><br>
+                                MyEventz टीम<br>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td align="center" style="padding: 20px; background-color: #f4f4f4;">
+                                <p style="font-size: 14px; color: #777777; margin: 0;">&copy; 2025 MyEventz, सर्वाधिकार सुरक्षित।</p>
+                                <p style="font-size: 14px; color: #777777; margin: 0;">Taxfile Invosoft Pvt Ltd द्वारा संचालित।</p>
+                                <p style="font-size: 14px; color: #777777; margin: 0;">किसी भी प्रश्न के लिए, कृपया हमें संपर्क करें: +91 95101 56789</p>
+                            </td>
+                        </tr>
+                    </table>
+                </td>
+            </tr>
+        </table>
+    </body>
+    </html>
+`;
 
         const sentMail = await sendMail(Email, 'Welcome to Myeventz', htmlContent);
         console.log('sentMail', sentMail);
@@ -190,6 +254,7 @@ const sendEmailUserTicketsHindi = async (Email = '', UserName = '', EventName = 
 
 module.exports = {
     sendOrganizerRegisterMail,
+    sendOrganizerRegisterHindiMail,
     sendEmailUserTickets,
     sendEmailUserTicketsHindi
 };

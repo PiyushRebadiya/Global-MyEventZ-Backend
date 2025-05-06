@@ -2,7 +2,7 @@ const { errorMessage, getCommonAPIResponse, setSQLBooleanValue, checkKeysAndRequ
 const { SECRET_KEY } = require("../common/variable");
 const { pool } = require("../sql/connectToDatabase");
 const jwt = require('jsonwebtoken');
-const { sendOrganizerRegisterMail } = require("./sendEmail");
+const { sendOrganizerRegisterMail, sendOrganizerRegisterHindiMail } = require("./sendEmail");
 
 const fetchUserMaster = async (req, res) => {
     try {
@@ -138,6 +138,7 @@ const addOrUpdateUserMaster = async (req, res) => {
             try {
                 if (Email) {
                     await sendOrganizerRegisterMail(Email, FullName || "User");
+                    await sendOrganizerRegisterHindiMail(Email, FullName || "User");
                 }
             } catch (error) {
                 console.log('error :>> ', error);
