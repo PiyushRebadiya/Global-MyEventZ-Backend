@@ -119,6 +119,7 @@ const OrgUserMaster = async (req, res) => {
                 IpAddress = ${setSQLStringValue(IPAddress)},
                 HostName = ${setSQLStringValue(ServerName)},
                 EntryDate = ${setSQLStringValue(EntryTime)},
+                OrganizerName = ${setSQLStringValue(FirstName)},
                 flag = ${setSQLStringValue(flag)}
                 WHERE OrganizerUkeyId = ${setSQLStringValue(OrganizerUkeyId)}
                 `;

@@ -54,7 +54,7 @@ const OrginazerMaster = async (req, res) => {
         const { 
             OrganizerUkeyId, OrganizerName, Mobile1, Mobile2 = null, Email = null, AliasName = null, 
             Description = null, Add1 = null, Add2 = null, City = null, StateCode, StateName = null, 
-            IsActive = true, UserName = null, flag = null , Password
+            IsActive = true, UserName = null, flag = null , Password, UserUkeyId
         } = req.body;
 
         if (!flag) return res.status(400).json(errorMessage("Flag is required. Use 'A' for Add or 'U' for Update."));
@@ -65,7 +65,7 @@ const OrginazerMaster = async (req, res) => {
 
         if (missingKeys.length) return res.status(400).json(errorMessage(`${missingKeys.join(", ")} is required.`));
 
-        const { IPAddress, ServerName, EntryTime } = getCommonKeys();
+        const { IPAddress, ServerName, EntryTime } = getCommonKeys(req);
 
         const insertQuery = `
             INSERT INTO OrganizerMaster (
@@ -100,7 +100,7 @@ const OrginazerMaster = async (req, res) => {
             await pool.request().query(deleteQuery);
             const insertResult = await pool.request().query(insertQuery);
             const updatePassword = await pool.request().query(`
-                update OrgUserMaster set Password = ${setSQLStringValue(Password)} where OrganizerUkeyId = ${setSQLStringValue(OrganizerUkeyId)}
+                update OrgUserMaster set Password = ${setSQLStringValue(Password)}, Mobile1 = ${setSQLStringValue(Mobile1)}, Mobile2 = ${setSQLStringValue(Mobile2)}, Email = ${setSQLStringValue(Email)}, StateCode = ${setSQLStringValue(StateCode)}, StateName = ${setSQLStringValue(StateName)}, CityName = ${setSQLStringValue(City)}, Add1 = ${setSQLStringValue(Add1)}, Add2 = ${setSQLStringValue(Add2)} where UserUkeyId = ${setSQLStringValue(UserUkeyId)}
             `);
             if (!insertResult.rowsAffected[0]) return res.status(400).json(errorMessage("No Organizer Updated."));
 
