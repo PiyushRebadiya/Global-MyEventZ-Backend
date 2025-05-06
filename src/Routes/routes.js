@@ -89,6 +89,7 @@ router.post('/forget_passwrod', UserController.ForgetPasswordForOrganizer);
 router.put('/update_organizer', auth, OrginizerUpload, UserController.updateOrginizer);
 
 router.get('/fetch_org_user_master', auth, OrgUserController.FetchOrgUserMasterDetails);
+router.get('/fetch_org_user_master_mob', OrgUserController.FetchOrgUserMasterDetails);
 router.post('/org_user_master', auth, OrginizerUpload, OrgUserController.OrgUserMaster);
 router.delete('/delete_org_user_master', auth, OrgUserController.RemoveOrgUser);
 
