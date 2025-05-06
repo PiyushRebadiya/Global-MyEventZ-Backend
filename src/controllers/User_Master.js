@@ -6,7 +6,7 @@ const { sendOrganizerRegisterMail } = require("./sendEmail");
 
 const fetchUserMaster = async (req, res) => {
     try {
-        const { UserUkeyId, Mobile1, Role, IsActive, IsLogin , StartDate, EndDate} = req.query;
+        const { UserUkeyId, Mobile1, Role, IsActive, IsLogin , StartDate, EndDate, AppleUserId} = req.query;
         let whereConditions = [];
 
         if (UserUkeyId) {
@@ -23,6 +23,9 @@ const fetchUserMaster = async (req, res) => {
         }
         if(IsLogin){
             whereConditions.push(`UM.IsLogin = ${setSQLBooleanValue(IsLogin)}`);
+        }
+        if(AppleUserId){
+            whereConditions.push(`UM.AppleUserId = ${setSQLBooleanValue(AppleUserId)}`);
         }
         if(StartDate && EndDate){
             whereConditions.push(`UM.EntryDate >= ${setSQLDateTime(StartDate)} and UM.EntryDate <= ${setSQLDateTime(EndDate)}`);
@@ -82,15 +85,21 @@ const VerifyUserEmail = async (req, res) => {
 
 const UserLoginWithEmail = async (req, res) => {
     try{
-        const {Email} = req.body;
+        const {Email, AppleUserId} = req.body;
 
-        const fieldCheck = checkKeysAndRequireValues(['Email'], req.body);
-        if (fieldCheck.length !== 0) {
-            return res.status(200).send(errorMessage(`${fieldCheck} is required`));
+        // const fieldCheck = checkKeysAndRequireValues(['Email'], req.body);
+        if (!Email && !AppleUserId) {
+            return res.status(200).send(errorMessage(`Email or AppleUserId is required`));
         }
 
-        const userMaster = await pool.query(`SELECT * FROM UserMaster WHERE Email = ${setSQLStringValue(Email)}`);
+        let query = "SELECT * FROM UserMaster WHERE IsActive = 1";
+        if (Email) {
+            query += ` AND Email = ${setSQLStringValue(Email)}`;
+        } else if (AppleUserId) {
+            query += ` AND AppleUserId = ${setSQLStringValue(AppleUserId)}`;
+        }
 
+        const userMaster = await pool.query(query);
         if (!userMaster?.recordset?.length) return res.status(200).send(errorMessage("Invalid credentials"));
         
         if (!userMaster?.recordset?.[0]?.IsActive) return res.status(200).send({...errorMessage("This account is inactive. To activate it, please contact customer support at +91-9904016789."), verify : false});
@@ -106,7 +115,7 @@ const addOrUpdateUserMaster = async (req, res) => {
 
     const UserName = req?.user?.firstName;
     try {
-        const { UserUkeyId, FullName, Mobile1, Mobile2, DOB = null, Email, Gender, Role, IsActive, flag, Password, NotificationToken } = req.body;
+        const { UserUkeyId, FullName, Mobile1, Mobile2, DOB = null, Email, Gender, Role, IsActive, flag, Password, NotificationToken, AppleUserId } = req.body;
         
         ProfiilePic = req?.files?.ProfiilePic?.length ? `${req?.files?.ProfiilePic[0]?.filename}` : ProfiilePic;
         const fieldCheck = checkKeysAndRequireValues(['Mobile1', 'FullName', 'UserUkeyId'], req.body);
@@ -126,7 +135,7 @@ const addOrUpdateUserMaster = async (req, res) => {
             }
 
             if (userMobile?.recordset?.length) return res.status(200).send(errorMessage("Mobile number already exists"));
-            const insertQuery = `INSERT INTO UserMaster (UserUkeyId, FullName, ProfiilePic, Mobile1, Mobile2, DOB, Email, Gender, Role, IsActive, IsLogin, flag, UserName, Password, IpAddress, HostName, EntryDate, NotificationToken) VALUES (${setSQLStringValue(UserUkeyId)}, ${setSQLStringValue(FullName)}, ${setSQLStringValue(ProfiilePic)}, ${setSQLNumberValue(Mobile1)}, ${setSQLNumberNullValue(Mobile2)}, ${setSQLDateTime(DOB)}, ${setSQLStringValue(Email)}, ${setSQLStringValue(Gender)}, ${setSQLStringValue(Role)}, ${setSQLBooleanValue(IsActive)}, 1, 'A', ${setSQLStringValue(UserName)}, ${setSQLStringValue(Password)}, ${setSQLStringValue(IPAddress)}, ${setSQLStringValue(ServerName)}, ${setSQLDateTime(EntryTime)}, ${setSQLStringValue(NotificationToken)})`;
+            const insertQuery = `INSERT INTO UserMaster (UserUkeyId, FullName, ProfiilePic, Mobile1, Mobile2, DOB, Email, Gender, Role, IsActive, IsLogin, flag, UserName, Password, IpAddress, HostName, EntryDate, NotificationToken, AppleUserId) VALUES (${setSQLStringValue(UserUkeyId)}, ${setSQLStringValue(FullName)}, ${setSQLStringValue(ProfiilePic)}, ${setSQLNumberValue(Mobile1)}, ${setSQLNumberNullValue(Mobile2)}, ${setSQLDateTime(DOB)}, ${setSQLStringValue(Email)}, ${setSQLStringValue(Gender)}, ${setSQLStringValue(Role)}, ${setSQLBooleanValue(IsActive)}, 1, 'A', ${setSQLStringValue(UserName)}, ${setSQLStringValue(Password)}, ${setSQLStringValue(IPAddress)}, ${setSQLStringValue(ServerName)}, ${setSQLDateTime(EntryTime)}, ${setSQLStringValue(NotificationToken)}, ${setSQLStringValue(AppleUserId)})`;
             const result = await pool.query(insertQuery);
 
             if (result?.rowsAffected[0] === 0) {
@@ -134,7 +143,7 @@ const addOrUpdateUserMaster = async (req, res) => {
                 return res.status(200).send({...errorMessage('No rows inserted of User Master'), verify: false});
             }
             const options = { expiresIn: '365d' };
-            const token = jwt.sign({ UserUkeyId: UserUkeyId, Mobile1, FullName, Role }, SECRET_KEY, options);
+            const token = jwt.sign({ UserUkeyId: UserUkeyId, Mobile1, FullName, Role, AppleUserId }, SECRET_KEY, options);
             try {
                 if (Email) {
                     await sendOrganizerRegisterMail(Email, FullName || "User");
@@ -151,7 +160,7 @@ const addOrUpdateUserMaster = async (req, res) => {
                 const userMobile = await pool.query(`SELECT * FROM UserMaster WHERE Mobile1 = '${Mobile1}'`);
                 if (userMobile?.recordset?.length) return res.status(200).send(errorMessage("Mobile number already exists"));
             }
-            const updateQuery = `UPDATE UserMaster SET FullName = ${setSQLStringValue(FullName)}, ProfiilePic = ${setSQLStringValue(ProfiilePic)}, Mobile1 = ${setSQLNumberValue(Mobile1)}, Mobile2 = ${setSQLNumberNullValue(Mobile2)}, DOB = ${setSQLDateTime(DOB)}, Email = ${setSQLStringValue(Email)}, Gender = ${setSQLStringValue(Gender)}, Role = ${setSQLStringValue(Role)}, IsActive = ${setSQLBooleanValue(IsActive)}, IsLogin = 1, Password = ${setSQLStringValue(Password)}, UserName = ${setSQLStringValue(req?.user?.FullName)}, IpAddress = ${setSQLStringValue(IPAddress)}, HostName = ${setSQLStringValue(ServerName)}, EntryDate = ${setSQLDateTime(EntryTime)},  flag = 'U', NotificationToken = ${setSQLStringValue(NotificationToken)} WHERE UserUkeyId = '${UserUkeyId}'`;
+            const updateQuery = `UPDATE UserMaster SET FullName = ${setSQLStringValue(FullName)}, ProfiilePic = ${setSQLStringValue(ProfiilePic)}, Mobile1 = ${setSQLNumberValue(Mobile1)}, Mobile2 = ${setSQLNumberNullValue(Mobile2)}, DOB = ${setSQLDateTime(DOB)}, Email = ${setSQLStringValue(Email)}, Gender = ${setSQLStringValue(Gender)}, Role = ${setSQLStringValue(Role)}, IsActive = ${setSQLBooleanValue(IsActive)}, IsLogin = 1, Password = ${setSQLStringValue(Password)}, UserName = ${setSQLStringValue(req?.user?.FullName)}, IpAddress = ${setSQLStringValue(IPAddress)}, HostName = ${setSQLStringValue(ServerName)}, EntryDate = ${setSQLDateTime(EntryTime)},  flag = 'U', NotificationToken = ${setSQLStringValue(NotificationToken)}, AppleUserId = ${setSQLStringValue(AppleUserId)} WHERE UserUkeyId = '${UserUkeyId}'`;
             
             await pool.query(updateQuery);
 
