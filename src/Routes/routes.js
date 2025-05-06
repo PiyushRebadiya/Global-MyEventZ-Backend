@@ -114,11 +114,13 @@ router.delete('/delete_event_category', auth, EventCategoryNasterController.Remo
 
 //#region SPEAKER APIs
 router.get('/fetch_speaker_master', auth, SpeakerMasterController.FetchSpeakerMasterDetails);
+router.get('/fetch_speaker_master_mob', SpeakerMasterController.FetchSpeakerMasterDetails);
 router.post('/speaker_master', auth, SpeakerMasterController.SpeakerMaster);
 router.delete('/delete_speaker_master', auth, SpeakerMasterController.RemoveSpeaker);
 //#endregion
 //#region SPONSOR APIs
 router.get('/fetch_sponsor_master', SponsorMasterController.FetchSponsorMasterDetails);
+router.get('/fetch_sponsor_master_mob', SponsorMasterController.FetchSponsorMasterDetails);
 router.post('/sponsor_master', auth, SponsorUpload, SponsorMasterController.SponsorMaster);
 router.delete('/delete_sponsor_master', auth, SponsorMasterController.RemoveSponsor);
 
