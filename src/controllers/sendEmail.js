@@ -45,7 +45,7 @@ const sendOrganizerRegisterMail = async (Email, OrganizerName) => {
                         <tr>
                             <td align="center" style="padding: 20px; background-color: #f4f4f4;">
                                 <p style="font-size: 14px; color: #777777; margin: 0;">&copy; 2025 MyEventz, All rights reserved.</p>
-                                <p style="font-size: 14px; color: #777777; margin: 0;">Powered by Taxfile Invosoft Pvt Ltd.</p>
+                                <p style="font-size: 14px; color: #777777; margin: 0;">Application by Taxfile Invosoft Pvt Ltd.</p>
                                 <p style="font-size: 14px; color: #777777; margin: 0;">For any queries, please contact: +91 95101 56789</p>
                             </td>
                         </tr>
@@ -109,7 +109,7 @@ const sendOrganizerRegisterHindiMail = async (Email, OrganizerName) => {
                         <tr>
                             <td align="center" style="padding: 20px; background-color: #f4f4f4;">
                                 <p style="font-size: 14px; color: #777777; margin: 0;">&copy; 2025 MyEventz, सर्वाधिकार सुरक्षित।</p>
-                                <p style="font-size: 14px; color: #777777; margin: 0;">Taxfile Invosoft Pvt Ltd द्वारा संचालित।</p>
+                                <p style="font-size: 14px; color: #777777; margin: 0;">एप्लिकेशन डेवलपर: Taxfile Invosoft Pvt Ltd</p>
                                 <p style="font-size: 14px; color: #777777; margin: 0;">किसी भी प्रश्न के लिए, कृपया हमें संपर्क करें: +91 95101 56789</p>
                             </td>
                         </tr>
@@ -131,8 +131,9 @@ const sendOrganizerRegisterHindiMail = async (Email, OrganizerName) => {
     }
 };
 
-const sendEmailUserTickets = async (Email = '', UserName = '', EventName = '', StartEventDate = '', address = '', ticketReport = '') => {
+const sendEmailUserTickets = async (Email = '', UserName = '', EventName = '', StartEventDate = '', address = '', ticketReport = '', Mobile1 = '', Mobile2 = '', OrganizerName = '') => {
     try {
+        const allMobiles = [Mobile1, Mobile2].filter(mobile => mobile !== null && mobile !== undefined && mobile !== '').map(mobile => `+${mobile}`).join(', ');
         
         const htmlContent = `
         <!DOCTYPE html>
@@ -161,7 +162,9 @@ const sendEmailUserTickets = async (Email = '', UserName = '', EventName = '', S
                                         <strong>Event Date:</strong> ${StartEventDate}<br>
                                         <strong>Venue:</strong> ${address} 🏢<br><br>
         
-                                        If you need any further information, feel free to contact us. 😊<br><br>
+                                        If you need any further information, feel free contact to organizer: ${OrganizerName} 😊<br><br>
+
+                                        <strong>For any queries, please contact:</strong> ${allMobiles}<br><br>
         
                                         🎫 <strong>Your Ticket:</strong> <a href=${ticketReport} style="color: #1a73e8; text-decoration: none;">Click here</a>
                                     </p>
@@ -170,8 +173,7 @@ const sendEmailUserTickets = async (Email = '', UserName = '', EventName = '', S
                             <tr>
                                 <td align="center" style="padding: 20px; background-color: #f4f4f4;">
                                     <p style="font-size: 14px; color: #777777; margin: 0;">&copy; 2025 MyEventz, All rights reserved.</p>
-                                    <p style="font-size: 14px; color: #777777; margin: 0;">Powered by Taxfile Invosoft Pvt Ltd.</p>
-                                    <p style="font-size: 14px; color: #777777; margin: 0;">For any queries, please contact: +91 95101 56789</p>
+                                    <p style="font-size: 14px; color: #777777; margin: 0;">Application by Taxfile Invosoft Pvt Ltd.</p>
                                 </td>
                             </tr>
                         </table>
@@ -192,8 +194,9 @@ const sendEmailUserTickets = async (Email = '', UserName = '', EventName = '', S
     }
 };
 
-const sendEmailUserTicketsHindi = async (Email = '', UserName = '', EventName = '', StartEventDate = '', address = '', ticketReport = '') => {
+const sendEmailUserTicketsHindi = async (Email = '', UserName = '', EventName = '', StartEventDate = '', address = '', ticketReport = '', Mobile1 = '', Mobile2 = '', OrganizerName = '') => {
     try {
+        const allMobiles = [Mobile1, Mobile2].filter(mobile => mobile !== null && mobile !== undefined && mobile !== '').map(mobile => `+${mobile}`).join(', ');
         const htmlContent = `
         <!DOCTYPE html>
         <html>
@@ -221,7 +224,9 @@ const sendEmailUserTicketsHindi = async (Email = '', UserName = '', EventName = 
                                         <strong>इवेंट की तारीख:</strong> ${StartEventDate}<br>
                                         <strong>स्थान:</strong> ${address} 🏢<br><br>
         
-                                        अगर आपको किसी और जानकारी की ज़रूरत हो, तो बेझिझक हमसे संपर्क करें। 😊<br><br>
+                                        अगर आपको किसी और जानकारी की ज़रूरत हो, तो बेझिझक आयोजक को संपर्क करें: ${OrganizerName} 😊<br><br>
+
+                                        <strong>किसी भी प्रश्न के लिए, कृपया संपर्क करें:</strong> ${allMobiles}<br><br>
         
                                         🎫 <strong>टिकट रिपोर्ट:</strong> <a href=${ticketReport} style="color: #1a73e8; text-decoration: none;">यहां क्लिक करें</a>
                                     </p>
@@ -230,8 +235,7 @@ const sendEmailUserTicketsHindi = async (Email = '', UserName = '', EventName = 
                             <tr>
                                 <td align="center" style="padding: 20px; background-color: #f4f4f4;">
                                     <p style="font-size: 14px; color: #777777; margin: 0;">&copy; 2025 MyEventz, सर्वाधिकार सुरक्षित।</p>
-                                    <p style="font-size: 14px; color: #777777; margin: 0;">प्रायोजित: Taxfile Invosoft Pvt Ltd.</p>
-                                    <p style="font-size: 14px; color: #777777; margin: 0;">किसी भी जानकारी के लिए संपर्क करें: +91 95101 56789</p>
+                                    <p style="font-size: 14px; color: #777777; margin: 0;">एप्लिकेशन डेवलपर: Taxfile Invosoft Pvt Ltd.</p>
                                 </td>
                             </tr>
                         </table>
