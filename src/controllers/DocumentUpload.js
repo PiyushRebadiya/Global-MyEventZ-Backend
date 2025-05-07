@@ -114,9 +114,9 @@ const updateIsActiveStatusOfDocument = async (req, res)=> {
 
 const RemoveDocumnet = async (req, res) => {
     try {
-        const { DocUkeyId, OrganizerUkeyId } = req.query;
+        const { DocUkeyId, OrganizerUkeyId, EventUkeyId, Category } = req.query;
 
-        const missingKeys = checkKeysAndRequireValues(['DocUkeyId', 'OrganizerUkeyId'], req.query);
+        const missingKeys = checkKeysAndRequireValues(['DocUkeyId', 'OrganizerUkeyId', 'EventUkeyId', 'Category'], req.query);
         if (missingKeys.length > 0) {
             return res.status(400).json(errorMessage(`${missingKeys.join(', ')} is Required`));
         }
@@ -135,7 +135,7 @@ const RemoveDocumnet = async (req, res) => {
             return res.status(400).json({ ...errorMessage('No Document upload Master Deleted.') });
         }
 
-        if (oldImg) deleteImage('./media/DocumentUpload/' + oldImg);; // Delete image only after successful DB deletion
+        if (oldImg) deleteImage(`./media/DocumentUpload/${OrganizerUkeyId}/${EventUkeyId}/${Category}/` + oldImg);; // Delete image only after successful DB deletion
 
         return res.status(200).json({ ...successMessage('Document upload Master Deleted Successfully.'), ...req.query });
     } catch (error) {

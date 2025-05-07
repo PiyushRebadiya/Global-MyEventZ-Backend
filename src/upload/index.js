@@ -1,4 +1,6 @@
 const multer = require('multer');
+const fs = require('fs');
+// const path = require('path');
 
 const SpeakerStorage = multer.diskStorage({
     destination: function (req, file, cb) {
@@ -141,8 +143,11 @@ const complaintStorage = multer.diskStorage({
 const complaintUpload = multer({ storage: complaintStorage }).fields(ImageUploadFields);
 
 const documentUploadStorage = multer.diskStorage({
-    destination: function (req, file, cb) {
-        cb(null, `./media/DocumentUpload`);
+    destination: async function (req, file, cb) {
+        await fs.mkdirSync(`./media/DocumentUpload/${req?.body?.OrganizerUkeyId}`, { recursive: true });
+        await fs.mkdirSync(`./media/DocumentUpload/${req?.body?.OrganizerUkeyId}/${req?.body?.EventUkeyId}`, { recursive: true });
+        await fs.mkdirSync(`./media/DocumentUpload/${req?.body?.OrganizerUkeyId}/${req?.body?.EventUkeyId}/${req?.body?.Category}`, { recursive: true });
+        cb(null, `./media/DocumentUpload/${req?.body?.OrganizerUkeyId}/${req?.body?.EventUkeyId}/${req?.body?.Category}/`);
     },
     filename: function (req, file, cb) {
         cb(null, Date.now() + '_' + file.originalname);
