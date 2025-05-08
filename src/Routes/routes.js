@@ -53,8 +53,7 @@ const OrganizerEmail = require('../controllers/sendEmail');
 
 const auth = require("../middleware/auth");
 
-const {SpeakerUpload, SponsorUpload, PaymentUpload, VolunteerMasterUpload, carouselUpload, galleryMasterUpload, ticketViewUpload, UserUpload, complaintUpload, OrginizerUpload, DocumentUploadUpload, ReminderUpload, ContectUpload} = require('../upload/index');
-const { Router } = require("express");
+const { UserUpload, OrginizerUpload, DocumentUploadUpload, ReminderUpload, ContectUpload} = require('../upload/index');
 
 //#region User Master
 router.get("/fetchUserMaster", auth, UserMasterController.fetchUserMaster)
@@ -122,7 +121,7 @@ router.delete('/delete_speaker_master', auth, SpeakerMasterController.RemoveSpea
 //#region SPONSOR APIs
 router.get('/fetch_sponsor_master', SponsorMasterController.FetchSponsorMasterDetails);
 router.get('/fetch_sponsor_master_mob', SponsorMasterController.FetchSponsorMasterDetails);
-router.post('/sponsor_master', auth, SponsorUpload, SponsorMasterController.SponsorMaster);
+router.post('/sponsor_master', auth, SponsorMasterController.SponsorMaster);
 router.delete('/delete_sponsor_master', auth, SponsorMasterController.RemoveSponsor);
 
 router.get('/fetch_sponsor_category_master', auth, SponsorCategoryMasterController.FetchSponsorCategoryMasterDetails);
