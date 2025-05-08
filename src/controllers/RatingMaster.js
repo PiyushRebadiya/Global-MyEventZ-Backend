@@ -3,7 +3,7 @@ const {pool} = require('../sql/connectToDatabase');
 
 const fetchRatings = async (req, res)=>{
     try{
-        const { ReviewUkeyId, Star, UserUkeyId } = req.query;
+        const { ReviewUkeyId, Star, UserUkeyId, EventUkeyId, OrganizerUkeyId } = req.query;
         let whereConditions = [];
 
         // Build the WHERE clause based on the Status
@@ -12,6 +12,12 @@ const fetchRatings = async (req, res)=>{
         }
         if (UserUkeyId) {
             whereConditions.push(`UserUkeyId = ${setSQLStringValue(UserUkeyId)}`);
+        }
+        if (EventUkeyId) {
+            whereConditions.push(`EventUkeyId = ${setSQLStringValue(EventUkeyId)}`);
+        }
+        if (OrganizerUkeyId) {
+            whereConditions.push(`OrganizerUkeyId = ${setSQLStringValue(OrganizerUkeyId)}`);
         }
         if (Star) {
             whereConditions.push(`Star = ${setSQLStringValue(Star)}`);
@@ -34,7 +40,7 @@ const fetchRatings = async (req, res)=>{
 }
 
 const RatingMaster = async (req, res)=>{
-    const { ReviewUkeyId, ReviewDetail, Star, UserUkeyId, flag} = req.body;
+    const { ReviewUkeyId, ReviewDetail, Star, UserUkeyId, EventUkeyId, OrganizerUkeyId, flag} = req.body;
     
     try{
         const missingKeys = checkKeysAndRequireValues(['ReviewUkeyId', 'UserUkeyId'], req.body);
@@ -45,8 +51,10 @@ const RatingMaster = async (req, res)=>{
         const { IPAddress, ServerName, EntryTime } = getCommonKeys(req);
 
         const insertQuery = `
-            INSERT INTO RatingMaster (ReviewUkeyId, UserUkeyId, ReviewDetail, Star, IpAddress, HostName, EntryDate, flag) VALUES (
+            INSERT INTO RatingMaster (ReviewUkeyId, EventUkeyId, OrganizerUkeyId, UserUkeyId, ReviewDetail, Star, IpAddress, HostName, EntryDate, flag) VALUES (
             ${setSQLStringValue(ReviewUkeyId)}, 
+            ${setSQLStringValue(EventUkeyId)}, 
+            ${setSQLStringValue(OrganizerUkeyId)},
             ${setSQLStringValue(UserUkeyId)}, 
             ${setSQLStringValue(ReviewDetail)}, 
             ${setSQLNumberValue(Star)}, 

@@ -3,12 +3,18 @@ const {pool} = require('../sql/connectToDatabase');
 
 const fetchSubscriberlist = async (req, res)=>{
     try{
-        const { SubscriberUkeyId, UserUkeyId, IsSubscribe, IsEmail } = req.query;
+        const { SubscriberUkeyId, UserUkeyId, IsSubscribe, IsEmail, EventUkeyId, OrganizerUkeyId } = req.query;
         let whereConditions = [];
 
         // Build the WHERE clause based on the Status
         if (SubscriberUkeyId) {
             whereConditions.push(`SubscriberUkeyId = ${setSQLStringValue(SubscriberUkeyId)}`);
+        }
+        if (EventUkeyId) {
+            whereConditions.push(`EventUkeyId = ${setSQLStringValue(EventUkeyId)}`);
+        }
+        if (OrganizerUkeyId) {
+            whereConditions.push(`OrganizerUkeyId = ${setSQLStringValue(OrganizerUkeyId)}`);
         }
         if (UserUkeyId) {
             whereConditions.push(`UserUkeyId = ${setSQLStringValue(UserUkeyId)}`);
@@ -37,7 +43,7 @@ const fetchSubscriberlist = async (req, res)=>{
 }
 
 const SubscriberMaster = async (req, res)=>{
-    const { SubscriberUkeyId, UserUkeyId, IsSubscribe, IsEmail, flag} = req.body;
+    const { SubscriberUkeyId, EventUkeyId, OrganizerUkeyId, UserUkeyId, IsSubscribe, IsEmail, flag} = req.body;
     
     try{
         const missingKeys = checkKeysAndRequireValues(['SubscriberUkeyId', 'UserUkeyId'], req.body);
@@ -48,8 +54,10 @@ const SubscriberMaster = async (req, res)=>{
         const { IPAddress, ServerName, EntryTime } = getCommonKeys(req);
 
         const insertQuery = `
-            INSERT INTO SubscriberMaster (SubscriberUkeyId, UserUkeyId, IsSubscribe, IsEmail, IpAddress, HostName, EntryDate, flag) VALUES (
+            INSERT INTO SubscriberMaster (SubscriberUkeyId, EventUkeyId, OrganizerUkeyId, UserUkeyId, IsSubscribe, IsEmail, IpAddress, HostName, EntryDate, flag) VALUES (
             ${setSQLStringValue(SubscriberUkeyId)}, 
+            ${setSQLStringValue(EventUkeyId)},
+            ${setSQLStringValue(OrganizerUkeyId)},
             ${setSQLStringValue(UserUkeyId)}, 
             ${setSQLBooleanValue(IsSubscribe)}, 
             ${setSQLBooleanValue(IsEmail)},
