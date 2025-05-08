@@ -49,6 +49,7 @@ const OrgtermandconditionController = require('../controllers/Org_TermsCondi');
 const PricingMasterController = require('../controllers/priceMaster');
 const whatsnewcontroller = require('../controllers/WhatsNew');
 const OrganizerEmail = require('../controllers/sendEmail');
+const SubscriberMaster = require('../controllers/subscriberMaster')
 // const carouselController = require('../controllers/carousel');
 
 const auth = require("../middleware/auth");
@@ -252,6 +253,11 @@ router.delete('/delete_whats_new', auth, whatsnewcontroller.removewhatsnew);
 
 //#region send email.
 // router.get('/send_organizer_email', OrganizerEmail.sendOrganizerRegisterMail);
+//#endregion
+
+//#region Subscriber master
+router.get('/fetch_subscriber', auth, SubscriberMaster.fetchSubscriberlist);
+router.post('/subscriber_master', auth, SubscriberMaster.SubscriberMaster);
 //#endregion
 
 module.exports = router;
