@@ -50,7 +50,8 @@ const PricingMasterController = require('../controllers/priceMaster');
 const whatsnewcontroller = require('../controllers/WhatsNew');
 const OrganizerEmail = require('../controllers/sendEmail');
 const SubscriberMaster = require('../controllers/subscriberMaster');
-const RatingMasterController = require('../controllers/RatingMaster')
+const RatingMasterController = require('../controllers/RatingMaster');
+const DisclaimerMasterController = require('../controllers/DisclaimerMaster');
 // const carouselController = require('../controllers/carousel');
 
 const auth = require("../middleware/auth");
@@ -234,7 +235,7 @@ router.post('/payment_gateway_master', auth, PaymentGatewayMaster.PaymentGateway
 router.delete('/delete_payment_gateway', auth, PaymentGatewayMaster.RemovePaymentGateway);
 //#endregion
 
-//#region 
+//#region Terms and Condition master
 router.get('/fetch_organizer_terms_condition', auth, OrgtermandconditionController.fetchOrgTermCond);
 router.post('/organizer_terms_condition', auth, OrgtermandconditionController.OrgTermCond);
 router.delete('/delete_organizer_terms_condition', auth, OrgtermandconditionController.RemoveOrgTermCond);
@@ -264,6 +265,12 @@ router.post('/subscriber_master', auth, SubscriberMaster.SubscriberMaster);
 //#region Rating master
 router.get('/fetch_rating', auth, RatingMasterController.fetchRatings);
 router.post('/rating_master', auth, RatingMasterController.RatingMaster);
+//#endregion
+
+//#region Disclaimer master
+router.get('/fetch_disclaimer_master', auth, DisclaimerMasterController.fetchDisclaimer);
+router.post('/disclaimer_master', auth, DisclaimerMasterController.Disclaimer);
+router.delete('/delete_disclaimer_master', auth, DisclaimerMasterController.RemoveDisclaimer);
 //#endregion
 
 module.exports = router;
