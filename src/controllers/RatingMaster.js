@@ -8,25 +8,30 @@ const fetchRatings = async (req, res)=>{
 
         // Build the WHERE clause based on the Status
         if (ReviewUkeyId) {
-            whereConditions.push(`ReviewUkeyId = ${setSQLStringValue(ReviewUkeyId)}`);
+            whereConditions.push(`rr.ReviewUkeyId = ${setSQLStringValue(ReviewUkeyId)}`);
         }
         if (UserUkeyId) {
-            whereConditions.push(`UserUkeyId = ${setSQLStringValue(UserUkeyId)}`);
+            whereConditions.push(`rr.UserUkeyId = ${setSQLStringValue(UserUkeyId)}`);
         }
         if (EventUkeyId) {
-            whereConditions.push(`EventUkeyId = ${setSQLStringValue(EventUkeyId)}`);
+            whereConditions.push(`rr.EventUkeyId = ${setSQLStringValue(EventUkeyId)}`);
         }
         if (OrganizerUkeyId) {
-            whereConditions.push(`OrganizerUkeyId = ${setSQLStringValue(OrganizerUkeyId)}`);
+            whereConditions.push(`rr.OrganizerUkeyId = ${setSQLStringValue(OrganizerUkeyId)}`);
         }
         if (Star) {
-            whereConditions.push(`Star = ${setSQLStringValue(Star)}`);
+            whereConditions.push(`rr.Star = ${setSQLStringValue(Star)}`);
         }
         // Combine the WHERE conditions into a single string
         const whereString = whereConditions.length > 0 ? `WHERE ${whereConditions.join(' AND ')}` : '';
         const getUserList = {
-            getQuery: `SELECT * FROM RatingMaster ${whereString} ORDER BY EntryDate DESC`,
-            countQuery: `SELECT COUNT(*) AS totalCount FROM RatingMaster ${whereString}`,
+            getQuery: `
+            select rr.*, um.FullName AS UserName, em.EventName, om.OrganizerName from RatingMaster rr
+            left join EventMaster em on rr.EventUkeyId = em.EventUkeyId
+            left join OrganizerMaster om on rr.OrganizerUkeyId = om.OrganizerUkeyId
+            left join UserMaster um on rr.UserUkeyId = um.UserUkeyId 
+            ${whereString} ORDER BY rr.EntryDate DESC`,
+            countQuery: `SELECT COUNT(rr.Id) AS totalCount FROM RatingMaster rr ${whereString}`,
         };
 
         const result = await getCommonAPIResponse(req, res, getUserList);
