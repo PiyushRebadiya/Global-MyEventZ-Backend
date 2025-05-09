@@ -136,7 +136,7 @@ const BookingMaster = async (req, res) => {
         const { IPAddress, ServerName, EntryTime } = getCommonKeys(req);
         let sqlQuery = '';
 
-        // ✅ Fetch ticket category limits and already booked tickets
+        // Fetch ticket category limits and already booked tickets
         const ticketCategoryData = await pool.request().query(`
             SELECT COUNT(bd.BookingdetailID) AS TotalBookedTickets, 
                    bd.TicketCateUkeyId, 
@@ -153,29 +153,30 @@ const BookingMaster = async (req, res) => {
         const categoryLimitExceeded = [];
         const categoryTicketCount = {};
 
-        // ✅ Count new ticket requests per category
+        // Count new ticket requests per category
         bookingdetails?.forEach(ticket => {
             const categoryId = ticket.TicketCateUkeyId;
             categoryTicketCount[categoryId] = (categoryTicketCount[categoryId] || 0) + 1;
         });
 
-        // ✅ Check if any category exceeds its limit
+        //  Check if any category exceeds its limit
         for (const category of ticketCategoryData.recordset) {
             const requestedCount = categoryTicketCount[category.TicketCateUkeyId] || 0;
             let availableTickets = category.TicketLimits - category.TotalBookedTickets;
-        
-            if (flag === 'U') {
-                // ✅ If updating, add back the user's current booking count before checking
+            console.log('requestedCount :', requestedCount);
+            console.log('availableTickets :', availableTickets);
+            // if (flag === 'U') {
+                //  If updating, add back the user's current booking count before checking
                 const userPreviousBooking = await pool.request().query(`
                     SELECT COUNT(*) AS PreviousBookedTickets
                     FROM Bookingdetails 
                     WHERE BookingUkeyID = ${setSQLStringValue(BookingUkeyID)}
-                      AND TicketCateUkeyId = ${setSQLStringValue(category.TicketCateUkeyId)}
+                    AND TicketCateUkeyId = ${setSQLStringValue(category.TicketCateUkeyId)}
                 `);
                 const previousBookingCount = userPreviousBooking.recordset?.[0]?.PreviousBookedTickets || 0;
         
                 availableTickets += previousBookingCount;
-            }
+            // }
         
             if (requestedCount > availableTickets) {
                 categoryLimitExceeded.push({
@@ -190,7 +191,7 @@ const BookingMaster = async (req, res) => {
             return res.status(400).json({ ...errorMessage(errorMsg), categoryLimitExceeded });
         }
                         
-        // ✅ Handle Update Scenario (flag === 'U')
+        //  Handle Update Scenario (flag === 'U')
         if (flag === 'U') {
             sqlQuery += `
                 DELETE FROM Bookingmast WHERE BookingUkeyID = ${setSQLStringValue(BookingUkeyID)} AND EventUkeyId = ${setSQLStringValue(EventUkeyId)};
