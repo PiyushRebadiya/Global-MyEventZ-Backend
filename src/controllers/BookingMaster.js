@@ -223,30 +223,60 @@ const BookingMaster = async (req, res) => {
             return res.status(400).json(errorMessage('No booking entry created.'));
         }
 
-        try {
-            const userDetailsQuery = `select * from UserMaster where UserUkeyID = ${setSQLStringValue(UserUkeyID)}`;
-            const userDetails = await pool.request().query(userDetailsQuery);
-            if (userDetails?.recordset?.length > 0) {
-                const { Email, Mobile1, FullName = 'User' } = userDetails.recordset[0];
-                if (Email) {
-                    const EventDetailsQuery = `select am.Address1, am.Address2, am.StateName, am.CityName, am.Pincode, em.EventName, em.StartEventDate, em.OrganizerUkeyId, om.OrganizerName, om.Mobile1, om.Mobile2 from EventMaster em
-                        left join AddressMaster am on am.AddressUkeyID = em.AddressUkeyID
-                        left join OrganizerMaster om on om.OrganizerUkeyId = em.OrganizerUkeyId
-                        where em.EventUkeyId = ${setSQLStringValue(EventUkeyId)} AND am.EventUkeyId = ${setSQLStringValue(EventUkeyId)}`;
-                    const EventDetails = await pool.request().query(EventDetailsQuery);
-                    if (EventDetails?.recordset?.length > 0) {
-                        const { EventName, StartEventDate, Address1, Address2, StateName, CityName, Pincode, OrganizerName, Mobile1, Mobile2 } = EventDetails.recordset[0];
-                        const address = [Address1, Address2, CityName, StateName, Pincode].filter(Boolean).join(', ');
-                        const ticketReport = `https://report.taxfile.co.in/report/TicketPrint?BookingUkeyID=${BookingUkeyID}&ExportMode=PDF`;
+        setImmediate(async () => {
+            try {
+                const userDetailsQuery = `SELECT * FROM UserMaster WHERE UserUkeyID = ${setSQLStringValue(UserUkeyID)}`;
+                const userDetails = await pool.request().query(userDetailsQuery);
+                if (userDetails?.recordset?.length > 0) {
+                    const { Email, Mobile1, FullName = 'User' } = userDetails.recordset[0];
+                    if (Email) {
+                        const EventDetailsQuery = `SELECT am.Address1, am.Address2, am.StateName, am.CityName, am.Pincode, em.EventName, em.StartEventDate, em.OrganizerUkeyId, om.OrganizerName, om.Mobile1, om.Mobile2 
+                    FROM EventMaster em
+                    LEFT JOIN AddressMaster am ON am.AddressUkeyID = em.AddressUkeyID
+                    LEFT JOIN OrganizerMaster om ON om.OrganizerUkeyId = em.OrganizerUkeyId
+                    WHERE em.EventUkeyId = ${setSQLStringValue(EventUkeyId)} AND am.EventUkeyId = ${setSQLStringValue(EventUkeyId)}`;
 
-                        await sendEmailUserTickets(Email, FullName || 'User', EventName, moment(StartEventDate).format("dddd, MMMM Do YYYY"), address, ticketReport, Mobile1, Mobile2, OrganizerName)
-                        await sendEmailUserTicketsHindi(Email, FullName || 'User', EventName, moment(StartEventDate).format("dddd, MMMM Do YYYY"), address, ticketReport, Mobile1, Mobile2, OrganizerName)
+                        const EventDetails = await pool.request().query(EventDetailsQuery);
+                        if (EventDetails?.recordset?.length > 0) {
+                            const { EventName, StartEventDate, Address1, Address2, StateName, CityName, Pincode, OrganizerName, Mobile1, Mobile2 } = EventDetails.recordset[0];
+                            const address = [Address1, Address2, CityName, StateName, Pincode].filter(Boolean).join(', ');
+                            const ticketReport = `https://report.taxfile.co.in/report/TicketPrint?BookingUkeyID=${BookingUkeyID}&ExportMode=PDF`;
+
+                            const responseTicketBookingEnglish = await sendEmailUserTickets(
+                                Email, FullName, EventName,
+                                moment(StartEventDate).format("dddd, MMMM Do YYYY"),
+                                address, ticketReport, Mobile1, Mobile2, OrganizerName
+                            );
+
+                            try {
+                                const insertQueryEN = `INSERT INTO [EmailLogs] ([OrganizerUkeyId],[EventUkeyId],[UkeyId],[Category],[Language],[Email],[IsSent],[UserUkeyId],[IpAddress],[HostName],[EntryTime],[flag]) VALUES (${setSQLStringValue(OrganizerUkeyId)},${setSQLStringValue(EventUkeyId)},${setSQLStringValue(generateUUID())},'TICKET_BOOKING','ENGLISH',${setSQLStringValue(Email)},${setSQLBooleanValue(responseTicketBookingEnglish)},${setSQLStringValue(UserUkeyID)},${setSQLStringValue(IPAddress)},${setSQLStringValue(ServerName)},GETDATE(),'A')`;
+                                await pool.request().query(insertQueryEN);
+                                console.log('English email log inserted');
+                            } catch (error) {
+                                console.error('Error inserting English email log:', error);
+                            }
+
+                            const responseTicketBookingHindi = await sendEmailUserTicketsHindi(
+                                Email, FullName, EventName,
+                                moment(StartEventDate).format("dddd, MMMM Do YYYY"),
+                                address, ticketReport, Mobile1, Mobile2, OrganizerName
+                            );
+
+                            try {
+                                const insertQueryHI = `INSERT INTO [EmailLogs] ([OrganizerUkeyId],[EventUkeyId],[UkeyId],[Category],[Language],[Email],[IsSent],[UserUkeyId],[IpAddress],[HostName],[EntryTime],[flag]) VALUES (${setSQLStringValue(OrganizerUkeyId)},${setSQLStringValue(EventUkeyId)},${setSQLStringValue(generateUUID())},'TICKET_BOOKING','HINDI',${setSQLStringValue(Email)},${setSQLBooleanValue(responseTicketBookingHindi)},${setSQLStringValue(UserUkeyID)},${setSQLStringValue(IPAddress)},${setSQLStringValue(ServerName)},GETDATE(),'A')`;
+                                await pool.request().query(insertQueryHI);
+                                console.log('Hindi email log inserted');
+                            } catch (error) {
+                                console.error('Error inserting Hindi email log:', error);
+                            }
+                        }
                     }
                 }
+            } catch (error) {
+                console.error('Error in background email job:', error);
             }
-        } catch (error) {
-            console.error('Error in sending email:', error);
-        }
+        });
+        
         return res.status(200).json({ 
             ...successMessage('New Booking Entry Created Successfully.'), 
             ...req.body 

@@ -2,6 +2,14 @@
 const { sendMail } = require("../common/mail");
 // const { checkKeysAndRequireValues, successMessage, errorMessage } = require("../common/main");
 
+const verifyMobileNumber = (mobileNumber) => {
+    // Check if the mobile number is a string and has a length of 10
+    if (mobileNumber?.length === 12 || mobileNumber?.length === 10) {
+        return mobileNumber;
+    }
+    return null;
+};
+
 const sendOrganizerRegisterMail = async (Email, OrganizerName) => {
     try {
         // const { Email, OrganizerName } = req.query;
@@ -61,9 +69,12 @@ const sendOrganizerRegisterMail = async (Email, OrganizerName) => {
         console.log('sentMail', sentMail);
         if (sentMail) {
             console.log('Email sent successfully');
+            return true;
         }
+        return false;
     } catch (error) {
         console.error('Error:', error);
+        return false;
     }
 };
 
@@ -125,15 +136,18 @@ const sendOrganizerRegisterHindiMail = async (Email, OrganizerName) => {
         console.log('sentMail', sentMail);
         if (sentMail) {
             console.log('Email sent successfully');
+            return true;
         }
+        return false;
     } catch (error) {
         console.error('Error:', error);
+        return false;
     }
 };
 
 const sendEmailUserTickets = async (Email = '', UserName = '', EventName = '', StartEventDate = '', address = '', ticketReport = '', Mobile1 = '', Mobile2 = '', OrganizerName = '') => {
     try {
-        const allMobiles = [Mobile1, Mobile2].filter(mobile => mobile !== null && mobile !== undefined && mobile !== '').map(mobile => `+${mobile}`).join(', ');
+        const allMobiles = [verifyMobileNumber(Mobile1), verifyMobileNumber(Mobile2)].filter(mobile => mobile !== null && mobile !== undefined && mobile !== '').map(mobile => `+${mobile}`).join(', ');
         
         const htmlContent = `
         <!DOCTYPE html>
@@ -188,15 +202,18 @@ const sendEmailUserTickets = async (Email = '', UserName = '', EventName = '', S
         console.log('sentMail', sentMail);
         if (sentMail) {
             console.log('Email sent successfully');
+            return true;
         }
+        return false;
     } catch (error) {
         console.error('Error:', error);
+        return false;
     }
 };
 
 const sendEmailUserTicketsHindi = async (Email = '', UserName = '', EventName = '', StartEventDate = '', address = '', ticketReport = '', Mobile1 = '', Mobile2 = '', OrganizerName = '') => {
     try {
-        const allMobiles = [Mobile1, Mobile2].filter(mobile => mobile !== null && mobile !== undefined && mobile !== '').map(mobile => `+${mobile}`).join(', ');
+        const allMobiles = [verifyMobileNumber(Mobile1), verifyMobileNumber(Mobile2)].filter(mobile => mobile !== null && mobile !== undefined && mobile !== '').map(mobile => `+${mobile}`).join(', ');
         const htmlContent = `
         <!DOCTYPE html>
         <html>
@@ -250,9 +267,12 @@ const sendEmailUserTicketsHindi = async (Email = '', UserName = '', EventName = 
         console.log('sentMail', sentMail);
         if (sentMail) {
             console.log('Email sent successfully');
+            return true;
         }
+        return false;
     } catch (error) {
         console.error('Error:', error);
+        return false;
     }
 };
 

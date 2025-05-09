@@ -144,14 +144,39 @@ const addOrUpdateUserMaster = async (req, res) => {
             }
             const options = { expiresIn: '365d' };
             const token = jwt.sign({ UserUkeyId: UserUkeyId, Mobile1, FullName, Role, AppleUserId }, SECRET_KEY, options);
-            try {
-                if (Email) {
-                    await sendOrganizerRegisterMail(Email, FullName || "User");
-                    await sendOrganizerRegisterHindiMail(Email, FullName || "User");
+           
+            // Run email processing in the background
+            setImmediate(async () => {
+                try {
+                    if (Email) {
+                        const responseEnglishMail = await sendOrganizerRegisterMail(Email, FullName || "User");
+
+                        try {
+                            const insertQuery = `INSERT INTO [EmailLogs] ([OrganizerUkeyId],[EventUkeyId],[UkeyId],[Category],[Language],[Email],[IsSent],[UserUkeyId],[IpAddress],[HostName],[EntryTime],[flag]) 
+                            VALUES (${setSQLStringValue('')},${setSQLStringValue('')},${setSQLStringValue(generateUUID())},'REGISTRATION','ENGLISH',${setSQLStringValue(Email)},${setSQLBooleanValue(responseEnglishMail)},${setSQLStringValue(UserUkeyId)},${setSQLStringValue(IPAddress)},${setSQLStringValue(ServerName)},GETDATE(),'A')`;
+
+                            await pool.request().query(insertQuery);
+                            console.log('Email log inserted successfully', insertQuery);
+                        } catch (error) {
+                            console.error('Error inserting into EmailLogs:', error);
+                        }
+
+                        const responseHindiMail = await sendOrganizerRegisterHindiMail(Email, FullName || "User");
+                        try {
+                            const insertQuery = `
+                            INSERT INTO [EmailLogs] ([OrganizerUkeyId],[EventUkeyId],[UkeyId],[Category],[Language],[Email],[IsSent],[UserUkeyId],[IpAddress],[HostName],[EntryTime],[flag]) 
+                            VALUES (${setSQLStringValue('')},${setSQLStringValue('')},${setSQLStringValue(generateUUID())},'REGISTRATION','HINDI',${setSQLStringValue(Email)},${setSQLBooleanValue(responseHindiMail)},${setSQLStringValue(UserUkeyId)},${setSQLStringValue(IPAddress)},${setSQLStringValue(ServerName)},GETDATE(),'A')`;
+
+                            await pool.request().query(insertQuery);
+                            console.log('Email log inserted successfully', insertQuery);
+                        } catch (error) {
+                            console.error('Error inserting into EmailLogs:', error);
+                        }
+                    }
+                } catch (error) {
+                    console.error('Error in background email task:', error);
                 }
-            } catch (error) {
-                console.log('error :>> ', error);
-            }
+            });
             return res.status(200).send({...successMessage('Data inserted Successfully!'), verify: true, token, ...req.body});
         } else if (flag === 'U') {
             if (!UserUkeyId) return res.status(200).send(errorMessage("UserUkeyId is required"));
