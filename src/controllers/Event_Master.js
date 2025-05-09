@@ -1,5 +1,7 @@
 const { errorMessage, successMessage, checkKeysAndRequireValues, generateCODE, setSQLBooleanValue, getCommonKeys, generateJWTT, generateUUID, getCommonAPIResponse, setSQLStringValue, deleteImage, setSQLDateTime, setSQLNumberValue, setSQLDecimalValue, CommonLogFun } = require("../common/main");
 const {pool} = require('../sql/connectToDatabase');
+const { sendEmailOrganizerEventTemplatesArray } = require("./sendEmail");
+const moment = require("moment");
 
 const EventList = async (req, res) => {
     try {
@@ -217,6 +219,7 @@ const addEvent = async (req, res) => {
             );
         `);
 
+        let addressValue = '';
         // INSERT multiple addresses
         if (Addresses && Addresses.length > 0) {
             for (const address of Addresses) {
@@ -236,11 +239,87 @@ const addEvent = async (req, res) => {
                         ${setSQLStringValue(CityName)}, ${setSQLStringValue(CountryName)}, ${setSQLBooleanValue(IsPrimaryAddress)}, ${setSQLBooleanValue(IsActive)}, ${setSQLStringValue(flag)}, ${setSQLStringValue(IPAddress)}, ${setSQLStringValue(ServerName)}, ${setSQLStringValue(EntryTime)}, ${setSQLStringValue(req.user.FirstName)}, ${setSQLNumberValue(req.user.UserId)}
                     );
                 `);
+                addressValue = [Address1, Address2, CityName, StateName, Pincode].filter(Boolean).join(', ');
             }
         }
 
         // Commit transaction
         await transaction.commit();
+        let usersList = [];
+        const organizerDetails = await pool.request().query(`
+            SELECT Mobile1, Mobile2, OrganizerName FROM OrganizerMaster WHERE OrganizerUkeyId = ${setSQLStringValue(OrganizerUkeyId)}
+        `);
+        if(organizerDetails?.recordset?.length > 0){
+            const { Mobile1 = '', Mobile2 = '', OrganizerName = '' } = organizerDetails.recordset[0];
+
+            const userDetails = await pool.request().query(`WITH EmailRanked AS (
+                SELECT 
+                    [UserId],
+                    [UserUkeyId],
+                    [FullName],
+                    [Mobile1],
+                    [Email],
+                    [IsActive],
+                    ROW_NUMBER() OVER (PARTITION BY LTRIM(RTRIM([Email])) ORDER BY [UserId]) AS rn
+                FROM 
+                    [GlobalMyEventZ].[dbo].[UserMaster]
+                WHERE 
+                    [Email] IS NOT NULL
+                    AND LTRIM(RTRIM([Email])) <> '' AND IsActive = 1 AND UserUkeyId = '9CC5-AA2025-121c6a8e-17e1-4207-bc22-dd784cd17132-W'
+            )
+            SELECT 
+                [UserId],
+                [UserUkeyId],
+                [FullName],
+                [Mobile1],
+                [Email],
+                [IsActive]
+            FROM 
+                EmailRanked
+            WHERE 
+                rn = 1;
+            `);
+
+            if(userDetails?.recordset?.length > 0){
+                usersList = userDetails.recordset;
+            }
+            setImmediate(async () => {
+                const index= Math.floor(Math.random() * 5);
+                for (const user of usersList) {
+                    const { Email = '', FullName = '', UserUkeyId = '' } = user;
+                    try {
+                        const checkEmailLog = await pool.request().query(`SELECT * FROM EmailLogs WHERE UserUkeyId = ${setSQLStringValue(UserUkeyId)} AND EventUkeyId = ${setSQLStringValue(EventUkeyId)} AND OrganizerUkeyId = ${setSQLStringValue(OrganizerUkeyId)} AND Category = 'EVENT_PUBLISHED'`);
+                        if(checkEmailLog?.recordset?.length > 0){
+                            console.log('Email already sent to this user', FullName, Email);
+                        } else {
+                      const responseSentMail = await sendEmailOrganizerEventTemplatesArray[index](
+                            Email,
+                            FullName || 'User',
+                            EventName,
+                            moment(StartEventDate).format("dddd, MMMM Do YYYY"),
+                            moment(StartEventDate).format("h:mm A"),
+                            addressValue,
+                            Mobile1,
+                            Mobile2,
+                            OrganizerName
+                        );
+                        try {
+                            const { IPAddress, ServerName, EntryTime } = getCommonKeys(req);
+                            
+                            // Check already sent email
+                            const insertQuery = `INSERT INTO [EmailLogs] ([OrganizerUkeyId],[EventUkeyId],[UkeyId],[Category],[Language],[Email],[IsSent],[UserUkeyId],[IpAddress],[HostName],[EntryTime],[flag]) VALUES (${setSQLStringValue(OrganizerUkeyId)},${setSQLStringValue(EventUkeyId)},${setSQLStringValue(generateUUID())},'EVENT_PUBLISHED','ENGLISH',${setSQLStringValue(Email)},${setSQLBooleanValue(responseSentMail)},${setSQLStringValue(UserUkeyId)},${setSQLStringValue(IPAddress)},${setSQLStringValue(ServerName)},GETDATE(),'A')`
+                            await pool.request().query(insertQuery);
+                            console.log(`Email sent to ${Email}:`, responseSentMail);
+                        } catch (error) {
+                            console.error('Error inserting into EmailLogs:', error);
+                        }
+                    }
+                    } catch (err) {
+                        console.error(`Failed to send email to ${Email}:`, err);
+                    }
+                }
+            });
+        }
 
         CommonLogFun({
             EventUkeyId : EventUkeyId, 
