@@ -8,28 +8,33 @@ const fetchSubscriberlist = async (req, res)=>{
 
         // Build the WHERE clause based on the Status
         if (SubscriberUkeyId) {
-            whereConditions.push(`SubscriberUkeyId = ${setSQLStringValue(SubscriberUkeyId)}`);
+            whereConditions.push(`sm.SubscriberUkeyId = ${setSQLStringValue(SubscriberUkeyId)}`);
         }
         if (EventUkeyId) {
-            whereConditions.push(`EventUkeyId = ${setSQLStringValue(EventUkeyId)}`);
+            whereConditions.push(`sm.EventUkeyId = ${setSQLStringValue(EventUkeyId)}`);
         }
         if (OrganizerUkeyId) {
-            whereConditions.push(`OrganizerUkeyId = ${setSQLStringValue(OrganizerUkeyId)}`);
+            whereConditions.push(`sm.OrganizerUkeyId = ${setSQLStringValue(OrganizerUkeyId)}`);
         }
         if (UserUkeyId) {
-            whereConditions.push(`UserUkeyId = ${setSQLStringValue(UserUkeyId)}`);
+            whereConditions.push(`sm.UserUkeyId = ${setSQLStringValue(UserUkeyId)}`);
         }
         if(IsSubscribe){
-            whereConditions.push(`IsSubscribe = ${setSQLBooleanValue(IsSubscribe)}`);
+            whereConditions.push(`sm.IsSubscribe = ${setSQLBooleanValue(IsSubscribe)}`);
         }
         if(IsEmail){
-            whereConditions.push(`IsEmail = ${setSQLBooleanValue(IsEmail)}`);
+            whereConditions.push(`sm.IsEmail = ${setSQLBooleanValue(IsEmail)}`);
         }
         // Combine the WHERE conditions into a single string
         const whereString = whereConditions.length > 0 ? `WHERE ${whereConditions.join(' AND ')}` : '';
         const getUserList = {
-            getQuery: `SELECT * FROM SubscriberMaster ${whereString} ORDER BY EntryDate DESC`,
-            countQuery: `SELECT COUNT(*) AS totalCount FROM SubscriberMaster ${whereString}`,
+            getQuery: `
+            select sm.*, um.FullName AS UserName, em.EventName, om.OrganizerName from SubscriberMaster sm
+            left join EventMaster em on sm.EventUkeyId = em.EventUkeyId
+            left join OrganizerMaster om on sm.OrganizerUkeyId = om.OrganizerUkeyId
+            left join UserMaster um on sm.UserUkeyId = um.UserUkeyId 
+            ${whereString} ORDER BY sm.EntryDate DESC`,
+            countQuery: `SELECT COUNT(Id) AS totalCount FROM SubscriberMaster sm ${whereString}`,
         };
 
         const result = await getCommonAPIResponse(req, res, getUserList);
