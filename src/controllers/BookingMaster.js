@@ -138,16 +138,18 @@ const BookingMaster = async (req, res) => {
 
         // Fetch ticket category limits and already booked tickets
         const ticketCategoryData = await pool.request().query(`
-            SELECT COUNT(bd.BookingdetailID) AS TotalBookedTickets, 
-                   bd.TicketCateUkeyId, 
-                   tm.TicketLimits, 
-                   tm.Category 
-            FROM Bookingdetails bd
+            SELECT 
+            COUNT(bd.BookingdetailID) AS TotalBookedTickets,
+            tm.TicketCateUkeyId,
+            tm.TicketLimits,
+            tm.Category
+            FROM TicketCategoryMaster tm
+            LEFT JOIN Bookingdetails bd ON tm.TicketCateUkeyId = bd.TicketCateUkeyId
             LEFT JOIN Bookingmast bm ON bd.BookingUkeyID = bm.BookingUkeyID
-            LEFT JOIN TicketCategoryMaster tm ON tm.TicketCateUkeyId = bd.TicketCateUkeyId
-            WHERE bm.EventUkeyId = ${setSQLStringValue(EventUkeyId)} 
-                  AND bm.OrganizerUkeyId = ${setSQLStringValue(OrganizerUkeyId)} 
-            GROUP BY bd.TicketCateUkeyId, tm.TicketLimits, tm.Category
+                AND bm.EventUkeyId = ${setSQLStringValue(EventUkeyId)}
+                AND bm.OrganizerUkeyId = ${setSQLStringValue(OrganizerUkeyId)}
+            WHERE tm.EventUkeyId = ${setSQLStringValue(EventUkeyId)}
+            GROUP BY tm.TicketCateUkeyId, tm.TicketLimits, tm.Category
         `);
 
         const categoryLimitExceeded = [];
@@ -163,9 +165,7 @@ const BookingMaster = async (req, res) => {
         for (const category of ticketCategoryData.recordset) {
             const requestedCount = categoryTicketCount[category.TicketCateUkeyId] || 0;
             let availableTickets = category.TicketLimits - category.TotalBookedTickets;
-            console.log('requestedCount :', requestedCount);
-            console.log('availableTickets :', availableTickets);
-            // if (flag === 'U') {
+            if (flag === 'U') {
                 //  If updating, add back the user's current booking count before checking
                 const userPreviousBooking = await pool.request().query(`
                     SELECT COUNT(*) AS PreviousBookedTickets
@@ -176,7 +176,7 @@ const BookingMaster = async (req, res) => {
                 const previousBookingCount = userPreviousBooking.recordset?.[0]?.PreviousBookedTickets || 0;
         
                 availableTickets += previousBookingCount;
-            // }
+            }
         
             if (requestedCount > availableTickets) {
                 categoryLimitExceeded.push({
@@ -217,7 +217,7 @@ const BookingMaster = async (req, res) => {
             }
         }
 
-        // ✅ Execute Query
+        //  Execute Query
         const result = await pool.request().query(sqlQuery);
 
         if (result?.rowsAffected?.[0] === 0) {
