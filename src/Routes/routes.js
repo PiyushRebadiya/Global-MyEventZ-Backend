@@ -146,6 +146,7 @@ router.get('/fetch_reminder_read', auth, ReminderMasterController.fetchReminderR
 router.post('/add_reminder_read', auth, ReminderMasterController.addReminderRead);
 
 router.post('/send_what_app_msg', WhatsAppMsgController.addWhatsAppMsg);
+router.get('/whatsapp_message_report', WhatsAppMsgController.whatsappReport123);
 //#endregion
 //#region OTHER APIs
 router.get('/fetch_template_master', auth, TemplateMasterController.FetchTemplateMasterDetails);
