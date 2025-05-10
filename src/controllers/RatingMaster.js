@@ -44,6 +44,35 @@ const fetchRatings = async (req, res)=>{
     }
 }
 
+const countOfRatingAndsubscriber = async ( req, res) => {
+    try{
+        const { EventUkeyId, OrganizerUkeyId} = req.query;
+
+        const missingKeys = checkKeysAndRequireValues(['EventUkeyId', 'OrganizerUkeyId'], req.query);
+
+        if(missingKeys.length > 0){
+            return res.status(400).json(errorMessage(`${missingKeys.join(', ')}, is required`))
+        }
+
+        const subscriberResult = await pool.request().query(`
+        select count(SubscriberUkeyId) as TotalSubscriber from SubscriberMaster where OrganizerUkeyId=${setSQLStringValue(OrganizerUkeyId)} and EventUkeyId=${setSQLStringValue(EventUkeyId)} and IsSubscribe=1
+        `)
+        const ratingResult = await pool.request().query(`
+        select COUNT(UserUkeyId) as TotalUserRating, CEILING(AVG(CAST(Star AS FLOAT))) AS AvgRating from RatingMaster where
+        OrganizerUkeyId=${setSQLStringValue(OrganizerUkeyId)}
+        and EventUkeyId=${setSQLStringValue(EventUkeyId)}
+        `)
+
+        return res.json({
+            TotalSubscriber : subscriberResult.recordset?.[0].TotalSubscriber,
+            TotalUserRating : ratingResult.recordset?.[0]?.TotalUserRating,
+            AvgRating : ratingResult.recordset?.[0]?.AvgRating
+        });
+    }catch(error){
+        return res.status(400).send(errorMessage(error?.message));
+    }
+}
+
 const RatingMaster = async (req, res)=>{
     const { ReviewUkeyId, ReviewDetail, Star, UserUkeyId, EventUkeyId, OrganizerUkeyId, flag} = req.body;
     
@@ -139,4 +168,5 @@ module.exports = {
     fetchRatings,
     RatingMaster,
     RemoveRating,
+    countOfRatingAndsubscriber
 }

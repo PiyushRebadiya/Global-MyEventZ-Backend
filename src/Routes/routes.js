@@ -265,6 +265,7 @@ router.post('/subscriber_master', auth, SubscriberMaster.SubscriberMaster);
 
 //#region Rating master
 router.get('/fetch_rating', auth, RatingMasterController.fetchRatings);
+router.get('/fetch_subscriber_rating_count', RatingMasterController.countOfRatingAndsubscriber);
 router.post('/rating_master', auth, RatingMasterController.RatingMaster);
 //#endregion
 
