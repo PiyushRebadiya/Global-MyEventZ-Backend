@@ -52,7 +52,7 @@ const OrgUserMaster = async (req, res) => {
         `)
 
         if(AdminUserCount?.recordset?.[0]?.AdminUserCount >= 50){
-            return res.status(400).json(errorMessage(`Max 5 users allowed as Subadmins and Volunteers combined. Remove one to add new.`));
+            return res.status(400).json(errorMessage(`Max 50 users allowed as Subadmins and Volunteers combined. Remove one to add new.`));
         }
 
         let insertQuery = `
