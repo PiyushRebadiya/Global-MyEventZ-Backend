@@ -51,7 +51,7 @@ const OrgUserMaster = async (req, res) => {
             select COUNT(*) AS AdminUserCount from OrgUserMaster where OrganizerUkeyId = ${setSQLStringValue(OrganizerUkeyId)} and EventUkeyId = ${setSQLStringValue(EventUkeyId)} and Role <> 'Admin'
         `)
 
-        if(AdminUserCount?.recordset?.[0]?.AdminUserCount >= 5){
+        if(AdminUserCount?.recordset?.[0]?.AdminUserCount >= 50){
             return res.status(400).json(errorMessage(`Max 5 users allowed as Subadmins and Volunteers combined. Remove one to add new.`));
         }
 
