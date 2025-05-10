@@ -30,12 +30,12 @@ const fetchWhatAppMsg = async (req, res) => {
 
 const addWhatsAppMsg = async (req, res) => {
     try {
-        const { Message = '', Mobile = '', EmailId = '', OrganizerUkeyId = '', TransMode = '', EventUkeyId = '' } = req.body;
+        const { Message = '', Mobile = '', EmailId = '', OrganizerUkeyId = '', TransMode = '', EventUkeyId = '',FilePath='',BookingUkeyID='' } = req.body;
         const fieldCheck = checkKeysAndRequireValues(['Message', 'Mobile', 'OrganizerUkeyId', 'TransMode'], req.body);
         if (fieldCheck.length !== 0) {
             return res.status(400).send(errorMessage(`${fieldCheck} is required`));
         }
-        const insertQuery = `INSERT INTO WhatsAppMessages (OrganizerUkeyId, Message, EmailId, Mobile, WhatsApp, Email, Msg, TransMode, Status, EntryTime, EventUkeyId) VALUES (${setSQLStringValue(OrganizerUkeyId)}, ${setSQLStringValue(Message)}, ${setSQLStringValue(EmailId)}, ${setSQLStringValue(Mobile)}, 0, 0, 0, ${setSQLStringValue(TransMode)}, 0, getdate(), ${setSQLStringValue(EventUkeyId)})`;
+        const insertQuery = `INSERT INTO WhatsAppMessages (OrganizerUkeyId, Message, EmailId, Mobile, WhatsApp, Email, Msg, TransMode, Status, EntryTime, EventUkeyId,FilePath,BookingUkeyID) VALUES (${setSQLStringValue(OrganizerUkeyId)}, ${setSQLStringValue(Message)}, ${setSQLStringValue(EmailId)}, ${setSQLStringValue(Mobile)}, 0, 0, 0, ${setSQLStringValue(TransMode)}, 0, getdate(), ${setSQLStringValue(EventUkeyId)},${setSQLStringValue(FilePath)},${setSQLStringValue(BookingUkeyID)})`;
         const result = await pool.query(insertQuery);
         if (result?.rowsAffected[0] === 0) {
             return res.status(400).send({ ...errorMessage('No rows inserted of Ticket Master')});
