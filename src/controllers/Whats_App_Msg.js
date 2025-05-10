@@ -1,32 +1,5 @@
-const { errorMessage, getCommonAPIResponse, setSQLBooleanValue, checkKeysAndRequireValues, successMessage, getCommonKeys, generateUUID, getServerIpAddress, setSQLNumberValue, generateSixDigitCode, setSQLStringValue } = require("../common/main");
+const { errorMessage, getCommonAPIResponse, setSQLBooleanValue, checkKeysAndRequireValues, successMessage, getCommonKeys, generateUUID, getServerIpAddress, setSQLNumberValue, generateSixDigitCode, setSQLStringValue, setSQLDateTime } = require("../common/main");
 const { pool } = require("../sql/connectToDatabase");
-
-const fetchWhatAppMsg = async (req, res) => {
-    try {
-        const { SentWhatsApp, SentEmail } = req.query;
-        let whereConditions = [];
-
-        // Build the WHERE clause based on the Status
-        if (SentWhatsApp) {
-            whereConditions.push(`SentWhatsApp = ${setSQLBooleanValue(SentWhatsApp)}`);
-        }
-        if (SentEmail) {
-            whereConditions.push(`SentEmail = ${setSQLBooleanValue(SentEmail)}`);
-        }
-
-        // Combine the WHERE conditions into a single string
-        const whereString = whereConditions.length > 0 ? `WHERE ${whereConditions.join(' AND ')}` : '';
-        const getUserList = {
-            getQuery: `select * from WhatsAppMessages ${whereString} ORDER BY Id DESC`,
-            countQuery: `SELECT COUNT(*) AS totalCount FROM WhatsAppMessages ${whereString}`,
-        };
-        const result = await getCommonAPIResponse(req, res, getUserList);
-        return res.json(result);
-
-    } catch (error) {
-        return res.status(400).send(errorMessage(error?.message));
-    }
-}
 
 const addWhatsAppMsg = async (req, res) => {
     try {
@@ -65,4 +38,42 @@ const deleteWhatAppMsg = async (req, res) => {
     }
 }
 
-module.exports = { fetchWhatAppMsg, addWhatsAppMsg, deleteWhatAppMsg }
+const whatsappReport123 = async (req, res) => {
+    try {
+        const { OrganizerUkeyId, EventUkeyId, WhatsApp, StartDate, EndDate, TransMode } = req.query;
+        let whereConditions = [];
+
+        if (OrganizerUkeyId) {
+            whereConditions.push(`wam.OrganizerUkeyId = ${setSQLStringValue(OrganizerUkeyId)}`);
+        }
+        if (TransMode) {
+            whereConditions.push(`wam.TransMode = ${setSQLStringValue(TransMode)}`);
+        }
+        if (EventUkeyId) {
+            whereConditions.push(`wam.EventUkeyId = ${setSQLStringValue(EventUkeyId)}`);
+        }
+        if (WhatsApp) {
+            whereConditions.push(`wam.WhatsApp = ${setSQLBooleanValue(WhatsApp)}`);
+        }
+        if(StartDate && EndDate){
+            whereConditions.push(`wam.EntryTime >= '${StartDate}' and wam.EntryTime <= DATEADD(DAY, 1,'${EndDate}')`);
+        }
+        // Combine the WHERE conditions into a single string
+        const whereString = whereConditions.length > 0 ? `WHERE ${whereConditions.join(' AND ')}` : '';
+        const getUserList = {
+            getQuery: `select wam.Mobile, wam.WhatsApp, wam.TransMode, wam.EntryTime, om.OrganizerName, em.EventName, um.FullName from WhatsAppMessages wam
+            left join OrganizerMaster om on om.OrganizerUkeyId = wam.OrganizerUkeyId
+            left join EventMaster em on em.EventUkeyId = wam.EventUkeyId
+            left join UserMaster um on um.Mobile1 = wam.Mobile
+            ${whereString} order by entrytime desc`,
+            countQuery: `SELECT COUNT(*) AS totalCount FROM WhatsAppMessages wam ${whereString}`,
+        };
+        const result = await getCommonAPIResponse(req, res, getUserList);
+        return res.json(result);
+
+    } catch (error) {
+        return res.status(400).send(errorMessage(error?.message));
+    }
+}
+
+module.exports = {addWhatsAppMsg, deleteWhatAppMsg, whatsappReport123 }
