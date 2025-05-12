@@ -312,7 +312,9 @@ const loginWithMobileAndRole = async (req, res) => {
                 , UserId : result?.recordset[0]?.UserId
                 , FirstName : result?.recordset[0]?.FirstName
             }),
-             userData : [...result?.recordset]
+            Mobile1,
+            Role,
+            userData : [...result?.recordset]
     });
     }catch(error){
         console.log('Login User Error :', error);
