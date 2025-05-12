@@ -49,6 +49,10 @@ const OrgtermandconditionController = require('../controllers/Org_TermsCondi');
 const PricingMasterController = require('../controllers/priceMaster');
 const whatsnewcontroller = require('../controllers/WhatsNew');
 const OrganizerEmail = require('../controllers/sendEmail');
+const SubscriberMaster = require('../controllers/subscriberMaster');
+const RatingMasterController = require('../controllers/RatingMaster');
+const DisclaimerMasterController = require('../controllers/DisclaimerMaster');
+const EmailsLogsAPIController = require('../controllers/EmailsLogsAPI.js');
 // const carouselController = require('../controllers/carousel');
 
 const auth = require("../middleware/auth");
@@ -142,6 +146,7 @@ router.get('/fetch_reminder_read', auth, ReminderMasterController.fetchReminderR
 router.post('/add_reminder_read', auth, ReminderMasterController.addReminderRead);
 
 router.post('/send_what_app_msg', WhatsAppMsgController.addWhatsAppMsg);
+router.get('/whatsapp_message_report', WhatsAppMsgController.whatsappReport123);
 //#endregion
 //#region OTHER APIs
 router.get('/fetch_template_master', auth, TemplateMasterController.FetchTemplateMasterDetails);
@@ -232,7 +237,7 @@ router.post('/payment_gateway_master', auth, PaymentGatewayMaster.PaymentGateway
 router.delete('/delete_payment_gateway', auth, PaymentGatewayMaster.RemovePaymentGateway);
 //#endregion
 
-//#region 
+//#region Terms and Condition master
 router.get('/fetch_organizer_terms_condition', auth, OrgtermandconditionController.fetchOrgTermCond);
 router.post('/organizer_terms_condition', auth, OrgtermandconditionController.OrgTermCond);
 router.delete('/delete_organizer_terms_condition', auth, OrgtermandconditionController.RemoveOrgTermCond);
@@ -254,4 +259,24 @@ router.delete('/delete_whats_new', auth, whatsnewcontroller.removewhatsnew);
 // router.get('/send_organizer_email', OrganizerEmail.sendOrganizerRegisterMail);
 //#endregion
 
+//#region Subscriber master
+router.get('/fetch_subscriber', auth, SubscriberMaster.fetchSubscriberlist);
+router.post('/subscriber_master', auth, SubscriberMaster.SubscriberMaster);
+//#endregion
+
+//#region Rating master
+router.get('/fetch_rating', auth, RatingMasterController.fetchRatings);
+router.get('/fetch_subscriber_rating_count', RatingMasterController.countOfRatingAndsubscriber);
+router.post('/rating_master', auth, RatingMasterController.RatingMaster);
+//#endregion
+
+//#region Disclaimer master
+router.get('/fetch_disclaimer_master', auth, DisclaimerMasterController.fetchDisclaimer);
+router.post('/disclaimer_master', auth, DisclaimerMasterController.Disclaimer);
+router.delete('/delete_disclaimer_master', auth, DisclaimerMasterController.RemoveDisclaimer);
+//#endregion
+
+//#region Email Logs
+router.get('/fetch_email_logs', auth, EmailsLogsAPIController.fetchEmailLogs);
+//#endregion
 module.exports = router;

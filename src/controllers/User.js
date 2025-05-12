@@ -280,7 +280,7 @@ const loginWithMobileAndRole = async (req, res) => {
             select om.OrganizerName, oum.OrganizerUkeyId, om.IsActive AS IsActiveOrganizer, em.IsActive AS IsActiveEvent, em.EventName, oum.EventUkeyId, oum.FirstName, oum.Role from OrgUserMaster oum 
             left join  OrganizerMaster om on om.OrganizerUkeyId = oum.OrganizerUkeyId
             left join EventMaster em on em.OrganizerUkeyId = oum.OrganizerUkeyId        
-            where om.Mobile1 = ${setSQLStringValue(Mobile1)} and Role = ${setSQLStringValue(Role)} and oum.IsActive = 1 and om.IsActive = 1 and em.IsActive = 1
+            where om.Mobile1 = ${setSQLStringValue(Mobile1)} and Role = ${setSQLStringValue(Role)} and oum.IsActive = 1
         `);
 
         if(result.rowsAffected[0] === 0){

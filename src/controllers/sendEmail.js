@@ -2,6 +2,14 @@
 const { sendMail } = require("../common/mail");
 // const { checkKeysAndRequireValues, successMessage, errorMessage } = require("../common/main");
 
+const verifyMobileNumber = (mobileNumber) => {
+    // Check if the mobile number is a string and has a length of 10
+    if (mobileNumber?.length === 12 || mobileNumber?.length === 10) {
+        return mobileNumber;
+    }
+    return null;
+};
+
 const sendOrganizerRegisterMail = async (Email, OrganizerName) => {
     try {
         // const { Email, OrganizerName } = req.query;
@@ -61,9 +69,12 @@ const sendOrganizerRegisterMail = async (Email, OrganizerName) => {
         console.log('sentMail', sentMail);
         if (sentMail) {
             console.log('Email sent successfully');
+            return true;
         }
+        return false;
     } catch (error) {
         console.error('Error:', error);
+        return false;
     }
 };
 
@@ -125,15 +136,18 @@ const sendOrganizerRegisterHindiMail = async (Email, OrganizerName) => {
         console.log('sentMail', sentMail);
         if (sentMail) {
             console.log('Email sent successfully');
+            return true;
         }
+        return false;
     } catch (error) {
         console.error('Error:', error);
+        return false;
     }
 };
 
 const sendEmailUserTickets = async (Email = '', UserName = '', EventName = '', StartEventDate = '', address = '', ticketReport = '', Mobile1 = '', Mobile2 = '', OrganizerName = '') => {
     try {
-        const allMobiles = [Mobile1, Mobile2].filter(mobile => mobile !== null && mobile !== undefined && mobile !== '').map(mobile => `+${mobile}`).join(', ');
+        const allMobiles = [verifyMobileNumber(Mobile1), verifyMobileNumber(Mobile2)].filter(mobile => mobile !== null && mobile !== undefined && mobile !== '').map(mobile => `+${mobile}`).join(', ');
         
         const htmlContent = `
         <!DOCTYPE html>
@@ -188,15 +202,338 @@ const sendEmailUserTickets = async (Email = '', UserName = '', EventName = '', S
         console.log('sentMail', sentMail);
         if (sentMail) {
             console.log('Email sent successfully');
+            return true;
         }
+        return false;
     } catch (error) {
         console.error('Error:', error);
+        return false;
     }
 };
 
+const sendEmailOrganizerEventTemplate1 = async (Email = '', UserName = '', EventName = '', StartEventDate = '', StartEventTime = '', address = '', Mobile1 = '', Mobile2 = '', OrganizerName = '') => {
+    try {
+        const allMobiles = [verifyMobileNumber(Mobile1), verifyMobileNumber(Mobile2)].filter(mobile => mobile !== null && mobile !== undefined && mobile !== '').map(mobile => `+${mobile}`).join(', ');
+       
+        const htmlContent = `
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <meta charset="UTF-8">
+            <title>Email Invitation</title>
+        </head>
+        <body style="font-family: Arial, sans-serif; margin: 0; padding: 0; background-color: #f4f4f4;">
+            <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color: #f4f4f4; padding: 20px 0;">
+                <tr>
+                    <td align="center">
+                        <table width="600" cellpadding="0" cellspacing="0" border="0" style="background-color: #ffffff; border-radius: 5px; overflow: hidden;">
+                            <tr>
+                                <td align="center" style="padding: 20px 0; background-color: #ffd3d3;">
+                                    <img src="https://myeventz.in/static/media/myeventzsecond.bdc23db9122747d166bf.png" alt="Logo" style="display: block; width: 150px">
+                                </td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 20px;">
+                                    <h1 style="font-size: 24px; color: #333333; margin: 0 0 20px;">Hello ${UserName},</h1>
+                                    <p style="font-size: 16px; color: #333333; line-height: 1.6; margin: 0;">
+                                        You're Invited! 🎉<br><br>
+                                        <strong>${EventName}</strong> is happening soon!<br><br>
+                                        🗓️ <strong>Date:</strong> ${StartEventDate}<br><br>
+                                        📍 <strong>Location:</strong> ${address}<br><br>
+                                        ⏰ <strong>Time:</strong> ${StartEventTime}<br><br>
+                                        Let us know if you’ll be joining. We can’t wait to welcome you! 😊<br><br>
+                                        If you need any further information, feel free contact to organizer: ${OrganizerName} 😊<br><br>
+
+                                                <strong>For any queries, please contact:</strong> ${allMobiles}<br><br>
+                                    </p>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td align="center" style="padding: 20px; background-color: #f4f4f4;">
+                                    <p style="font-size: 14px; color: #777777; margin: 0;">&copy; 2025 MyEventz, All rights reserved.</p>
+                                    <p style="font-size: 14px; color: #777777; margin: 0;">Application by Taxfile Invosoft Pvt Ltd.</p>
+                                </td>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+            </table>
+        </body>
+        </html>
+        `;
+
+        const sentMail = await sendMail(Email, 'Welcome to Myeventz', htmlContent);
+        if (sentMail) {
+            console.log('Email sent successfully');
+            return true;
+        }
+        return false;
+    } catch (error) {
+        console.error('Error:', error);
+        return false;
+    }
+};
+
+const sendEmailOrganizerEventTemplate2 = async (Email = '', UserName = '', EventName = '', StartEventDate = '', StartEventTime = '', address = '', Mobile1 = '', Mobile2 = '', OrganizerName = '') => {
+    try {
+        const allMobiles = [verifyMobileNumber(Mobile1), verifyMobileNumber(Mobile2)].filter(mobile => mobile !== null && mobile !== undefined && mobile !== '').map(mobile => `+${mobile}`).join(', ');
+       
+        const htmlContent = `
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <meta charset="UTF-8">
+            <title>Email Invitation</title>
+        </head>
+        <body style="font-family: Arial, sans-serif; margin: 0; padding: 0; background-color: #f4f4f4;">
+            <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color: #f4f4f4; padding: 20px 0;">
+                <tr>
+                    <td align="center">
+                        <table width="600" cellpadding="0" cellspacing="0" border="0" style="background-color: #ffffff; border-radius: 5px; overflow: hidden;">
+                            <tr>
+                                <td align="center" style="padding: 20px 0; background-color: #ffd3d3;">
+                                    <img src="https://myeventz.in/static/media/myeventzsecond.bdc23db9122747d166bf.png" alt="Logo" style="display: block; width: 150px">
+                                </td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 20px;">
+                                    <h1 style="font-size: 24px; color: #333333; margin: 0 0 20px;">Hi ${UserName},</h1>
+                                    <p style="font-size: 16px; color: #333333; line-height: 1.6; margin: 0;">
+                                        Don’t miss our upcoming event – <strong>${EventName}</strong>! ✨<br><br>
+                                        🗓️ <strong>Date:</strong> ${StartEventDate}<br><br>
+                                        📍 <strong>Location:</strong> ${address}<br><br>
+                                        🕒 <strong>Time:</strong> ${StartEventTime}<br><br>
+                                        Let us know if you’ll be joining. We can’t wait to welcome you! 😊<br><br>
+                                        If you need any further information, feel free contact to organizer: ${OrganizerName} 😊<br><br>
+
+                                                <strong>For any queries, please contact:</strong> ${allMobiles}<br><br>
+                                    </p>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td align="center" style="padding: 20px; background-color: #f4f4f4;">
+                                    <p style="font-size: 14px; color: #777777; margin: 0;">&copy; 2025 MyEventz, All rights reserved.</p>
+                                    <p style="font-size: 14px; color: #777777; margin: 0;">Application by Taxfile Invosoft Pvt Ltd.</p>
+                                </td>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+            </table>
+        </body>
+        </html>
+        `;
+
+        const sentMail = await sendMail(Email, 'Welcome to Myeventz', htmlContent);
+        if (sentMail) {
+            console.log('Email sent successfully');
+            return true;
+        }
+        return false;
+    } catch (error) {
+        console.error('Error:', error);
+        return false;
+    }
+};
+
+const sendEmailOrganizerEventTemplate3 = async (Email = '', UserName = '', EventName = '', StartEventDate = '', StartEventTime = '', address = '', Mobile1 = '', Mobile2 = '', OrganizerName = '') => {
+    try {
+        const allMobiles = [verifyMobileNumber(Mobile1), verifyMobileNumber(Mobile2)].filter(mobile => mobile !== null && mobile !== undefined && mobile !== '').map(mobile => `+${mobile}`).join(', ');
+       
+        const htmlContent = `
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <meta charset="UTF-8">
+            <title>Email Invitation</title>
+        </head>
+        <body style="font-family: Arial, sans-serif; margin: 0; padding: 0; background-color: #f4f4f4;">
+            <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color: #f4f4f4; padding: 20px 0;">
+                <tr>
+                    <td align="center">
+                        <table width="600" cellpadding="0" cellspacing="0" border="0" style="background-color: #ffffff; border-radius: 5px; overflow: hidden;">
+                            <tr>
+                                <td align="center" style="padding: 20px 0; background-color: #ffd3d3;">
+                                    <img src="https://myeventz.in/static/media/myeventzsecond.bdc23db9122747d166bf.png" alt="Logo" style="display: block; width: 150px">
+                                </td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 20px;">
+                                    <h1 style="font-size: 24px; color: #333333; margin: 0 0 20px;">Dear ${UserName},</h1>
+                                    <p style="font-size: 16px; color: #333333; line-height: 1.6; margin: 0;">
+                                        Get ready for <strong>${EventName}</strong>! 🎊<br><br>
+                                        🗓️ <strong>Date:</strong> ${StartEventDate}<br><br>
+                                        📍 <strong>Location:</strong> ${address}<br><br>
+                                        ⏰ <strong>Time:</strong> ${StartEventTime}<br><br>
+                                        Your presence will make it special. Please confirm your attendance! 😊<br><br>
+                                        If you need any further information, feel free contact to organizer: ${OrganizerName} 😊<br><br>
+
+                                                <strong>For any queries, please contact:</strong> ${allMobiles}<br><br>
+                                    </p>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td align="center" style="padding: 20px; background-color: #f4f4f4;">
+                                    <p style="font-size: 14px; color: #777777; margin: 0;">&copy; 2025 MyEventz, All rights reserved.</p>
+                                    <p style="font-size: 14px; color: #777777; margin: 0;">Application by Taxfile Invosoft Pvt Ltd.</p>
+                                </td>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+            </table>
+        </body>
+        </html>
+        `;
+
+        const sentMail = await sendMail(Email, 'Welcome to Myeventz', htmlContent);
+        if (sentMail) {
+            console.log('Email sent successfully');
+            return true;
+        }
+        return false;
+    } catch (error) {
+        console.error('Error:', error);
+        return false;
+    }
+};
+
+const sendEmailOrganizerEventTemplate4 = async (Email = '', UserName = '', EventName = '', StartEventDate = '', StartEventTime = '', address = '', Mobile1 = '', Mobile2 = '', OrganizerName = '') => {
+    try {
+        const allMobiles = [verifyMobileNumber(Mobile1), verifyMobileNumber(Mobile2)].filter(mobile => mobile !== null && mobile !== undefined && mobile !== '').map(mobile => `+${mobile}`).join(', ');
+       
+        const htmlContent = `
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <meta charset="UTF-8">
+            <title>Email Invitation</title>
+        </head>
+        <body style="font-family: Arial, sans-serif; margin: 0; padding: 0; background-color: #f4f4f4;">
+            <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color: #f4f4f4; padding: 20px 0;">
+                <tr>
+                    <td align="center">
+                        <table width="600" cellpadding="0" cellspacing="0" border="0" style="background-color: #ffffff; border-radius: 5px; overflow: hidden;">
+                            <tr>
+                                <td align="center" style="padding: 20px 0; background-color: #ffd3d3;">
+                                    <img src="https://myeventz.in/static/media/myeventzsecond.bdc23db9122747d166bf.png" alt="Logo" style="display: block; width: 150px">
+                                </td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 20px;">
+                                    <h1 style="font-size: 24px; color: #333333; margin: 0 0 20px;">Hello ${UserName},</h1>
+                                    <p style="font-size: 16px; color: #333333; line-height: 1.6; margin: 0;">
+                                        We’re thrilled to invite you to <strong>${EventName}</strong>! 🥳<br><br>
+                                        🗓️ <strong>Date:</strong> ${StartEventDate}<br><br>
+                                        📍 <strong>Location:</strong> ${address}<br><br>
+                                        🕓 <strong>Time:</strong> ${StartEventTime}<br><br>
+                                        Let us know you’re coming. We’d love to have you there! 🤗<br><br>
+                                        If you need any further information, feel free contact to organizer: ${OrganizerName} 😊<br><br>
+
+                                                <strong>For any queries, please contact:</strong> ${allMobiles}<br><br>
+                                    </p>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td align="center" style="padding: 20px; background-color: #f4f4f4;">
+                                    <p style="font-size: 14px; color: #777777; margin: 0;">&copy; 2025 MyEventz, All rights reserved.</p>
+                                    <p style="font-size: 14px; color: #777777; margin: 0;">Application by Taxfile Invosoft Pvt Ltd.</p>
+                                </td>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+            </table>
+        </body>
+        </html>
+        `;
+
+        const sentMail = await sendMail(Email, 'Welcome to Myeventz', htmlContent);
+        if (sentMail) {
+            console.log('Email sent successfully');
+            return true;
+        }
+        return false;
+    } catch (error) {
+        console.error('Error:', error);
+        return false;
+    }
+};
+
+const sendEmailOrganizerEventTemplate5 = async (Email = '', UserName = '', EventName = '', StartEventDate = '', StartEventTime = '', address = '', Mobile1 = '', Mobile2 = '', OrganizerName = '') => {
+    try {
+        const allMobiles = [verifyMobileNumber(Mobile1), verifyMobileNumber(Mobile2)].filter(mobile => mobile !== null && mobile !== undefined && mobile !== '').map(mobile => `+${mobile}`).join(', ');
+       
+        const htmlContent = `
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <meta charset="UTF-8">
+            <title>Email Invitation</title>
+        </head>
+        <body style="font-family: Arial, sans-serif; margin: 0; padding: 0; background-color: #f4f4f4;">
+            <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color: #f4f4f4; padding: 20px 0;">
+                <tr>
+                    <td align="center">
+                        <table width="600" cellpadding="0" cellspacing="0" border="0" style="background-color: #ffffff; border-radius: 5px; overflow: hidden;">
+                            <tr>
+                                <td align="center" style="padding: 20px 0; background-color: #ffd3d3;">
+                                    <img src="https://myeventz.in/static/media/myeventzsecond.bdc23db9122747d166bf.png" alt="Logo" style="display: block; width: 150px">
+                                </td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 20px;">
+                                    <h1 style="font-size: 24px; color: #333333; margin: 0 0 20px;">Hey ${UserName},</h1>
+                                    <p style="font-size: 16px; color: #333333; line-height: 1.6; margin: 0;">
+                                        Mark your calendar for <strong>${EventName}</strong>! 🥳<br><br>
+                                        🗓️ <strong>Date:</strong> ${StartEventDate}<br><br>
+                                        📍 <strong>Location:</strong> ${address}<br><br>
+                                        ⏰ <strong>Time:</strong> ${StartEventTime}<br><br>
+                                        Let us know you’re coming. We’d love to have you there! 🤗<br><br>
+                                        If you need any further information, feel free contact to organizer: ${OrganizerName} 😊<br><br>
+
+                                                <strong>For any queries, please contact:</strong> ${allMobiles}<br><br>
+                                    </p>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td align="center" style="padding: 20px; background-color: #f4f4f4;">
+                                    <p style="font-size: 14px; color: #777777; margin: 0;">&copy; 2025 MyEventz, All rights reserved.</p>
+                                    <p style="font-size: 14px; color: #777777; margin: 0;">Application by Taxfile Invosoft Pvt Ltd.</p>
+                                </td>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+            </table>
+        </body>
+        </html>
+        `;
+
+        const sentMail = await sendMail(Email, 'Welcome to Myeventz', htmlContent);
+        if (sentMail) {
+            console.log('Email sent successfully');
+            return true;
+        }
+        return false;
+    } catch (error) {
+        console.error('Error:', error);
+        return false;
+    }
+};
+
+// Store all functions in an array
+const sendEmailOrganizerEventTemplatesArray = [
+    sendEmailOrganizerEventTemplate1,
+    sendEmailOrganizerEventTemplate2,
+    sendEmailOrganizerEventTemplate3,
+    sendEmailOrganizerEventTemplate4,
+    sendEmailOrganizerEventTemplate5,
+  ];
+
 const sendEmailUserTicketsHindi = async (Email = '', UserName = '', EventName = '', StartEventDate = '', address = '', ticketReport = '', Mobile1 = '', Mobile2 = '', OrganizerName = '') => {
     try {
-        const allMobiles = [Mobile1, Mobile2].filter(mobile => mobile !== null && mobile !== undefined && mobile !== '').map(mobile => `+${mobile}`).join(', ');
+        const allMobiles = [verifyMobileNumber(Mobile1), verifyMobileNumber(Mobile2)].filter(mobile => mobile !== null && mobile !== undefined && mobile !== '').map(mobile => `+${mobile}`).join(', ');
         const htmlContent = `
         <!DOCTYPE html>
         <html>
@@ -250,9 +587,12 @@ const sendEmailUserTicketsHindi = async (Email = '', UserName = '', EventName = 
         console.log('sentMail', sentMail);
         if (sentMail) {
             console.log('Email sent successfully');
+            return true;
         }
+        return false;
     } catch (error) {
         console.error('Error:', error);
+        return false;
     }
 };
 
@@ -260,5 +600,6 @@ module.exports = {
     sendOrganizerRegisterMail,
     sendOrganizerRegisterHindiMail,
     sendEmailUserTickets,
-    sendEmailUserTicketsHindi
+    sendEmailUserTicketsHindi,
+    sendEmailOrganizerEventTemplatesArray
 };

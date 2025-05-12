@@ -136,41 +136,42 @@ const BookingMaster = async (req, res) => {
         const { IPAddress, ServerName, EntryTime } = getCommonKeys(req);
         let sqlQuery = '';
 
-        // ✅ Fetch ticket category limits and already booked tickets
+        // Fetch ticket category limits and already booked tickets
         const ticketCategoryData = await pool.request().query(`
-            SELECT COUNT(bd.BookingdetailID) AS TotalBookedTickets, 
-                   bd.TicketCateUkeyId, 
-                   tm.TicketLimits, 
-                   tm.Category 
-            FROM Bookingdetails bd
+            SELECT 
+            COUNT(bd.BookingdetailID) AS TotalBookedTickets,
+            tm.TicketCateUkeyId,
+            tm.TicketLimits,
+            tm.Category
+            FROM TicketCategoryMaster tm
+            LEFT JOIN Bookingdetails bd ON tm.TicketCateUkeyId = bd.TicketCateUkeyId
             LEFT JOIN Bookingmast bm ON bd.BookingUkeyID = bm.BookingUkeyID
-            LEFT JOIN TicketCategoryMaster tm ON tm.TicketCateUkeyId = bd.TicketCateUkeyId
-            WHERE bm.EventUkeyId = ${setSQLStringValue(EventUkeyId)} 
-                  AND bm.OrganizerUkeyId = ${setSQLStringValue(OrganizerUkeyId)} 
-            GROUP BY bd.TicketCateUkeyId, tm.TicketLimits, tm.Category
+                AND bm.EventUkeyId = ${setSQLStringValue(EventUkeyId)}
+                AND bm.OrganizerUkeyId = ${setSQLStringValue(OrganizerUkeyId)}
+            WHERE tm.EventUkeyId = ${setSQLStringValue(EventUkeyId)}
+            GROUP BY tm.TicketCateUkeyId, tm.TicketLimits, tm.Category
         `);
 
         const categoryLimitExceeded = [];
         const categoryTicketCount = {};
 
-        // ✅ Count new ticket requests per category
+        // Count new ticket requests per category
         bookingdetails?.forEach(ticket => {
             const categoryId = ticket.TicketCateUkeyId;
             categoryTicketCount[categoryId] = (categoryTicketCount[categoryId] || 0) + 1;
         });
 
-        // ✅ Check if any category exceeds its limit
+        //  Check if any category exceeds its limit
         for (const category of ticketCategoryData.recordset) {
             const requestedCount = categoryTicketCount[category.TicketCateUkeyId] || 0;
             let availableTickets = category.TicketLimits - category.TotalBookedTickets;
-        
             if (flag === 'U') {
-                // ✅ If updating, add back the user's current booking count before checking
+                //  If updating, add back the user's current booking count before checking
                 const userPreviousBooking = await pool.request().query(`
                     SELECT COUNT(*) AS PreviousBookedTickets
                     FROM Bookingdetails 
                     WHERE BookingUkeyID = ${setSQLStringValue(BookingUkeyID)}
-                      AND TicketCateUkeyId = ${setSQLStringValue(category.TicketCateUkeyId)}
+                    AND TicketCateUkeyId = ${setSQLStringValue(category.TicketCateUkeyId)}
                 `);
                 const previousBookingCount = userPreviousBooking.recordset?.[0]?.PreviousBookedTickets || 0;
         
@@ -190,7 +191,7 @@ const BookingMaster = async (req, res) => {
             return res.status(400).json({ ...errorMessage(errorMsg), categoryLimitExceeded });
         }
                         
-        // ✅ Handle Update Scenario (flag === 'U')
+        //  Handle Update Scenario (flag === 'U')
         if (flag === 'U') {
             sqlQuery += `
                 DELETE FROM Bookingmast WHERE BookingUkeyID = ${setSQLStringValue(BookingUkeyID)} AND EventUkeyId = ${setSQLStringValue(EventUkeyId)};
@@ -216,37 +217,67 @@ const BookingMaster = async (req, res) => {
             }
         }
 
-        // ✅ Execute Query
+        //  Execute Query
         const result = await pool.request().query(sqlQuery);
 
         if (result?.rowsAffected?.[0] === 0) {
             return res.status(400).json(errorMessage('No booking entry created.'));
         }
 
-        try {
-            const userDetailsQuery = `select * from UserMaster where UserUkeyID = ${setSQLStringValue(UserUkeyID)}`;
-            const userDetails = await pool.request().query(userDetailsQuery);
-            if (userDetails?.recordset?.length > 0) {
-                const { Email, Mobile1, FullName = 'User' } = userDetails.recordset[0];
-                if (Email) {
-                    const EventDetailsQuery = `select am.Address1, am.Address2, am.StateName, am.CityName, am.Pincode, em.EventName, em.StartEventDate, em.OrganizerUkeyId, om.OrganizerName, om.Mobile1, om.Mobile2 from EventMaster em
-                        left join AddressMaster am on am.AddressUkeyID = em.AddressUkeyID
-                        left join OrganizerMaster om on om.OrganizerUkeyId = em.OrganizerUkeyId
-                        where em.EventUkeyId = ${setSQLStringValue(EventUkeyId)} AND am.EventUkeyId = ${setSQLStringValue(EventUkeyId)}`;
-                    const EventDetails = await pool.request().query(EventDetailsQuery);
-                    if (EventDetails?.recordset?.length > 0) {
-                        const { EventName, StartEventDate, Address1, Address2, StateName, CityName, Pincode, OrganizerName, Mobile1, Mobile2 } = EventDetails.recordset[0];
-                        const address = [Address1, Address2, CityName, StateName, Pincode].filter(Boolean).join(', ');
-                        const ticketReport = `https://report.taxfile.co.in/report/TicketPrint?BookingUkeyID=${BookingUkeyID}&ExportMode=PDF`;
+        setImmediate(async () => {
+            try {
+                const userDetailsQuery = `SELECT * FROM UserMaster WHERE UserUkeyID = ${setSQLStringValue(UserUkeyID)}`;
+                const userDetails = await pool.request().query(userDetailsQuery);
+                if (userDetails?.recordset?.length > 0) {
+                    const { Email, Mobile1, FullName = 'User' } = userDetails.recordset[0];
+                    if (Email) {
+                        const EventDetailsQuery = `SELECT am.Address1, am.Address2, am.StateName, am.CityName, am.Pincode, em.EventName, em.StartEventDate, em.OrganizerUkeyId, om.OrganizerName, om.Mobile1, om.Mobile2 
+                    FROM EventMaster em
+                    LEFT JOIN AddressMaster am ON am.AddressUkeyID = em.AddressUkeyID
+                    LEFT JOIN OrganizerMaster om ON om.OrganizerUkeyId = em.OrganizerUkeyId
+                    WHERE em.EventUkeyId = ${setSQLStringValue(EventUkeyId)} AND am.EventUkeyId = ${setSQLStringValue(EventUkeyId)}`;
 
-                        await sendEmailUserTickets(Email, FullName || 'User', EventName, moment(StartEventDate).format("dddd, MMMM Do YYYY"), address, ticketReport, Mobile1, Mobile2, OrganizerName)
-                        await sendEmailUserTicketsHindi(Email, FullName || 'User', EventName, moment(StartEventDate).format("dddd, MMMM Do YYYY"), address, ticketReport, Mobile1, Mobile2, OrganizerName)
+                        const EventDetails = await pool.request().query(EventDetailsQuery);
+                        if (EventDetails?.recordset?.length > 0) {
+                            const { EventName, StartEventDate, Address1, Address2, StateName, CityName, Pincode, OrganizerName, Mobile1, Mobile2 } = EventDetails.recordset[0];
+                            const address = [Address1, Address2, CityName, StateName, Pincode].filter(Boolean).join(', ');
+                            const ticketReport = `https://report.taxfile.co.in/report/TicketPrint?BookingUkeyID=${BookingUkeyID}&ExportMode=PDF`;
+
+                            const responseTicketBookingEnglish = await sendEmailUserTickets(
+                                Email, FullName, EventName,
+                                moment(StartEventDate).format("dddd, MMMM Do YYYY"),
+                                address, ticketReport, Mobile1, Mobile2, OrganizerName
+                            );
+
+                            try {
+                                const insertQueryEN = `INSERT INTO [EmailLogs] ([OrganizerUkeyId],[EventUkeyId],[UkeyId],[Category],[Language],[Email],[IsSent],[UserUkeyId],[IpAddress],[HostName],[EntryTime],[flag]) VALUES (${setSQLStringValue(OrganizerUkeyId)},${setSQLStringValue(EventUkeyId)},${setSQLStringValue(generateUUID())},'TICKET_BOOKING','ENGLISH',${setSQLStringValue(Email)},${setSQLBooleanValue(responseTicketBookingEnglish)},${setSQLStringValue(UserUkeyID)},${setSQLStringValue(IPAddress)},${setSQLStringValue(ServerName)},GETDATE(),'A')`;
+                                await pool.request().query(insertQueryEN);
+                                console.log('English email log inserted');
+                            } catch (error) {
+                                console.error('Error inserting English email log:', error);
+                            }
+
+                            const responseTicketBookingHindi = await sendEmailUserTicketsHindi(
+                                Email, FullName, EventName,
+                                moment(StartEventDate).format("dddd, MMMM Do YYYY"),
+                                address, ticketReport, Mobile1, Mobile2, OrganizerName
+                            );
+
+                            try {
+                                const insertQueryHI = `INSERT INTO [EmailLogs] ([OrganizerUkeyId],[EventUkeyId],[UkeyId],[Category],[Language],[Email],[IsSent],[UserUkeyId],[IpAddress],[HostName],[EntryTime],[flag]) VALUES (${setSQLStringValue(OrganizerUkeyId)},${setSQLStringValue(EventUkeyId)},${setSQLStringValue(generateUUID())},'TICKET_BOOKING','HINDI',${setSQLStringValue(Email)},${setSQLBooleanValue(responseTicketBookingHindi)},${setSQLStringValue(UserUkeyID)},${setSQLStringValue(IPAddress)},${setSQLStringValue(ServerName)},GETDATE(),'A')`;
+                                await pool.request().query(insertQueryHI);
+                                console.log('Hindi email log inserted');
+                            } catch (error) {
+                                console.error('Error inserting Hindi email log:', error);
+                            }
+                        }
                     }
                 }
+            } catch (error) {
+                console.error('Error in background email job:', error);
             }
-        } catch (error) {
-            console.error('Error in sending email:', error);
-        }
+        });
+        
         return res.status(200).json({ 
             ...successMessage('New Booking Entry Created Successfully.'), 
             ...req.body 
