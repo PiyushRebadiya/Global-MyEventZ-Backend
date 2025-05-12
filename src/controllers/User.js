@@ -277,10 +277,10 @@ const loginWithMobileAndRole = async (req, res) => {
         }
 
         const result = await pool.request().query(`
-            select om.OrganizerName, oum.OrganizerUkeyId, om.IsActive AS IsActiveOrganizer, em.IsActive AS IsActiveEvent, em.EventName, oum.EventUkeyId, oum.FirstName, oum.Role from OrgUserMaster oum 
-            left join  OrganizerMaster om on om.OrganizerUkeyId = oum.OrganizerUkeyId
-            left join EventMaster em on em.OrganizerUkeyId = oum.OrganizerUkeyId        
-            where om.Mobile1 = ${setSQLStringValue(Mobile1)} and Role = ${setSQLStringValue(Role)} and oum.IsActive = 1
+        select om.OrganizerName, oum.OrganizerUkeyId, om.IsActive AS IsActiveOrganizer, em.IsActive AS IsActiveEvent, em.EventName, oum.EventUkeyId, oum.FirstName, oum.Role, oum.Mobile1 from OrgUserMaster oum 
+        left join  OrganizerMaster om on om.OrganizerUkeyId = oum.OrganizerUkeyId
+        left join EventMaster em on em.EventUkeyId = oum.EventUkeyId       
+        where oum.Mobile1 = ${setSQLStringValue(Mobile1)} and oum.Role = ${setSQLStringValue(Role)}
         `);
 
         if(result.rowsAffected[0] === 0){
