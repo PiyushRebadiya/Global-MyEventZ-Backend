@@ -52,6 +52,7 @@ const OrganizerEmail = require('../controllers/sendEmail');
 const SubscriberMaster = require('../controllers/subscriberMaster');
 const RatingMasterController = require('../controllers/RatingMaster');
 const DisclaimerMasterController = require('../controllers/DisclaimerMaster');
+const EmailsLogsAPIController = require('../controllers/EmailsLogsAPI.js');
 // const carouselController = require('../controllers/carousel');
 
 const auth = require("../middleware/auth");
@@ -275,4 +276,7 @@ router.post('/disclaimer_master', auth, DisclaimerMasterController.Disclaimer);
 router.delete('/delete_disclaimer_master', auth, DisclaimerMasterController.RemoveDisclaimer);
 //#endregion
 
+//#region Email Logs
+router.get('/fetch_email_logs', auth, EmailsLogsAPIController.fetchEmailLogs);
+//#endregion
 module.exports = router;
