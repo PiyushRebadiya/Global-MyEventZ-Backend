@@ -38,20 +38,32 @@ SET NotificationStatus =
     }
 }
 
-async function autoUpdateCoupon (){
+async function autoUpdateEvent (){
     try{
         await pool.request().query(
-            ` UPDATE BellNotification
-            SET NotificationStatus = 
-                CASE
-                    WHEN CAST(EndDate AS DATE) < CAST(GETDATE() AS DATE) THEN 'Expired'
-                    WHEN CAST(StartDate AS DATE) > CAST(GETDATE() AS DATE) THEN 'Pending'
-                    ELSE 'Active'
-                END`,
+            ` UPDATE EventMaster
+            SET IsActive = 0
+            WHERE EndEventDate < GETDATE()
+            AND IsActive = 1;
+            `,
         );        
     }catch(error){
         console.log("Auto update coupon : ", error);
     }
 }
 
-module.exports = { autoVerifyCarousel, autoVerifyBellNotification, autoUpdateCoupon };
+async function autoUpdateCoupon (){
+    try{
+        await pool.request().query(
+            ` UPDATE CouponMaster
+            SET IsActive = 0
+            WHERE EndDate < GETDATE()
+            AND IsActive = 1;
+            `,
+        );        
+    }catch(error){
+        console.log("Auto update coupon : ", error);
+    }
+}
+
+module.exports = { autoVerifyCarousel, autoVerifyBellNotification, autoUpdateEvent, autoUpdateCoupon };
