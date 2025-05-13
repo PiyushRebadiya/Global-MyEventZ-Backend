@@ -39,13 +39,13 @@ const OrgUserMaster = async (req, res) => {
     try {
         const { IPAddress, ServerName, EntryTime } = getCommonKeys();
 
-        const checkUserMobileandEmail = await pool.request().query(`
-            select COUNT(*) AS checkUserMobileandEmail from OrgUserMaster where Mobile1 = ${setSQLStringValue(Mobile1)} OR Email = ${setSQLStringValue(Email)} and IsActive = 1 
-        `)
+        // const checkUserMobileandEmail = await pool.request().query(`
+        //     select COUNT(*) AS checkUserMobileandEmail from OrgUserMaster where Mobile1 = ${setSQLStringValue(Mobile1)} OR Email = ${setSQLStringValue(Email)} and IsActive = 1 
+        // `)
         
-        if(checkUserMobileandEmail?.recordset?.[0]?.checkUserMobileandEmail > 0 && flag == 'A'){
-            return res.status(400).json(errorMessage(`User already exists with the provided mobile number or email address.`));
-        }
+        // if(checkUserMobileandEmail?.recordset?.[0]?.checkUserMobileandEmail > 0 && flag == 'A'){
+        //     return res.status(400).json(errorMessage(`User already exists with the provided mobile number or email address.`));
+        // }
 
         const AdminUserCount = await pool.request().query(`
             select COUNT(*) AS AdminUserCount from OrgUserMaster where OrganizerUkeyId = ${setSQLStringValue(OrganizerUkeyId)} and EventUkeyId = ${setSQLStringValue(EventUkeyId)} and Role <> 'Admin'
