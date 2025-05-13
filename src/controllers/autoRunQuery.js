@@ -38,4 +38,20 @@ SET NotificationStatus =
     }
 }
 
-module.exports = { autoVerifyCarousel, autoVerifyBellNotification };
+async function autoUpdateCoupon (){
+    try{
+        await pool.request().query(
+            ` UPDATE BellNotification
+            SET NotificationStatus = 
+                CASE
+                    WHEN CAST(EndDate AS DATE) < CAST(GETDATE() AS DATE) THEN 'Expired'
+                    WHEN CAST(StartDate AS DATE) > CAST(GETDATE() AS DATE) THEN 'Pending'
+                    ELSE 'Active'
+                END`,
+        );        
+    }catch(error){
+        console.log("Auto update coupon : ", error);
+    }
+}
+
+module.exports = { autoVerifyCarousel, autoVerifyBellNotification, autoUpdateCoupon };

@@ -214,12 +214,16 @@ const AddOrginizer = async (req, res) => {
 
 const Loginorganizer = async (req, res) => {
     try{
-        const {Mobile1, Password, UserUkeyId} = req.body;
+        const {Mobile1, Password, UserUkeyId, Email} = req.body;
 
-        const missingKeys = checkKeysAndRequireValues(['Mobile1'], req.body);
+        // const missingKeys = checkKeysAndRequireValues(['Mobile1'], req.body);
 
-        if(missingKeys.length > 0){
-            return res.status(400).json(errorMessage(`${missingKeys.join(', ')} is required`))
+        // if(missingKeys.length > 0){
+        //     return res.status(400).json(errorMessage(`${missingKeys.join(', ')} is required`))
+        // }
+
+        if(!Email && !Mobile1){
+            return res.status(400).json(errorMessage(`Email or Mobile1 is required`))
         }
 
         const {IPAddress, ServerName, EntryTime} = getCommonKeys(req); 
@@ -229,14 +233,19 @@ const Loginorganizer = async (req, res) => {
         SELECT om.*, em.EventName 
         FROM OrgUserMaster om 
         LEFT JOIN EventMaster em ON em.EventUkeyId = om.EventUkeyId
-        WHERE om.Mobile1 = ${setSQLStringValue(Mobile1)} 
-        AND om.Password = ${setSQLStringValue(Password)} 
+        WHERE om.Password = ${setSQLStringValue(Password)} 
         AND om.IsActive = 1
         `;
 
         // Add EventUkeyId condition if provided
         if (UserUkeyId) {
             query += ` AND om.UserUkeyId = ${setSQLStringValue(UserUkeyId)}`;
+        }
+        if (Email) {
+            query += ` AND om.Email = ${setSQLStringValue(Email)}`;
+        }
+        if (Mobile1) {
+            query += ` AND om.Mobile1 = ${setSQLStringValue(Mobile1)}`;
         }
 
         const result = await pool.request().query(query);

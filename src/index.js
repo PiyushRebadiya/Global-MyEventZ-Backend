@@ -6,7 +6,7 @@ const routes = require('./Routes/routes');
 const app = express();
 const bodyParser = require('body-parser');
 const cors = require('cors');
-const { autoVerifyCarousel } = require('./controllers/autoRunQuery');
+const { autoVerifyCarousel, autoUpdateCoupon } = require('./controllers/autoRunQuery');
 const cron = require('node-cron');
 // const { sendNotificationOnSetTime } = require('./controllers/globleAutoSentNotification');
 const path = require('path');
@@ -58,6 +58,7 @@ app.get('/', async (req, res) => {
 cron.schedule('15 0 * * *', () => {
     console.log('Running Auto Task' + new Date());
     autoVerifyCarousel();
+    autoUpdateCoupon();
 });
 
 // call for new DB Entry
