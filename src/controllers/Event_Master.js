@@ -249,7 +249,7 @@ const addEvent = async (req, res) => {
         const organizerDetails = await pool.request().query(`
             SELECT Mobile1, Mobile2, OrganizerName FROM OrganizerMaster WHERE OrganizerUkeyId = ${setSQLStringValue(OrganizerUkeyId)}
         `);
-        if(organizerDetails?.recordset?.length > 0){
+        if(organizerDetails?.recordset?.length > 0 && setSQLBooleanValue(IsActive) === 1){
             const { Mobile1 = '', Mobile2 = '', OrganizerName = '' } = organizerDetails.recordset[0];
 
             const userDetails = await pool.request().query(`WITH EmailRanked AS (
