@@ -214,7 +214,7 @@ const AddOrginizer = async (req, res) => {
 
 const Loginorganizer = async (req, res) => {
     try{
-        const {Mobile1, Password, Role} = req.body;
+        const {Mobile1, Password, UserUkeyId} = req.body;
 
         const missingKeys = checkKeysAndRequireValues(['Mobile1'], req.body);
 
@@ -224,10 +224,22 @@ const Loginorganizer = async (req, res) => {
 
         const {IPAddress, ServerName, EntryTime} = getCommonKeys(req); 
 
-        const result = await pool.request().query(`
-        select om.*,em.EventName from OrgUserMaster om left join EventMaster em on em.EventUkeyId=om.EventUkeyId
-        where om.Mobile1 = ${setSQLStringValue(Mobile1)} AND (om.Password = ${setSQLStringValue(Password)} OR Role = ${setSQLStringValue(Role)}) AND om.IsActive = 1
-        `);
+        // Build dynamic SQL query
+        let query = `
+        SELECT om.*, em.EventName 
+        FROM OrgUserMaster om 
+        LEFT JOIN EventMaster em ON em.EventUkeyId = om.EventUkeyId
+        WHERE om.Mobile1 = ${setSQLStringValue(Mobile1)} 
+        AND om.Password = ${setSQLStringValue(Password)} 
+        AND om.IsActive = 1
+        `;
+
+        // Add EventUkeyId condition if provided
+        if (UserUkeyId) {
+            query += ` AND om.UserUkeyId = ${setSQLStringValue(UserUkeyId)}`;
+        }
+
+        const result = await pool.request().query(query);
 
         if(result.rowsAffected[0] === 0){
             return res.status(400).json({...errorMessage('Invelit Mobile Number Or Password'), IsVerified : false});
