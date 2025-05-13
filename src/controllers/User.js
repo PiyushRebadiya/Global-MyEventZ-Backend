@@ -214,7 +214,7 @@ const AddOrginizer = async (req, res) => {
 
 const Loginorganizer = async (req, res) => {
     try{
-        const {Mobile1, Password, UserUkeyId, Email} = req.body;
+        const {Mobile1, Password, UserUkeyId, Email, AppleUserId} = req.body;
 
         // const missingKeys = checkKeysAndRequireValues(['Mobile1'], req.body);
 
@@ -223,7 +223,7 @@ const Loginorganizer = async (req, res) => {
         // }
 
         if(!Email && !Mobile1){
-            return res.status(400).json(errorMessage(`Email or Mobile1 is required`))
+            return res.status(400).json(errorMessage(`Email or Mobile numbner or AppleUserId is required`))
         }
 
         const {IPAddress, ServerName, EntryTime} = getCommonKeys(req); 
@@ -243,6 +243,9 @@ const Loginorganizer = async (req, res) => {
         }
         if (Email) {
             query += ` AND om.Email = ${setSQLStringValue(Email)}`;
+        }
+        if (AppleUserId) {
+            query += ` AND om.AppleUserId = ${setSQLStringValue(AppleUserId)}`;
         }
         if (Mobile1) {
             query += ` AND om.Mobile1 = ${setSQLStringValue(Mobile1)}`;
