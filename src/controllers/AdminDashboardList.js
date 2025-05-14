@@ -355,16 +355,22 @@ const TicketVerifyReportByTicketCategory = async (req, res) => {
         const TransactionReport = {
             getQuery: `
             SELECT 
-                bd.BookingdetailID, bd.BookingdetailUkeyID, bd.BookingUkeyID, bd.Name, bd.Mobile, bd.GST, bd.Conviencefee, bd.Amount, bd.DiscAmt, bd.TicketCateUkeyId, bd.IsVerify, bd.VerifiedByUkeyId, bd.flag, bd.IpAddress, bd.HostName, bd.EntryDate, tcm.Category AS EventCategoryName,  MAX(oum.FirstName) AS verifierName,  MAX(em.EventName) AS EventName,  bm.EventUkeyId,  bm.OrganizerUkeyId,  bm.TotalNetAmount
+                bd.*,
+                tcm.Category AS EventCategoryName,
+                oum.FirstName AS verifierName,
+                em.EventName,
+                bm.EventUkeyId,
+                bm.OrganizerUkeyId,
+                bm.TotalNetAmount
             FROM Bookingdetails bd
             LEFT JOIN Bookingmast bm ON bm.BookingUkeyID = bd.BookingUkeyID
             LEFT JOIN TicketCategoryMaster tcm ON tcm.TicketCateUkeyId = bd.TicketCateUkeyId
             LEFT JOIN OrgUserMaster oum ON oum.UserUkeyId = bd.VerifiedByUkeyId
             LEFT JOIN EventMaster em ON em.EventUkeyId = bm.EventUkeyId
             ${whereString}
-            GROUP BY 
-                bd.BookingdetailID, bd.BookingdetailUkeyID, bd.BookingUkeyID, bd.Name, bd.Mobile, bd.GST, bd.Conviencefee, bd.Amount, bd.DiscAmt, bd.TicketCateUkeyId, bd.IsVerify, bd.VerifiedByUkeyId, bd.flag, bd.IpAddress, bd.HostName, bd.EntryDate, tcm.Category, bm.EventUkeyId, bm.OrganizerUkeyId, bm.TotalNetAmount
-            ORDER BY bd.EntryDate DESC, verifierName ASC
+            ORDER BY 
+            verifierName ASC,        
+            bd.EntryDate DESC 
             `,
             countQuery: `
                 select count(*) AS totalCount from Bookingdetails bd
