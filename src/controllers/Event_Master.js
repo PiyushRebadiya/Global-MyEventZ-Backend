@@ -265,7 +265,7 @@ const addEvent = async (req, res) => {
                     [GlobalMyEventZ].[dbo].[UserMaster]
                 WHERE 
                     [Email] IS NOT NULL
-                    AND LTRIM(RTRIM([Email])) <> '' AND IsActive = 1
+                    AND LTRIM(RTRIM([Email])) <> '' AND IsActive = 1 AND UserUkeyId = '9CC5-AA2025-121c6a8e-17e1-4207-bc22-dd784cd17132-W'
             )
             SELECT 
                 [UserId],
