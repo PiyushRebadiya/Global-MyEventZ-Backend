@@ -360,7 +360,7 @@ const TicketVerifyReportByTicketCategory = async (req, res) => {
             left join TicketCategoryMaster tcm on tcm.TicketCateUkeyId = bd.TicketCateUkeyId
             left join OrgUserMaster oum on oum.UserUkeyId = bd.VerifiedByUkeyId
             left join EventMaster em on em.EventUkeyId = bm.EventUkeyId
-                            ${whereString} order by BookingDate desc, , oum.FirstName asc
+                            ${whereString} order by BookingDate desc, oum.FirstName asc
             `,
             countQuery: `
                 select count(*) AS totalCount from Bookingdetails bd
