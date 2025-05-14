@@ -233,13 +233,15 @@ const Loginorganizer = async (req, res) => {
         SELECT om.*, em.EventName 
         FROM OrgUserMaster om 
         LEFT JOIN EventMaster em ON em.EventUkeyId = om.EventUkeyId
-        WHERE om.Password = ${setSQLStringValue(Password)} 
-        AND om.IsActive = 1
+        WHERE om.IsActive = 1
         `;
 
         // Add EventUkeyId condition if provided
         if (UserUkeyId) {
             query += ` AND om.UserUkeyId = ${setSQLStringValue(UserUkeyId)}`;
+        }
+        if (Password) {
+            query += ` AND om.Password = ${setSQLStringValue(Password)}`;
         }
         if (Email) {
             query += ` AND om.Email = ${setSQLStringValue(Email)}`;
