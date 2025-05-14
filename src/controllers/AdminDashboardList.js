@@ -389,6 +389,69 @@ const TicketVerifyReportByTicketCategory = async (req, res) => {
     }
 }
 
+const CustomeReport = async (req, res) => {
+    try{
+        const {EventUkeyId, OrganizerUkeyId, IsVerify, VerifiedByUkeyId} = req.query;
+        let whereConditions = [];
+        let {TicketCateUkeyId} = req.query
+        TicketCateUkeyId = TicketCateUkeyId?.split(',')
+
+        TicketCateUkeyId.forEach((element, i) => {
+            TicketCateUkeyId[i] = `'${element}'`
+        });
+
+        if (OrganizerUkeyId) {
+            whereConditions.push(`bm.OrganizerUkeyId = ${setSQLStringValue(OrganizerUkeyId)}`);
+        }
+        if (EventUkeyId) {
+            whereConditions.push(`bm.EventUkeyId = ${setSQLStringValue(EventUkeyId)}`);
+        }
+        if (VerifiedByUkeyId) {
+            whereConditions.push(`bd.VerifiedByUkeyId = ${setSQLStringValue(VerifiedByUkeyId)}`);
+        }
+        if (TicketCateUkeyId) {
+            whereConditions.push(`bd.TicketCateUkeyId IN (${TicketCateUkeyId.join(',')})`);
+        }
+        if (IsVerify) {
+            whereConditions.push(`bd.IsVerify = ${setSQLBooleanValue(IsVerify)}`);
+        }
+        
+        const whereString = whereConditions.length > 0 ? `WHERE ${whereConditions.join(' AND ')}` : '';
+
+        const TransactionReport = {
+            getQuery: `
+            SELECT 
+                oum.FirstName AS verifierName,
+                tcm.Category AS EventCategoryName,
+                bd.TicketCateUkeyId,
+                COUNT(*) AS VerifiedCount
+            FROM Bookingdetails bd
+            LEFT JOIN OrgUserMaster oum ON oum.UserUkeyId = bd.VerifiedByUkeyId
+            LEFT JOIN TicketCategoryMaster tcm ON tcm.TicketCateUkeyId = bd.TicketCateUkeyId
+                ${whereString}
+                GROUP BY 
+                oum.FirstName,
+                tcm.Category,
+                bd.TicketCateUkeyId
+            ORDER BY 
+                verifierName,
+                EventCategoryName
+            `,
+            countQuery: `
+                select count(*) AS totalCount from Bookingdetails bd
+                left join TicketCategoryMaster tcm on tcm.TicketCateUkeyId = bd.TicketCateUkeyId
+                left join OrgUserMaster oum on oum.UserUkeyId = bd.VerifiedByUkeyId
+                ${whereString}
+            `,
+        };
+        const result = await getCommonAPIResponse(req, res, TransactionReport);
+        return res.json(result);
+    }catch(error){
+        console.log('transaction report error : ', error);
+        return res.status(500).json(errorMessage(error.message));
+    }
+}
+
 const dashboardVolunteerCount = async (req, res) => {
     try{
         const {EventUkeyId, OrganizerUkeyId, } = req.query;
@@ -429,4 +492,5 @@ module.exports = {
     TicketVerifyReport,
     TicketVerifyReportByTicketCategory,
     dashboardVolunteerCount,
+    CustomeReport
 }

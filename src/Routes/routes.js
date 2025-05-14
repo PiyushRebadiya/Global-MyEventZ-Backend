@@ -221,6 +221,7 @@ router.get('/admin_dashboard_chart_list', auth, AdminDashboardController.AdminDa
 router.get('/transaction_report',auth, AdminDashboardController.TransactionReport);
 router.get('/ticket_verify_count',auth, AdminDashboardController.TicketVerifyReport);
 router.get('/ticket_verify_report', auth, AdminDashboardController.TicketVerifyReportByTicketCategory);
+router.get('/custome_report', auth, AdminDashboardController.CustomeReport);
 router.get('/dashboard_volunteer_master', auth, AdminDashboardController.dashboardVolunteerCount);
 //#endregion
 
