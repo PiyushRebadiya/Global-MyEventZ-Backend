@@ -260,18 +260,18 @@ router.delete('/delete_whats_new', auth, whatsnewcontroller.removewhatsnew);
 //#endregion
 
 //#region Subscriber master
-router.get('/fetch_subscriber', auth, SubscriberMaster.fetchSubscriberlist);
+router.get('/fetch_subscriber', SubscriberMaster.fetchSubscriberlist);
 router.post('/subscriber_master', auth, SubscriberMaster.SubscriberMaster);
 //#endregion
 
 //#region Rating master
-router.get('/fetch_rating', auth, RatingMasterController.fetchRatings);
+router.get('/fetch_rating', RatingMasterController.fetchRatings);
 router.get('/fetch_subscriber_rating_count', RatingMasterController.countOfRatingAndsubscriber);
-router.post('/rating_master', auth, RatingMasterController.RatingMaster);
+router.post('/rating_master', RatingMasterController.RatingMaster);
 //#endregion
 
 //#region Disclaimer master
-router.get('/fetch_disclaimer_master', auth, DisclaimerMasterController.fetchDisclaimer);
+router.get('/fetch_disclaimer_master', DisclaimerMasterController.fetchDisclaimer);
 router.post('/disclaimer_master', auth, DisclaimerMasterController.Disclaimer);
 router.delete('/delete_disclaimer_master', auth, DisclaimerMasterController.RemoveDisclaimer);
 //#endregion
