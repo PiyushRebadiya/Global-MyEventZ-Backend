@@ -214,23 +214,49 @@ const AddOrginizer = async (req, res) => {
 
 const Loginorganizer = async (req, res) => {
     try{
-        const {Mobile1, Password, Role} = req.body;
+        const {Mobile1, Password, UserUkeyId, Email, AppleUserId} = req.body;
 
-        const missingKeys = checkKeysAndRequireValues(['Mobile1'], req.body);
+        // const missingKeys = checkKeysAndRequireValues(['Mobile1'], req.body);
 
-        if(missingKeys.length > 0){
-            return res.status(400).json(errorMessage(`${missingKeys.join(', ')} is required`))
+        // if(missingKeys.length > 0){
+        //     return res.status(400).json(errorMessage(`${missingKeys.join(', ')} is required`))
+        // }
+
+        if(!Email && !Mobile1 && !AppleUserId){
+            return res.status(400).json(errorMessage(`Email or Mobile numbner or AppleUserId is required`))
         }
 
         const {IPAddress, ServerName, EntryTime} = getCommonKeys(req); 
 
-        const result = await pool.request().query(`
-        select om.*,em.EventName from OrgUserMaster om left join EventMaster em on em.EventUkeyId=om.EventUkeyId
-        where om.Mobile1 = ${setSQLStringValue(Mobile1)} AND (om.Password = ${setSQLStringValue(Password)} OR Role = ${setSQLStringValue(Role)}) AND om.IsActive = 1
-        `);
+        // Build dynamic SQL query
+        let query = `
+        SELECT om.*, em.EventName 
+        FROM OrgUserMaster om 
+        LEFT JOIN EventMaster em ON em.EventUkeyId = om.EventUkeyId
+        WHERE om.IsActive = 1
+        `;
+
+        // Add EventUkeyId condition if provided
+        if (UserUkeyId) {
+            query += ` AND om.UserUkeyId = ${setSQLStringValue(UserUkeyId)}`;
+        }
+        if (Password) {
+            query += ` AND om.Password = ${setSQLStringValue(Password)}`;
+        }
+        if (Email) {
+            query += ` AND om.Email = ${setSQLStringValue(Email)}`;
+        }
+        if (AppleUserId) {
+            query += ` AND om.AppleUserId = ${setSQLStringValue(AppleUserId)}`;
+        }
+        if (Mobile1) {
+            query += ` AND om.Mobile1 = ${setSQLStringValue(Mobile1)}`;
+        }
+
+        const result = await pool.request().query(query);
 
         if(result.rowsAffected[0] === 0){
-            return res.status(400).json({...errorMessage('Invelit Mobile Number Or Password'), IsVerified : false});
+            return res.status(400).json({...errorMessage('Invelid credentials'), IsVerified : false});
         }
 
         const Organizers = await pool.request().query(`
@@ -268,24 +294,46 @@ const Loginorganizer = async (req, res) => {
 //#region 
 const loginWithMobileAndRole = async (req, res) => {
     try{
-        const {Mobile1, Role} = req.body;
+        const {Mobile1, Role, Email, AppleUserId} = req.body;
 
-        const missingKeys = checkKeysAndRequireValues(['Mobile1', 'Role'], req.body);
-
-        if(missingKeys.length > 0){
-            return res.status(400).json(errorMessage(`${missingKeys.join(', ')} is required`))
+        if(!Mobile1 && !Email && !AppleUserId){
+            return res.status(400).json(errorMessage(`Mobile1 or !Email or !AppleUserId is required`))
         }
 
-        const result = await pool.request().query(`
-            select om.OrganizerName, oum.OrganizerUkeyId, om.IsActive AS IsActiveOrganizer, em.IsActive AS IsActiveEvent, em.EventName, oum.EventUkeyId, oum.FirstName, oum.Role from OrgUserMaster oum 
-            left join  OrganizerMaster om on om.OrganizerUkeyId = oum.OrganizerUkeyId
-            left join EventMaster em on em.OrganizerUkeyId = oum.OrganizerUkeyId        
-            where om.Mobile1 = ${setSQLStringValue(Mobile1)} and Role = ${setSQLStringValue(Role)} and oum.IsActive = 1
-        `);
+        let query = `select om.OrganizerName, oum.OrganizerUkeyId, om.IsActive AS IsActiveOrganizer, em.IsActive AS IsActiveEvent, em.EventName, oum.EventUkeyId, StartEventDate, em.EndEventDate, em.EventCode, em.EventDetails, em.Longitude, em.Latitude, oum.FirstName, oum.Role, oum.Mobile1, oum.Password, oum.DOB, oum.UserUkeyId,am.Address1, am.Address2, am.Pincode, am.StateName,am.StateCode, am.CityName, am.IsPrimaryAddress, am.IsActive AS IsActiveAddress, 
+        (
+            SELECT du.FileName, du.Label, du.docukeyid
+            FROM DocumentUpload du 
+            WHERE du.UkeyId = em.EventUkeyId
+            FOR JSON PATH
+        ) AS FileNames from OrgUserMaster oum 
+        left join  OrganizerMaster om on om.OrganizerUkeyId = oum.OrganizerUkeyId
+        left join EventMaster em on em.EventUkeyId = oum.EventUkeyId     
+        LEFT JOIN AddressMaster am ON am.EventUkeyId = em.EventUkeyId where oum.Role = ${setSQLStringValue(Role)}`
+
+        if (Email) {
+            query += ` AND oum.Email = ${setSQLStringValue(Email)}`;
+        }
+        if (AppleUserId) {
+            query += ` AND oum.AppleUserId = ${setSQLStringValue(AppleUserId)}`;
+        }
+        if (Mobile1) {
+            query += ` AND oum.Mobile1 = ${setSQLStringValue(Mobile1)}`;
+        }
+
+        const result = await pool.request().query(query);
 
         if(result.rowsAffected[0] === 0){
             return res.status(400).json({...errorMessage('Invalid crediantials'), IsVerified : false});
         }
+
+        result.recordset?.forEach(event => {
+            if(event.FileNames){
+                event.FileNames = JSON.parse(event?.FileNames)
+            } else {
+                event.FileNames = []
+            }
+        });
 
         return res.status(200).json({
             ...successMessage('User Verified Successfully.'), IsVerified : true, token : generateJWTT({
@@ -295,7 +343,9 @@ const loginWithMobileAndRole = async (req, res) => {
                 , UserId : result?.recordset[0]?.UserId
                 , FirstName : result?.recordset[0]?.FirstName
             }),
-             userData : [...result?.recordset]
+            Mobile1,
+            Role,
+            userData : [...result?.recordset]
     });
     }catch(error){
         console.log('Login User Error :', error);

@@ -38,4 +38,32 @@ SET NotificationStatus =
     }
 }
 
-module.exports = { autoVerifyCarousel, autoVerifyBellNotification };
+async function autoUpdateEvent (){
+    try{
+        await pool.request().query(
+            ` UPDATE EventMaster
+            SET IsActive = 0
+            WHERE EndEventDate < GETDATE()
+            AND IsActive = 1;
+            `,
+        );        
+    }catch(error){
+        console.log("Auto update coupon : ", error);
+    }
+}
+
+async function autoUpdateCoupon (){
+    try{
+        await pool.request().query(
+            ` UPDATE CouponMaster
+            SET IsActive = 0
+            WHERE EndDate < GETDATE()
+            AND IsActive = 1;
+            `,
+        );        
+    }catch(error){
+        console.log("Auto update coupon : ", error);
+    }
+}
+
+module.exports = { autoVerifyCarousel, autoVerifyBellNotification, autoUpdateEvent, autoUpdateCoupon };
