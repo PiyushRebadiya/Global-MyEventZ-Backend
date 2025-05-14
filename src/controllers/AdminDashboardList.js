@@ -354,13 +354,17 @@ const TicketVerifyReportByTicketCategory = async (req, res) => {
 
         const TransactionReport = {
             getQuery: `
-            select bd.*
-            , tcm.Category AS EventCategoryName, oum.FirstName AS verifierName, em.EventName, bm.EventUkeyId, bm.OrganizerUkeyId, bm.TotalNetAmount from Bookingdetails bd
-            left join Bookingmast bm on bm.BookingUkeyID = bd.BookingUkeyID
-            left join TicketCategoryMaster tcm on tcm.TicketCateUkeyId = bd.TicketCateUkeyId
-            left join OrgUserMaster oum on oum.UserUkeyId = bd.VerifiedByUkeyId
-            left join EventMaster em on em.EventUkeyId = bm.EventUkeyId
-                            ${whereString} order by BookingDate desc, oum.FirstName asc
+            SELECT 
+                bd.BookingdetailID, bd.BookingdetailUkeyID, bd.BookingUkeyID, bd.Name, bd.Mobile, bd.GST, bd.Conviencefee, bd.Amount, bd.DiscAmt, bd.TicketCateUkeyId, bd.IsVerify, bd.VerifiedByUkeyId, bd.flag, bd.IpAddress, bd.HostName, bd.EntryDate, tcm.Category AS EventCategoryName,  MAX(oum.FirstName) AS verifierName,  MAX(em.EventName) AS EventName,  bm.EventUkeyId,  bm.OrganizerUkeyId,  bm.TotalNetAmount
+            FROM Bookingdetails bd
+            LEFT JOIN Bookingmast bm ON bm.BookingUkeyID = bd.BookingUkeyID
+            LEFT JOIN TicketCategoryMaster tcm ON tcm.TicketCateUkeyId = bd.TicketCateUkeyId
+            LEFT JOIN OrgUserMaster oum ON oum.UserUkeyId = bd.VerifiedByUkeyId
+            LEFT JOIN EventMaster em ON em.EventUkeyId = bm.EventUkeyId
+            ${whereString}
+            GROUP BY 
+                bd.BookingdetailID, bd.BookingdetailUkeyID, bd.BookingUkeyID, bd.Name, bd.Mobile, bd.GST, bd.Conviencefee, bd.Amount, bd.DiscAmt, bd.TicketCateUkeyId, bd.IsVerify, bd.VerifiedByUkeyId, bd.flag, bd.IpAddress, bd.HostName, bd.EntryDate, tcm.Category, bm.EventUkeyId, bm.OrganizerUkeyId, bm.TotalNetAmount
+            ORDER BY bd.EntryDate DESC, verifierName ASC
             `,
             countQuery: `
                 select count(*) AS totalCount from Bookingdetails bd
