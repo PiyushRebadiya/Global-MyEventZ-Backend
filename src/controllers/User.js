@@ -222,7 +222,7 @@ const Loginorganizer = async (req, res) => {
         //     return res.status(400).json(errorMessage(`${missingKeys.join(', ')} is required`))
         // }
 
-        if(!Email && !Mobile1){
+        if(!Email && !Mobile1 && !AppleUserId){
             return res.status(400).json(errorMessage(`Email or Mobile numbner or AppleUserId is required`))
         }
 
@@ -256,7 +256,7 @@ const Loginorganizer = async (req, res) => {
         const result = await pool.request().query(query);
 
         if(result.rowsAffected[0] === 0){
-            return res.status(400).json({...errorMessage('Invelit Mobile Number Or Password'), IsVerified : false});
+            return res.status(400).json({...errorMessage('Invelid credentials'), IsVerified : false});
         }
 
         const Organizers = await pool.request().query(`
