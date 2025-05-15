@@ -302,7 +302,7 @@ const loginWithMobileAndRole = async (req, res) => {
 
         let query = `select om.OrganizerName, oum.OrganizerUkeyId, om.IsActive AS IsActiveOrganizer, em.IsActive AS IsActiveEvent, em.EventName, oum.EventUkeyId, StartEventDate, em.EndEventDate, em.EventCode, em.EventDetails, em.Longitude, em.Latitude, oum.FirstName, oum.Role, oum.Mobile1, oum.Password, oum.DOB, oum.UserUkeyId,am.Address1, am.Address2, am.Pincode, am.StateName,am.StateCode, am.CityName, am.IsPrimaryAddress, am.IsActive AS IsActiveAddress, 
         (
-            SELECT du.FileName, du.Label, du.docukeyid
+            SELECT du.FileName, du.Label, du.docukeyid, du.docukeyid, du.EventUkeyId, du.OrganizerUkeyId, du.Category
             FROM DocumentUpload du 
             WHERE du.UkeyId = em.EventUkeyId
             FOR JSON PATH

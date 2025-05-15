@@ -41,7 +41,7 @@ const EventList = async (req, res) => {
             ecm.CategoryName AS EventCategoryName,
             pgm.GatewayName,
             (
-                SELECT du.FileName, du.Label, du.docukeyid
+                SELECT du.FileName, du.Label, du.docukeyid, du.EventUkeyId, du.OrganizerUkeyId, du.Category
                 FROM DocumentUpload du 
                 WHERE du.UkeyId = em.EventUkeyId
                 FOR JSON PATH
@@ -126,7 +126,7 @@ const fetchEventById = async (req, res)=> {
             ecm.CategoryName AS EventCategoryName,
             pgm.GatewayName,
             (
-                SELECT du.FileName, du.Label, du.docukeyid
+                SELECT du.FileName, du.Label, du.docukeyid, du.EventUkeyId, du.OrganizerUkeyId, du.Category
                 FROM DocumentUpload du 
                 WHERE du.UkeyId = em.EventUkeyId
                 FOR JSON PATH

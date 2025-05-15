@@ -26,7 +26,7 @@ const fetchCarouselList = async (req, res) => {
             getQuery: `SELECT 
             cc.*, 
             ( 
-                SELECT dm.FileName, dm.Label, dm.DocUkeyId
+                SELECT dm.FileName, dm.Label, dm.DocUkeyId, du.EventUkeyId, du.OrganizerUkeyId, du.Category
                 FROM DocumentUpload dm 
                 WHERE dm.UkeyId = cc.CarouselUkeyId 
                 FOR JSON PATH 
