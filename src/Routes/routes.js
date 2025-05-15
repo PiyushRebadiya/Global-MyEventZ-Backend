@@ -221,6 +221,7 @@ router.get('/admin_dashboard_chart_list', auth, AdminDashboardController.AdminDa
 router.get('/transaction_report',auth, AdminDashboardController.TransactionReport);
 router.get('/ticket_verify_count',auth, AdminDashboardController.TicketVerifyReport);
 router.get('/ticket_verify_report', auth, AdminDashboardController.TicketVerifyReportByTicketCategory);
+router.get('/custome_report', auth, AdminDashboardController.CustomeReport);
 router.get('/dashboard_volunteer_master', auth, AdminDashboardController.dashboardVolunteerCount);
 //#endregion
 
@@ -260,18 +261,18 @@ router.delete('/delete_whats_new', auth, whatsnewcontroller.removewhatsnew);
 //#endregion
 
 //#region Subscriber master
-router.get('/fetch_subscriber', auth, SubscriberMaster.fetchSubscriberlist);
+router.get('/fetch_subscriber', SubscriberMaster.fetchSubscriberlist);
 router.post('/subscriber_master', auth, SubscriberMaster.SubscriberMaster);
 //#endregion
 
 //#region Rating master
-router.get('/fetch_rating', auth, RatingMasterController.fetchRatings);
+router.get('/fetch_rating', RatingMasterController.fetchRatings);
 router.get('/fetch_subscriber_rating_count', RatingMasterController.countOfRatingAndsubscriber);
-router.post('/rating_master', auth, RatingMasterController.RatingMaster);
+router.post('/rating_master', RatingMasterController.RatingMaster);
 //#endregion
 
 //#region Disclaimer master
-router.get('/fetch_disclaimer_master', auth, DisclaimerMasterController.fetchDisclaimer);
+router.get('/fetch_disclaimer_master', DisclaimerMasterController.fetchDisclaimer);
 router.post('/disclaimer_master', auth, DisclaimerMasterController.Disclaimer);
 router.delete('/delete_disclaimer_master', auth, DisclaimerMasterController.RemoveDisclaimer);
 //#endregion

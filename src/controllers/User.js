@@ -222,7 +222,7 @@ const Loginorganizer = async (req, res) => {
         //     return res.status(400).json(errorMessage(`${missingKeys.join(', ')} is required`))
         // }
 
-        if(!Email && !Mobile1){
+        if(!Email && !Mobile1 && !AppleUserId){
             return res.status(400).json(errorMessage(`Email or Mobile numbner or AppleUserId is required`))
         }
 
@@ -256,7 +256,7 @@ const Loginorganizer = async (req, res) => {
         const result = await pool.request().query(query);
 
         if(result.rowsAffected[0] === 0){
-            return res.status(400).json({...errorMessage('Invelit Mobile Number Or Password'), IsVerified : false});
+            return res.status(400).json({...errorMessage('Invelid credentials'), IsVerified : false});
         }
 
         const Organizers = await pool.request().query(`
@@ -294,18 +294,13 @@ const Loginorganizer = async (req, res) => {
 //#region 
 const loginWithMobileAndRole = async (req, res) => {
     try{
-        const {Mobile1, Role} = req.body;
+        const {Mobile1, Role, Email, AppleUserId} = req.body;
 
-        const missingKeys = checkKeysAndRequireValues(['Mobile1', 'Role'], req.body);
-
-        if(missingKeys.length > 0){
-            return res.status(400).json(errorMessage(`${missingKeys.join(', ')} is required`))
+        if(!Mobile1 && !Email && !AppleUserId){
+            return res.status(400).json(errorMessage(`Mobile1 or !Email or !AppleUserId is required`))
         }
 
-        const result = await pool.request().query(`
-        select om.OrganizerName, oum.OrganizerUkeyId, om.IsActive AS IsActiveOrganizer, 
-        em.IsActive AS IsActiveEvent, em.EventName, oum.EventUkeyId,
-        StartEventDate, em.EndEventDate, em.EventCode, em.EventDetails, em.Longitude, em.Latitude, oum.FirstName, oum.Role, oum.Mobile1, oum.Password, oum.DOB, oum.UserUkeyId,am.Address1, am.Address2, am.Pincode, am.StateName,am.StateCode, am.CityName, am.IsPrimaryAddress, am.IsActive AS IsActiveAddress, 
+        let query = `select om.OrganizerName, oum.OrganizerUkeyId, om.IsActive AS IsActiveOrganizer, em.IsActive AS IsActiveEvent, em.EventName, oum.EventUkeyId, StartEventDate, em.EndEventDate, em.EventCode, em.EventDetails, em.Longitude, em.Latitude, oum.FirstName, oum.Role, oum.Mobile1, oum.Password, oum.DOB, oum.UserUkeyId,am.Address1, am.Address2, am.Pincode, am.StateName,am.StateCode, am.CityName, am.IsPrimaryAddress, am.IsActive AS IsActiveAddress, 
         (
             SELECT du.FileName, du.Label, du.docukeyid
             FROM DocumentUpload du 
@@ -314,9 +309,19 @@ const loginWithMobileAndRole = async (req, res) => {
         ) AS FileNames from OrgUserMaster oum 
         left join  OrganizerMaster om on om.OrganizerUkeyId = oum.OrganizerUkeyId
         left join EventMaster em on em.EventUkeyId = oum.EventUkeyId     
-        LEFT JOIN AddressMaster am ON am.EventUkeyId = em.EventUkeyId   
-        where oum.Mobile1 = ${setSQLStringValue(Mobile1)} and oum.Role = ${setSQLStringValue(Role)}
-        `);
+        LEFT JOIN AddressMaster am ON am.EventUkeyId = em.EventUkeyId where oum.Role = ${setSQLStringValue(Role)}`
+
+        if (Email) {
+            query += ` AND oum.Email = ${setSQLStringValue(Email)}`;
+        }
+        if (AppleUserId) {
+            query += ` AND oum.AppleUserId = ${setSQLStringValue(AppleUserId)}`;
+        }
+        if (Mobile1) {
+            query += ` AND oum.Mobile1 = ${setSQLStringValue(Mobile1)}`;
+        }
+
+        const result = await pool.request().query(query);
 
         if(result.rowsAffected[0] === 0){
             return res.status(400).json({...errorMessage('Invalid crediantials'), IsVerified : false});
