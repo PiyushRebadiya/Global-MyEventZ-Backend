@@ -31,7 +31,7 @@ const fetchContects = async (req, res) => {
             getQuery: `
             SELECT CM.*, 
             (SELECT JSON_QUERY(
-            (SELECT FileName, Label, du.docukeyid, du.EventUkeyId, du.OrganizerUkeyId, du.Category
+            (SELECT FileName, Label, docukeyid, EventUkeyId, OrganizerUkeyId, Category
             FROM DocumentUpload 
             WHERE UkeyId = CM.ContactUkeyId 
             FOR JSON PATH)

@@ -25,7 +25,7 @@ const FetchSponsorMasterDetails = async (req, res) => {
             getQuery: `
                 SELECT SM.*, SCM.Name AS SponsorCategoryName,
                 (SELECT JSON_QUERY(
-                    (SELECT FileName, Label , DocUkeyId
+                    (SELECT FileName, Label , DocUkeyId, EventUkeyId, OrganizerUkeyId, Category
                     FROM DocumentUpload 
                     WHERE UkeyId = SM.SponsorUkeyId 
                     FOR JSON PATH)
@@ -39,7 +39,7 @@ const FetchSponsorMasterDetails = async (req, res) => {
         };
 
         const result = await getCommonAPIResponse(req, res, getUserList);
-        result.data.forEach(event => {
+        result.data?.forEach(event => {
             if(event.FileNames){
                 event.FileNames = JSON.parse(event?.FileNames)
             } else {
