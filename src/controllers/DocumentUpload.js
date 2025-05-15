@@ -144,9 +144,42 @@ const RemoveDocumnet = async (req, res) => {
     }
 };
 
+const RemoveDocumnetV2 = async (req, res) => {
+    try {
+        const { DocUkeyId, OrganizerUkeyId, EventUkeyId, Category } = req.query;
+
+        const missingKeys = checkKeysAndRequireValues(['DocUkeyId', 'OrganizerUkeyId', 'EventUkeyId', 'Category'], req.query);
+        if (missingKeys.length > 0) {
+            return res.status(400).json(errorMessage(`${missingKeys.join(', ')} is Required`));
+        }
+        const oldImgResult = await pool.request().query(`
+            SELECT FileName FROM DocumentUpload WHERE DocUkeyId = ${setSQLStringValue(DocUkeyId)} and OrganizerUkeyId = ${setSQLStringValue(OrganizerUkeyId)};
+        `);
+
+        const oldImg = oldImgResult.recordset?.[0]?.FileName;
+
+        const deleteQuery = `
+            DELETE FROM DocumentUpload WHERE DocUkeyId = ${setSQLStringValue(DocUkeyId)} AND OrganizerUkeyId = ${setSQLStringValue(OrganizerUkeyId)};
+        `;
+        const deleteResult = await pool.request().query(deleteQuery);
+
+        if (deleteResult.rowsAffected[0] === 0) {
+            return res.status(400).json({ ...errorMessage('No Document upload Master Deleted.') });
+        }
+
+        if (oldImg) deleteImage(`./media/DocumentUpload/${OrganizerUkeyId}/${EventUkeyId}/${Category}/` + oldImg);; // Delete image only after successful DB deletion
+
+        return res.status(200).json({ ...successMessage('Document upload Master Deleted Successfully.'), ...req.query });
+    } catch (error) {
+        console.log('Delete Document upload Master Error :', error);
+        return res.status(500).json({ ...errorMessage(error.message) });
+    }
+};
+
 module.exports = {
     FetchDocumentUploadDetails,
     DocumentUpload,
     RemoveDocumnet,
-    updateIsActiveStatusOfDocument
+    updateIsActiveStatusOfDocument,
+    RemoveDocumnetV2
 }

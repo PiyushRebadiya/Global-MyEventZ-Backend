@@ -57,7 +57,7 @@ const EmailsLogsAPIController = require('../controllers/EmailsLogsAPI.js');
 
 const auth = require("../middleware/auth");
 
-const { UserUpload, OrginizerUpload, DocumentUploadUpload, ReminderUpload, ContectUpload} = require('../upload/index');
+const { UserUpload, OrginizerUpload, DocumentUploadUpload, ReminderUpload, ContectUpload, DocumentUploadUploadV2} = require('../upload/index');
 
 //#region User Master
 router.get("/fetchUserMaster", auth, UserMasterController.fetchUserMaster)
@@ -167,8 +167,10 @@ router.put('/razorpay/credentials', auth, RazorpayController.updateRazorpayCrede
 //#region DOCUMENT UPLOAD MASTER
 router.get('/list_document', auth, DocumentUploadController.FetchDocumentUploadDetails);
 router.post('/document_upload_master', auth, DocumentUploadUpload, DocumentUploadController.DocumentUpload);
+router.post('/document_upload_master_V2', auth, DocumentUploadUploadV2, DocumentUploadController.DocumentUpload);
 router.put('/document_status_update', auth, DocumentUploadController.updateIsActiveStatusOfDocument);
 router.delete('/delete_document', auth, DocumentUploadController.RemoveDocumnet);
+router.delete('/delete_document_V2', auth, DocumentUploadController.RemoveDocumnetV2);
 //#endregion
 
 //#region NEW BOOKING TICKET APIs
