@@ -117,7 +117,7 @@ router.delete('/delete_event_category', auth, EventCategoryNasterController.Remo
 //#endregion
 
 //#region SPEAKER APIs
-router.get('/fetch_speaker_master', auth, SpeakerMasterController.FetchSpeakerMasterDetails);
+router.get('/fetch_speaker_master', SpeakerMasterController.FetchSpeakerMasterDetails);
 router.get('/fetch_speaker_master_mob', SpeakerMasterController.FetchSpeakerMasterDetails);
 router.post('/speaker_master', auth, SpeakerMasterController.SpeakerMaster);
 router.delete('/delete_speaker_master', auth, SpeakerMasterController.RemoveSpeaker);
