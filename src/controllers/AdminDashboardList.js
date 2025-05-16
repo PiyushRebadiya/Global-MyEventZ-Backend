@@ -1,5 +1,6 @@
 const { errorMessage, successMessage, checkKeysAndRequireValues, generateCODE, setSQLBooleanValue, getCommonKeys, generateJWTT, generateUUID, setSQLStringValue, setSQLNumberValue, getCommonAPIResponse, setSQLDateTime } = require("../common/main");
 const {pool} = require('../sql/connectToDatabase');
+const { ticketViewUpload } = require("../upload");
 
 const AdminDashboardList = async (req, res) => {
     try {
@@ -395,10 +396,11 @@ const CustomeReport = async (req, res) => {
         let whereConditions = [];
         let {TicketCateUkeyId} = req.query
         TicketCateUkeyId = TicketCateUkeyId?.split(',')
-
-        TicketCateUkeyId?.forEach((element, i) => {
-            TicketCateUkeyId[i] = `'${element}'`
-        });
+        if(TicketCateUkeyId){
+            TicketCateUkeyId?.forEach((element, i) => {
+                TicketCateUkeyId[i] = `'${element}'`
+            });
+        }
 
         if (OrganizerUkeyId) {
             whereConditions.push(`tcm.OrganizerUkeyId = ${setSQLStringValue(OrganizerUkeyId)}`);
