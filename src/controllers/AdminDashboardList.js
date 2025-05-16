@@ -396,7 +396,7 @@ const CustomeReport = async (req, res) => {
         let {TicketCateUkeyId} = req.query
         TicketCateUkeyId = TicketCateUkeyId?.split(',')
 
-        TicketCateUkeyId.forEach((element, i) => {
+        TicketCateUkeyId?.forEach((element, i) => {
             TicketCateUkeyId[i] = `'${element}'`
         });
 
