@@ -27,9 +27,12 @@ const fetchUserMaster = async (req, res) => {
         if(AppleUserId){
             whereConditions.push(`UM.AppleUserId = ${setSQLBooleanValue(AppleUserId)}`);
         }
-        if(StartDate && EndDate){
-            whereConditions.push(`UM.EntryDate >= ${setSQLDateTime(StartDate)} and UM.EntryDate <= ${setSQLDateTime(EndDate)}`);
+        if (StartDate && EndDate) {
+            const nextEndDate = new Date(EndDate);
+            nextEndDate.setDate(nextEndDate.getDate() + 1); // Add one day
+            whereConditions.push(`UM.EntryDate >= ${setSQLDateTime(StartDate)} AND UM.EntryDate < ${setSQLDateTime(nextEndDate)}`);
         }
+
         
         const whereString = whereConditions.length > 0 ? `WHERE ${whereConditions.join(' AND ')}` : '';
         const getUserList = {
