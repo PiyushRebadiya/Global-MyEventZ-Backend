@@ -1,5 +1,6 @@
 const { errorMessage, successMessage, checkKeysAndRequireValues, generateCODE, setSQLBooleanValue, getCommonKeys, generateJWTT, generateUUID, setSQLStringValue, setSQLNumberValue, getCommonAPIResponse, setSQLDateTime } = require("../common/main");
 const {pool} = require('../sql/connectToDatabase');
+const { ticketViewUpload } = require("../upload");
 
 const AdminDashboardList = async (req, res) => {
     try {
@@ -395,16 +396,17 @@ const CustomeReport = async (req, res) => {
         let whereConditions = [];
         let {TicketCateUkeyId} = req.query
         TicketCateUkeyId = TicketCateUkeyId?.split(',')
-
-        TicketCateUkeyId.forEach((element, i) => {
-            TicketCateUkeyId[i] = `'${element}'`
-        });
+        if(TicketCateUkeyId){
+            TicketCateUkeyId?.forEach((element, i) => {
+                TicketCateUkeyId[i] = `'${element}'`
+            });
+        }
 
         if (OrganizerUkeyId) {
-            whereConditions.push(`bm.OrganizerUkeyId = ${setSQLStringValue(OrganizerUkeyId)}`);
+            whereConditions.push(`tcm.OrganizerUkeyId = ${setSQLStringValue(OrganizerUkeyId)}`);
         }
         if (EventUkeyId) {
-            whereConditions.push(`bm.EventUkeyId = ${setSQLStringValue(EventUkeyId)}`);
+            whereConditions.push(`tcm.EventUkeyId = ${setSQLStringValue(EventUkeyId)}`);
         }
         if (VerifiedByUkeyId) {
             whereConditions.push(`bd.VerifiedByUkeyId = ${setSQLStringValue(VerifiedByUkeyId)}`);
@@ -420,27 +422,28 @@ const CustomeReport = async (req, res) => {
 
         const TransactionReport = {
             getQuery: `
-            SELECT 
-                oum.FirstName AS verifierName,
-                tcm.Category AS EventCategoryName,
-                bd.TicketCateUkeyId,
-                COUNT(*) AS VerifiedCount
-            FROM Bookingdetails bd
-            LEFT JOIN OrgUserMaster oum ON oum.UserUkeyId = bd.VerifiedByUkeyId
-            LEFT JOIN TicketCategoryMaster tcm ON tcm.TicketCateUkeyId = bd.TicketCateUkeyId
+                SELECT 
+                    oum.FirstName AS verifierName,
+                    tcm.Category AS EventCategoryName,
+                    bd.TicketCateUkeyId,
+                    COUNT(*) AS VerifiedCount
+                FROM Bookingdetails bd
+                LEFT JOIN OrgUserMaster oum ON oum.UserUkeyId = bd.VerifiedByUkeyId
+                LEFT JOIN TicketCategoryMaster tcm ON tcm.TicketCateUkeyId = bd.TicketCateUkeyId
                 ${whereString}
                 GROUP BY 
-                oum.FirstName,
-                tcm.Category,
-                bd.TicketCateUkeyId
-            ORDER BY 
-                verifierName,
-                EventCategoryName
+                    oum.FirstName,
+                    tcm.Category,
+                    bd.TicketCateUkeyId
+                ORDER BY 
+                    verifierName,
+                    EventCategoryName
             `,
             countQuery: `
-                select count(*) AS totalCount from Bookingdetails bd
-                left join TicketCategoryMaster tcm on tcm.TicketCateUkeyId = bd.TicketCateUkeyId
-                left join OrgUserMaster oum on oum.UserUkeyId = bd.VerifiedByUkeyId
+                SELECT COUNT(*) AS totalCount
+                FROM Bookingdetails bd
+                LEFT JOIN OrgUserMaster oum ON oum.UserUkeyId = bd.VerifiedByUkeyId
+                LEFT JOIN TicketCategoryMaster tcm ON tcm.TicketCateUkeyId = bd.TicketCateUkeyId
                 ${whereString}
             `,
         };
