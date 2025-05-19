@@ -87,22 +87,20 @@ const autoSendEventReview = async () => {
     try {
         // let EventReviewArr = [];
         const eventReviewQuery = `SELECT
- em.OrganizerUkeyId,
-   em.EventUkeyId,
-    em.EndEventDate,
-	em.EventName,
-    du.FileName
-FROM EventMaster em 
-OUTER APPLY (
-    SELECT TOP 1 du.FileName
-    FROM DocumentUpload du
-    WHERE du.UkeyId = em.EventUkeyId
-) du
-WHERE CAST(em.EndEventDate AS DATE) = CAST(DATEADD(DAY, -9, GETDATE()) AS DATE)`;
+                                em.OrganizerUkeyId,
+                                em.EventUkeyId,
+                                    em.EndEventDate,
+                                    em.EventName,
+                                    du.FileName
+                                FROM EventMaster em 
+                                OUTER APPLY (
+                                    SELECT TOP 1 du.FileName
+                                    FROM DocumentUpload du
+                                    WHERE du.UkeyId = em.EventUkeyId
+                                ) du
+                                WHERE CAST(em.EndEventDate AS DATE) = CAST(DATEADD(DAY, -1, GETDATE()) AS DATE)`;
         // WHERE CAST(em.EndEventDate AS DATE) = CAST(DATEADD(DAY, -1, GETDATE()) AS DATE)`;
         const eventReview = await pool.query(eventReviewQuery);
-        console.log('eventReview', eventReview);
-
         if (eventReview.recordset.length > 0) {
             for (const event of eventReview.recordset) {
                 const { OrganizerUkeyId, EventUkeyId, EventName, FileName } = event;
@@ -111,17 +109,11 @@ WHERE CAST(em.EndEventDate AS DATE) = CAST(DATEADD(DAY, -9, GETDATE()) AS DATE)`
                 let usersToken = [];
                 const userTokenQuery = `select DISTINCT um.NotificationToken from Bookingmast as bm left join UserMaster um on um.UserUkeyId = bm.UserUkeyID where bm.EventUkeyId = ${setSQLStringValue(EventUkeyId)} AND bm.OrganizerUkeyId = ${setSQLStringValue(OrganizerUkeyId)} AND bm.IsVerify = 1 AND um.NotificationToken != '' AND um.NotificationToken is not null`;
                 const userToken = await pool.query(userTokenQuery);
-                // console.log('userToken', userToken);
                 if (userToken.recordset.length > 0) {
                     usersToken = userToken.recordset;
                 }
-
-                console.log('usersToken', usersToken);
-
                 if (usersToken.length > 0) {
                     for (const user of usersToken) {
-                        console.log('user', user);
-                        console.log('link', `/EventRatingScreen?EventUkeyId=${EventUkeyId}&OrganizerUkeyId=${OrganizerUkeyId}`)
                         await sentNotificationOnSetTime({
                             body: {
                                 Title: EventName,
@@ -134,7 +126,6 @@ WHERE CAST(em.EndEventDate AS DATE) = CAST(DATEADD(DAY, -9, GETDATE()) AS DATE)`
                         });
                     }
                 }
-
             }
         }
     } catch (error) {

@@ -69,11 +69,9 @@ setInterval(() => {
     sendNotificationOnSetTime()
 }, 300000);
 
-// cron.schedule('*/5 * * * *', () => {
-//     // console.log('Running Auto Task =======>>>>>>>>>>> ' + new Date());
-//     // sendNotificationOnSetTime();
-//     autoSendEventReview();
-// });
+cron.schedule('0 15 * * *', () => {
+    autoSendEventReview();
+});
 // let i = 0
 
 // routes.stack.map(()=>{
