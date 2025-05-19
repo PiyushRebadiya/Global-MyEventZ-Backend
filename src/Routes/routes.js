@@ -53,6 +53,7 @@ const SubscriberMaster = require('../controllers/subscriberMaster');
 const RatingMasterController = require('../controllers/RatingMaster');
 const DisclaimerMasterController = require('../controllers/DisclaimerMaster');
 const EmailsLogsAPIController = require('../controllers/EmailsLogsAPI.js');
+const firebaseSentNotification = require('../controllers/firebaseSentNotification');
 // const carouselController = require('../controllers/carousel');
 
 const auth = require("../middleware/auth");
@@ -281,5 +282,9 @@ router.delete('/delete_disclaimer_master', auth, DisclaimerMasterController.Remo
 
 //#region Email Logs
 router.get('/fetch_email_logs', auth, EmailsLogsAPIController.fetchEmailLogs);
+//#endregion
+
+//#Background Notification
+router.post('/send_notification_in_background', auth, firebaseSentNotification.sendNotificationInBackground);
 //#endregion
 module.exports = router;
