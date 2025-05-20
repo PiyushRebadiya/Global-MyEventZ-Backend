@@ -83,7 +83,6 @@ const addInnerNotification = async (notification) => {
 };
 
 const autoSendEventReview = async () => {
-    console.log('autoSendEventReview', new Date());
     try {
         // let EventReviewArr = [];
         const eventReviewQuery = `SELECT
@@ -104,8 +103,6 @@ const autoSendEventReview = async () => {
         if (eventReview.recordset.length > 0) {
             for (const event of eventReview.recordset) {
                 const { OrganizerUkeyId, EventUkeyId, EventName, FileName } = event;
-                console.log('event', event);
-
                 let usersToken = [];
                 const userTokenQuery = `select DISTINCT um.NotificationToken from Bookingmast as bm left join UserMaster um on um.UserUkeyId = bm.UserUkeyID where bm.EventUkeyId = ${setSQLStringValue(EventUkeyId)} AND bm.OrganizerUkeyId = ${setSQLStringValue(OrganizerUkeyId)} AND bm.IsVerify = 1 AND um.NotificationToken != '' AND um.NotificationToken is not null`;
                 const userToken = await pool.query(userTokenQuery);
