@@ -3,7 +3,7 @@ const {pool} = require('../sql/connectToDatabase');
 
 const FetchTicketCategory = async(req, res)=>{
     try{
-        const { TicketCateUkeyId, OrganizerUkeyId, EventUkeyId, IsActive } = req.query;
+        const { TicketCateUkeyId, OrganizerUkeyId, EventUkeyId, IsActive, IsUser } = req.query;
         let whereConditions = [];
 
         // Build the WHERE clause based on the Status
@@ -18,6 +18,9 @@ const FetchTicketCategory = async(req, res)=>{
         }
         if(IsActive){
             whereConditions.push(`IsActive = ${setSQLBooleanValue(IsActive)}`);
+        }
+        if(IsUser){
+            whereConditions.push(`IsUser = ${setSQLBooleanValue(IsUser)}`);
         }
         // Combine the WHERE conditions into a single string
         const whereString = whereConditions.length > 0 ? `WHERE ${whereConditions.join(' AND ')}` : '';
