@@ -28,6 +28,15 @@ app.use(bodyParser.json());
 app.use(express.json())
 app.use(cors());
 
+// Middleware to disable caching for all GET requests
+app.use((req, res, next) => {
+  if (req.method === 'GET') {
+    res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+    res.setHeader('Pragma', 'no-cache');
+    res.setHeader('Expires', '0');
+  }
+  next(); // Pass control to the next middleware/route
+});
 // app.use('/', express.static(`./media/carousel`));
 // app.use('/', express.static(`./media/sentNotification`));
 // app.use('/', express.static(`./media/userInfo`));
