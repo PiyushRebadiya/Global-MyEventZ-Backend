@@ -5,7 +5,7 @@ const moment = require("moment");
 
 const EventList = async (req, res) => {
     try {
-        const { EventUkeyId, IsActive, OrganizerUkeyId, EventCategoryUkeyId } = req.query;
+        const { EventUkeyId, IsActive, OrganizerUkeyId, EventCategoryUkeyId, Search, StartEventDate, EndEventDate } = req.query;
         let whereConditions = [];
 
         // Build the WHERE clause based on the Status
@@ -16,10 +16,20 @@ const EventList = async (req, res) => {
             whereConditions.push(`em.OrganizerUkeyId = '${OrganizerUkeyId}'`); // Specify alias 'em' for EventMaster
         }
         if (EventCategoryUkeyId) {
-            whereConditions.push(`em.EventCategoryUkeyId = ${setSQLStringValue(EventCategoryUkeyId)}`); // Specify alias 'em' for EventMaster
+            const multipleEventCategory = EventCategoryUkeyId.split(',').map((i) => `'${i}'`).join(',');
+            whereConditions.push(`em.EventCategoryUkeyId IN (${multipleEventCategory})`); // Specify alias 'em' for EventMaster
         }
         if (IsActive) {
             whereConditions.push(`em.IsActive = ${setSQLBooleanValue(IsActive)}`); // Specify alias 'em' for EventMaster
+        }
+        if (Search) {
+            whereConditions.push(`em.EventName LIKE '%${Search}%'`);
+        }
+        if (StartEventDate) {
+            whereConditions.push(`em.StartEventDate >= ${setSQLDateTime(StartEventDate)}`);
+        }
+        if (EndEventDate) {
+            whereConditions.push(`em.EndEventDate <= ${setSQLDateTime(EndEventDate)}`);
         }
 
         // Combine the WHERE conditions into a single string
