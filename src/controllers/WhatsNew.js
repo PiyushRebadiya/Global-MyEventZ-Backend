@@ -3,12 +3,15 @@ const {pool} = require('../sql/connectToDatabase');
 
 const Fetchwhatsnew = async (req, res) => {
     try {
-        const { UkeyId } = req.query;
+        const { UkeyId, PanelType } = req.query;
         let whereConditions = [];
 
         // Build the WHERE clause based on the Status
         if (UkeyId) {
             whereConditions.push(`UkeyId = ${setSQLStringValue(UkeyId)}`);
+        }
+        if (PanelType) {
+            whereConditions.push(`PanelType = ${setSQLStringValue(PanelType)}`);
         }
 
         // Combine the WHERE conditions into a single string
