@@ -265,6 +265,7 @@ router.delete('/delete_whats_new', auth, whatsnewcontroller.removewhatsnew);
 
 //#region Subscriber master
 router.get('/fetch_subscriber', SubscriberMaster.fetchSubscriberlist);
+router.get('/fetch_subscriber_Count', SubscriberMaster.subscriberCount);
 router.post('/subscriber_master', auth, SubscriberMaster.SubscriberMaster);
 //#endregion
 
