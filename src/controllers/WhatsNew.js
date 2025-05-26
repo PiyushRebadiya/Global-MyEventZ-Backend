@@ -28,15 +28,15 @@ const Fetchwhatsnew = async (req, res) => {
 };
 
 const whatsnew = async (req, res) => {
-    const { UkeyId, EntryDate, Release, dbVersion, Description, Module, WType, Notes, flag} = req.body;
+    const { UkeyId, EntryDate, Release, dbVersion, Description, Module, WType, Notes, flag, PanelType} = req.body;
     try {
         const { EntryTime } = getCommonKeys(req);
         
         const insertQuery = `
             INSERT INTO WhatsNew (
-                UkeyId, EntryDate, Release, dbVersion, Description, Module, WType, Notes, EntryTime, flag
+                UkeyId, EntryDate, Release, dbVersion, Description, Module, WType, Notes, EntryTime, flag, PanelType
             ) VALUES (
-                ${setSQLStringValue(UkeyId)}, ${setSQLDateTime(EntryDate)}, ${setSQLStringValue(Release)}, ${setSQLDecimalValue(dbVersion)}, ${setSQLStringValue(Description)}, ${setSQLStringValue(Module)}, ${setSQLStringValue(WType)}, ${setSQLStringValue(Notes)}, ${setSQLStringValue(EntryTime)}, ${setSQLStringValue(flag)}
+                ${setSQLStringValue(UkeyId)}, ${setSQLDateTime(EntryDate)}, ${setSQLStringValue(Release)}, ${setSQLDecimalValue(dbVersion)}, ${setSQLStringValue(Description)}, ${setSQLStringValue(Module)}, ${setSQLStringValue(WType)}, ${setSQLStringValue(Notes)}, ${setSQLStringValue(EntryTime)}, ${setSQLStringValue(flag)}, ${setSQLStringValue(PanelType)}
             );
         `;
 
