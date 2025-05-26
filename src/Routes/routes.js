@@ -254,7 +254,7 @@ router.delete('/delete_pricing', auth, PricingMasterController.RemovePricing);
 //#endregion
 
 //#region Whats New
-router.get('/fetch_whats_new', auth, whatsnewcontroller.Fetchwhatsnew);
+router.get('/fetch_whats_new', whatsnewcontroller.Fetchwhatsnew);
 router.post('/whats_new_master', auth, whatsnewcontroller.whatsnew);
 router.delete('/delete_whats_new', auth, whatsnewcontroller.removewhatsnew);
 //#endregion
