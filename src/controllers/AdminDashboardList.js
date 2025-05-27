@@ -66,48 +66,54 @@ const AdminDashboardList = async (req, res) => {
         `);
 
         const TotalTicketsBooked = await pool.request().query(`
-            SELECT 
-                COUNT(BD.BookingUkeyID) AS TotalTicketsBooked, 
-                TCM.Category, TCM.TicketLimits
-            FROM 
-                TicketCategoryMaster TCM WITH (NOLOCK)
-            LEFT JOIN 
-                Bookingdetails BD WITH (NOLOCK) ON BD.TicketCateUkeyId = TCM.TicketCateUkeyId
-            LEFT JOIN 
-                Bookingmast BM WITH (NOLOCK) ON BD.BookingUkeyID = BM.BookingUkeyID
-            WHERE 
-                BM.EventUkeyId = ${setSQLStringValue(EventUkeyId)} 
+        SELECT 
+            COUNT(BD.BookingUkeyID) AS TotalTicketsBooked, 
+            TCM.Category, 
+            TCM.TicketLimits, 
+            TCM.PaidLimit, 
+            TCM.UnPaidLimit
+        FROM 
+            TicketCategoryMaster TCM WITH (NOLOCK)
+        LEFT JOIN 
+            Bookingdetails BD WITH (NOLOCK) ON BD.TicketCateUkeyId = TCM.TicketCateUkeyId
+        LEFT JOIN 
+            Bookingmast BM WITH (NOLOCK) ON BD.BookingUkeyID = BM.BookingUkeyID
+        WHERE 
+            BM.EventUkeyId = ${setSQLStringValue(EventUkeyId)} 
+            AND BM.OrganizerUkeyId = ${setSQLStringValue(OrganizerUkeyId)}
+            ${StartDate && EndDate ? `AND CONVERT(DATE, BD.EntryDate) BETWEEN '${StartDate}' AND '${EndDate}'` : ''}
+        GROUP BY 
+            TCM.Category, TCM.TicketLimits, TCM.PaidLimit, TCM.UnPaidLimit
+    
+        UNION ALL
+    
+        SELECT 
+            0 AS TotalTicketsBooked, 
+            TCM.Category, 
+            TCM.TicketLimits, 
+            TCM.PaidLimit, 
+            TCM.UnPaidLimit
+        FROM 
+            TicketCategoryMaster TCM WITH (NOLOCK)
+        WHERE 
+            TCM.TicketCateUkeyId IN (
+                SELECT DISTINCT BD.TicketCateUkeyId 
+                FROM Bookingdetails BD WITH (NOLOCK)
+                LEFT JOIN Bookingmast BM WITH (NOLOCK) ON BD.BookingUkeyID = BM.BookingUkeyID
+                WHERE BM.EventUkeyId = ${setSQLStringValue(EventUkeyId)}
                 AND BM.OrganizerUkeyId = ${setSQLStringValue(OrganizerUkeyId)}
+            )
+            AND NOT EXISTS (
+                SELECT 1 
+                FROM Bookingdetails BD WITH (NOLOCK)
+                LEFT JOIN Bookingmast BM WITH (NOLOCK) ON BD.BookingUkeyID = BM.BookingUkeyID
+                WHERE BM.EventUkeyId = ${setSQLStringValue(EventUkeyId)}
+                AND BM.OrganizerUkeyId = ${setSQLStringValue(OrganizerUkeyId)}
+                AND BD.TicketCateUkeyId = TCM.TicketCateUkeyId
                 ${StartDate && EndDate ? `AND CONVERT(DATE, BD.EntryDate) BETWEEN '${StartDate}' AND '${EndDate}'` : ''}
-            GROUP BY 
-                TCM.Category, TCM.TicketLimits
-        
-            UNION ALL
-        
-            SELECT 
-                0 AS TotalTicketsBooked, 
-                TCM.Category, TCM.TicketLimits
-            FROM 
-                TicketCategoryMaster TCM WITH (NOLOCK)
-            WHERE 
-                TCM.TicketCateUkeyId IN (
-                    SELECT DISTINCT BD.TicketCateUkeyId 
-                    FROM Bookingdetails BD WITH (NOLOCK)
-                    LEFT JOIN Bookingmast BM WITH (NOLOCK) ON BD.BookingUkeyID = BM.BookingUkeyID
-                    WHERE BM.EventUkeyId = ${setSQLStringValue(EventUkeyId)}
-                    AND BM.OrganizerUkeyId = ${setSQLStringValue(OrganizerUkeyId)}
-                )
-                AND NOT EXISTS (
-                    SELECT 1 
-                    FROM Bookingdetails BD WITH (NOLOCK)
-                    LEFT JOIN Bookingmast BM WITH (NOLOCK) ON BD.BookingUkeyID = BM.BookingUkeyID
-                    WHERE BM.EventUkeyId = ${setSQLStringValue(EventUkeyId)}
-                    AND BM.OrganizerUkeyId = ${setSQLStringValue(OrganizerUkeyId)}
-                    AND BD.TicketCateUkeyId = TCM.TicketCateUkeyId
-                    ${StartDate && EndDate ? `AND CONVERT(DATE, BD.EntryDate) BETWEEN '${StartDate}' AND '${EndDate}'` : ''}
-                )
+            )
         `);
-
+    
         return res.status(200).json({
             TotalEvents: totalEvents?.recordset[0]?.TotalEvents,
             TotalUsers: totalUsers?.recordset[0]?.totalUsers,
