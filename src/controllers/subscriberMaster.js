@@ -29,18 +29,61 @@ const fetchSubscriberlist = async (req, res)=>{
         const whereString = whereConditions.length > 0 ? `WHERE ${whereConditions.join(' AND ')}` : '';
         const getUserList = {
             getQuery: `
-            select sm.*, um.FullName AS UserName, em.EventName, om.OrganizerName from SubscriberMaster sm
+            select sm.*, um.FullName AS UserName, em.EventName, ecm.CategoryName AS EventCategoryName, om.OrganizerName ,
+            (SELECT JSON_QUERY(
+            (SELECT FileName, Label , DocUkeyId, EventUkeyId, OrganizerUkeyId, Category
+            FROM DocumentUpload du
+            WHERE UkeyId = em.EventUkeyId and du.Label = 'Logo'
+            FOR JSON PATH)
+            )) AS FileNames
+            from SubscriberMaster sm
             left join EventMaster em on sm.EventUkeyId = em.EventUkeyId
             left join OrganizerMaster om on sm.OrganizerUkeyId = om.OrganizerUkeyId
             left join UserMaster um on sm.UserUkeyId = um.UserUkeyId 
+            left join EventCategoryMaster ecm on em.EventCategoryUkeyId = ecm.EventCategoryUkeyId
             ${whereString} ORDER BY sm.EntryDate DESC`,
             countQuery: `SELECT COUNT(Id) AS totalCount FROM SubscriberMaster sm ${whereString}`,
         };
 
         const result = await getCommonAPIResponse(req, res, getUserList);
+        if(result?.data?.length > 0){
+            result?.data?.forEach(event => {
+                if(event.FileNames){
+                    event.FileNames = JSON.parse(event?.FileNames)
+                } else {
+                    event.FileNames = []
+                }
+            });
+        }
 
         return res.json({
             ...result,
+        });
+    }catch(error){
+        return res.status(400).send(errorMessage(error?.message));
+    }
+}
+
+const subscriberCount = async (req, res)=> {
+    try{
+        const { EventUkeyId, OrganizerUkeyId } = req.query;
+
+        let whereConditions = [];
+
+        // Build the WHERE clause based on the Status
+        if (EventUkeyId) {
+            whereConditions.push(`EventUkeyId = ${setSQLStringValue(EventUkeyId)}`);
+        }
+        if (OrganizerUkeyId) {
+            whereConditions.push(`OrganizerUkeyId = ${setSQLStringValue(OrganizerUkeyId)}`);
+        }
+
+        const whereString = whereConditions.length > 0 ? `WHERE ${whereConditions.join(' AND ')}` : '';
+
+        const result = await pool.request().query(`select Count(*) AS SubscriberCount from SubscriberMaster ${whereString}`)
+
+        return res.json({
+            ...result?.recordset?.[0],
         });
     }catch(error){
         return res.status(400).send(errorMessage(error?.message));
@@ -142,4 +185,5 @@ module.exports = {
     fetchSubscriberlist,
     SubscriberMaster,
     RemoveSubscriber,
+    subscriberCount,
 }
