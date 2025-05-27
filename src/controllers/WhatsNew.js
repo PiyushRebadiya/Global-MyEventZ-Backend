@@ -3,7 +3,7 @@ const {pool} = require('../sql/connectToDatabase');
 
 const Fetchwhatsnew = async (req, res) => {
     try {
-        const { UkeyId, PanelType } = req.query;
+        const { UkeyId, PanelType, DeviceType } = req.query;
         let whereConditions = [];
 
         // Build the WHERE clause based on the Status
@@ -12,6 +12,9 @@ const Fetchwhatsnew = async (req, res) => {
         }
         if (PanelType) {
             whereConditions.push(`PanelType = ${setSQLStringValue(PanelType)}`);
+        }
+        if (DeviceType) {
+            whereConditions.push(`DeviceType = ${setSQLStringValue(DeviceType)}`);
         }
 
         // Combine the WHERE conditions into a single string
@@ -31,15 +34,15 @@ const Fetchwhatsnew = async (req, res) => {
 };
 
 const whatsnew = async (req, res) => {
-    const { UkeyId, EntryDate, Release, dbVersion, Description, Module, WType, Notes, flag, PanelType} = req.body;
+    const { UkeyId, EntryDate, Release, dbVersion, Description, Module, WType, Notes, flag, PanelType, DeviceType } = req.body;
     try {
         const { EntryTime } = getCommonKeys(req);
         
         const insertQuery = `
             INSERT INTO WhatsNew (
-                UkeyId, EntryDate, Release, dbVersion, Description, Module, WType, Notes, EntryTime, flag, PanelType
+                UkeyId, EntryDate, Release, dbVersion, Description, Module, WType, Notes, EntryTime, flag, PanelType, DeviceType
             ) VALUES (
-                ${setSQLStringValue(UkeyId)}, ${setSQLDateTime(EntryDate)}, ${setSQLStringValue(Release)}, ${setSQLDecimalValue(dbVersion)}, ${setSQLStringValue(Description)}, ${setSQLStringValue(Module)}, ${setSQLStringValue(WType)}, ${setSQLStringValue(Notes)}, ${setSQLStringValue(EntryTime)}, ${setSQLStringValue(flag)}, ${setSQLStringValue(PanelType)}
+                ${setSQLStringValue(UkeyId)}, ${setSQLDateTime(EntryDate)}, ${setSQLStringValue(Release)}, ${setSQLDecimalValue(dbVersion)}, ${setSQLStringValue(Description)}, ${setSQLStringValue(Module)}, ${setSQLStringValue(WType)}, ${setSQLStringValue(Notes)}, ${setSQLStringValue(EntryTime)}, ${setSQLStringValue(flag)}, ${setSQLStringValue(PanelType)}, ${setSQLStringValue(DeviceType)}
             );
         `;
 
