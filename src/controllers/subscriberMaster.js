@@ -77,6 +77,7 @@ const subscriberCount = async (req, res)=> {
         if (OrganizerUkeyId) {
             whereConditions.push(`OrganizerUkeyId = ${setSQLStringValue(OrganizerUkeyId)}`);
         }
+        whereConditions.push(`IsSubscribe = 1`);
 
         const whereString = whereConditions.length > 0 ? `WHERE ${whereConditions.join(' AND ')}` : '';
 
