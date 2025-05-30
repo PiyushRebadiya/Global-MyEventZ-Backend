@@ -184,6 +184,187 @@ const fetchEventById = async (req, res)=> {
     }
 }
 
+const EventPermissionList = async (req, res) => {
+    try {
+        const { EventUkeyId, IsActive, OrganizerUkeyId, EventCategoryUkeyId, Search, StartEventDate, EndEventDate } = req.query;
+        let whereConditions = [];
+
+        // Build the WHERE clause based on the Status
+        if (EventUkeyId) {
+            whereConditions.push(`em.EventUkeyId = '${EventUkeyId}'`); // Specify alias 'em' for EventMaster
+        }
+        if (OrganizerUkeyId) {
+            whereConditions.push(`em.OrganizerUkeyId = '${OrganizerUkeyId}'`); // Specify alias 'em' for EventMaster
+        }
+        if (EventCategoryUkeyId) {
+            const multipleEventCategory = EventCategoryUkeyId.split(',').map((i) => `'${i}'`).join(',');
+            whereConditions.push(`em.EventCategoryUkeyId IN (${multipleEventCategory})`); // Specify alias 'em' for EventMaster
+        }
+        if (IsActive) {
+            whereConditions.push(`em.IsActive = ${setSQLBooleanValue(IsActive)}`); // Specify alias 'em' for EventMaster
+        }
+        if (Search) {
+            whereConditions.push(`em.EventName LIKE '%${Search}%'`);
+        }
+        if (StartEventDate) {
+            whereConditions.push(`em.StartEventDate >= ${setSQLDateTime(StartEventDate)}`);
+        }
+        if (EndEventDate) {
+            whereConditions.push(`em.EndEventDate <= ${setSQLDateTime(EndEventDate)}`);
+        }
+
+        // Combine the WHERE conditions into a single string
+        const whereString = whereConditions.length > 0 ? `WHERE ${whereConditions.join(' AND ')}` : '';
+
+        const getUserList = {
+            getQuery: `
+            SELECT 
+            em.*, 
+            am.Address1, 
+            am.Address2, 
+            am.Pincode, 
+            am.StateName,
+            am.StateCode, 
+            am.CityName, 
+            am.IsPrimaryAddress, 
+            am.IsActive AS IsActiveAddress, 
+            om.OrganizerName, 
+            ecm.CategoryName AS EventCategoryName,
+            pgm.GatewayName,
+            (
+                SELECT du.FileName, du.Label, du.docukeyid, du.EventUkeyId, du.OrganizerUkeyId, du.Category
+                FROM DocumentUpload du 
+                WHERE du.UkeyId = em.EventUkeyId
+                FOR JSON PATH
+            ) AS FileNames,
+			 (
+                SELECT pgm.ShortName, pgm.GatewayName, pgm.ConvenienceFee, pgm.GST, pgm.DonationAmt, pgm.AdditionalCharges, pgm.IsActive, pgm.KeyId, pgm.SecretKey
+                FROM PaymentGatewayMaster pgm 
+                WHERE em.PaymentGateway = pgm.GatewayUkeyId
+                FOR JSON PATH
+            ) AS PaymentGatewayDetails
+        FROM EventMasterPermission em 
+        LEFT JOIN AddressMaster am ON am.EventUkeyId = em.EventUkeyId 
+        LEFT JOIN OrganizerMaster om ON om.OrganizerUkeyId = em.OrganizerUkeyId
+        LEFT JOIN EventCategoryMaster ecm on em.EventCategoryUkeyId = ecm.EventCategoryUkeyId
+        LEFT JOIN PaymentGatewayMaster pgm on em.PaymentGateway = pgm.GatewayUkeyId
+                        ${whereString} 
+                ORDER BY em.EntryDate DESC
+            `,
+            countQuery: `
+                SELECT COUNT(*) AS totalCount 
+                FROM EventMaster em 
+                ${whereString}
+            `,
+        };
+
+        const result = await getCommonAPIResponse(req, res, getUserList);
+        result.data?.forEach(event => {
+            if(event.FileNames){
+                event.FileNames = JSON.parse(event?.FileNames)
+            } else {
+                event.FileNames = []
+            }
+            if(event.PaymentGatewayDetails){
+                event.PaymentGatewayDetails = JSON.parse(event?.PaymentGatewayDetails)
+            } else {
+                event.PaymentGatewayDetails = []
+            }
+        });
+        return res.json(result);
+
+    } catch (error) {
+        return res.status(500).send(errorMessage(error?.message));
+    }
+};
+
+const fetchEvenPermissiontById = async (req, res)=> {
+    try{
+        const {EventUkeyId, OrganizerUkeyId} = req.query
+
+        const missingKeys = checkKeysAndRequireValues(['EventUkeyId', 'OrganizerUkeyId'], req.query);
+
+        if(missingKeys.length > 0){
+            return res.status(400).json(errorMessage(`${missingKeys.join(', ')} is Required`));
+        }
+
+        let whereConditions = [];
+
+        // Build the WHERE clause based on the Status
+        if (EventUkeyId) {
+            whereConditions.push(`em.EventUkeyId = '${EventUkeyId}'`); // Specify alias 'em' for EventMaster
+        }
+        if (OrganizerUkeyId) {
+            whereConditions.push(`em.OrganizerUkeyId = '${OrganizerUkeyId}'`); // Specify alias 'em' for EventMaster
+        }
+
+        // Combine the WHERE conditions into a single string
+        const whereString = whereConditions.length > 0 ? `WHERE ${whereConditions.join(' AND ')}` : '';
+
+        const getUserList = {
+            getQuery: `
+            SELECT 
+            em.*, 
+            am.Address1, 
+            am.Address2, 
+            am.Pincode, 
+            am.StateName,
+            am.StateCode, 
+            am.CityName, 
+            am.IsPrimaryAddress, 
+            am.IsActive AS IsActiveAddress, 
+            om.OrganizerName, 
+            ecm.CategoryName AS EventCategoryName,
+            pgm.GatewayName,
+            (
+                SELECT du.FileName, du.Label, du.docukeyid, du.EventUkeyId, du.OrganizerUkeyId, du.Category
+                FROM DocumentUpload du 
+                WHERE du.UkeyId = em.EventUkeyId
+                FOR JSON PATH
+            ) AS FileNames,
+			 (
+                SELECT pgm.ShortName, pgm.GatewayName, pgm.ConvenienceFee, pgm.GST, pgm.DonationAmt, pgm.AdditionalCharges, pgm.IsActive, pgm.KeyId, pgm.SecretKey
+                FROM PaymentGatewayMaster pgm 
+                WHERE em.PaymentGateway = pgm.GatewayUkeyId
+                FOR JSON PATH
+            ) AS PaymentGatewayDetails
+        FROM EventMasterPermission em 
+        LEFT JOIN AddressMaster am ON am.EventUkeyId = em.EventUkeyId 
+        LEFT JOIN OrganizerMaster om ON om.OrganizerUkeyId = em.OrganizerUkeyId
+        LEFT JOIN EventCategoryMaster ecm on em.EventCategoryUkeyId = ecm.EventCategoryUkeyId
+        LEFT JOIN PaymentGatewayMaster pgm on em.PaymentGateway = pgm.GatewayUkeyId
+                ${whereString} 
+                ORDER BY em.EntryDate DESC
+            `,
+            countQuery: `
+                SELECT COUNT(*) AS totalCount 
+                FROM EventMaster em 
+                ${whereString}
+            `,
+        };
+
+        const result = await getCommonAPIResponse(req, res, getUserList);
+
+        result.data?.forEach(event => {
+            if(event.FileNames){
+                event.FileNames = JSON.parse(event?.FileNames)
+            } else {
+                event.FileNames = []
+            }
+            if(event.PaymentGatewayDetails){
+                event.PaymentGatewayDetails = JSON.parse(event?.PaymentGatewayDetails)
+            } else {
+                event.PaymentGatewayDetails = []
+            }
+        });
+
+        return res.json(result);
+
+    }catch(error){
+        return res.status(500).json(errorMessage(error.message))
+    }
+}
+
 const addEvent = async (req, res) => {
     const { flag, Event, Addresses } = req.body;
     const {
@@ -214,20 +395,42 @@ const addEvent = async (req, res) => {
         await transaction.begin();
 
         if (flag === 'U') {
+            let query = ` update EventMasterPermission set flag = 'D' where EventUkeyId = '${EventUkeyId}';`
+            if (
+                flag === 'U' && EventStatus === 'PUBLISHED'
+            ) {
+                query += `
+                    DELETE FROM AddressMaster WHERE EventUkeyId = '${EventUkeyId}';
+                    DELETE FROM EventMaster WHERE EventUkeyId = '${EventUkeyId}';
+                `
+            }
+    
+            await transaction.request().query(query);
+        }
+
+        if (
+            flag === 'A' ||
+            (flag === 'U' && EventStatus === 'PUBLISHED')
+        ) {
+            // INSERT into EventMaster
             await transaction.request().query(`
-                DELETE FROM AddressMaster WHERE EventUkeyId = '${EventUkeyId}';
-                DELETE FROM EventMaster WHERE EventUkeyId = '${EventUkeyId}';
+                INSERT INTO EventMaster (
+                    EventUkeyId, OrganizerUkeyId, EventName, Alias, StartEventDate, EventCode, EventDetails, IsActive, IpAddress, HostName, EntryDate, flag, TicketLimit, Location, PaymentGateway, UserName, UserID, AddressUkeyId, Longitude, Latitude, EndEventDate, EventCategoryUkeyId, Tagline1, Tagline2, UserBookingLimit, BookingStartDate, BookingEndDate, EventStatus
+                  ) VALUES (
+                    ${setSQLStringValue(EventUkeyId)}, ${setSQLStringValue(OrganizerUkeyId)}, ${setSQLStringValue(EventName)}, ${setSQLStringValue(Alias)}, ${setSQLDateTime(StartEventDate)}, ${setSQLStringValue(EventCode)}, ${setSQLStringValue(EventDetails)}, ${setSQLBooleanValue(IsActive)}, '${IPAddress}', '${ServerName}', '${EntryTime}', '${flag}', ${setSQLNumberValue(TicketLimit)}, ${setSQLStringValue(Location)}, ${setSQLStringValue(PaymentGateway)}, ${setSQLStringValue(req.user.FirstName)}, ${setSQLNumberValue(req.user.UserId)}, ${setSQLStringValue(primaryAddress.AddressUkeyId)}, ${setSQLStringValue(Longitude)}, ${setSQLStringValue(Latitude)}, ${setSQLDateTime(EndEventDate)}, ${setSQLStringValue(EventCategoryUkeyId)}, ${setSQLStringValue(Tagline1)}, ${setSQLStringValue(Tagline2)}, ${setSQLNumberValue(UserBookingLimit)}, ${setSQLDateTime(BookingStartDate)}, ${setSQLDateTime(BookingEndDate)}, ${setSQLStringValue(EventStatus)}
+                );
             `);
         }
 
-        // INSERT into EventMaster
-        await transaction.request().query(`
-            INSERT INTO EventMaster (
-                EventUkeyId, OrganizerUkeyId, EventName, Alias, StartEventDate, EventCode, EventDetails, IsActive, IpAddress, HostName, EntryDate, flag, TicketLimit, Location, PaymentGateway, UserName, UserID, AddressUkeyId, Longitude, Latitude, EndEventDate, EventCategoryUkeyId, Tagline1, Tagline2, UserBookingLimit, BookingStartDate, BookingEndDate, EventStatus
-            ) VALUES (
-                ${setSQLStringValue(EventUkeyId)}, ${setSQLStringValue(OrganizerUkeyId)}, ${setSQLStringValue(EventName)}, ${setSQLStringValue(Alias)}, ${setSQLDateTime(StartEventDate)}, ${setSQLStringValue(EventCode)}, ${setSQLStringValue(EventDetails)}, ${setSQLBooleanValue(IsActive)}, '${IPAddress}', '${ServerName}', '${EntryTime}', '${flag}', ${setSQLNumberValue(TicketLimit)}, ${setSQLStringValue(Location)}, ${setSQLStringValue(PaymentGateway)}, ${setSQLStringValue(req.user.FirstName)}, ${setSQLNumberValue(req.user.UserId)}, ${setSQLStringValue(primaryAddress.AddressUkeyId)}, ${setSQLStringValue(Longitude)}, ${setSQLStringValue(Latitude)}, ${setSQLDateTime(EndEventDate)}, ${setSQLStringValue(EventCategoryUkeyId)}, ${setSQLStringValue(Tagline1)}, ${setSQLStringValue(Tagline2)}, ${setSQLNumberValue(UserBookingLimit)}, ${setSQLDateTime(BookingStartDate)}, ${setSQLDateTime(BookingEndDate)}, ${setSQLStringValue(EventStatus)}
-            );
-        `);
+        if(flag === 'A' || (flag === 'U' && EventStatus !== 'PUBLISHED')){
+            await transaction.request().query(`
+                INSERT INTO EventMasterPermission (
+                    EventUkeyId, OrganizerUkeyId, EventName, Alias, StartEventDate, EventCode, EventDetails, IsActive, IpAddress, HostName, EntryDate, flag, TicketLimit, Location, PaymentGateway, UserName, UserID, AddressUkeyId, Longitude, Latitude, EndEventDate, EventCategoryUkeyId, Tagline1, Tagline2, UserBookingLimit, BookingStartDate, BookingEndDate, EventStatus
+                ) VALUES (
+                    ${setSQLStringValue(EventUkeyId)}, ${setSQLStringValue(OrganizerUkeyId)}, ${setSQLStringValue(EventName)}, ${setSQLStringValue(Alias)}, ${setSQLDateTime(StartEventDate)}, ${setSQLStringValue(EventCode)}, ${setSQLStringValue(EventDetails)}, ${setSQLBooleanValue(IsActive)}, '${IPAddress}', '${ServerName}', '${EntryTime}', '${flag}', ${setSQLNumberValue(TicketLimit)}, ${setSQLStringValue(Location)}, ${setSQLStringValue(PaymentGateway)}, ${setSQLStringValue(req.user.FirstName)}, ${setSQLNumberValue(req.user.UserId)}, ${setSQLStringValue(primaryAddress.AddressUkeyId)}, ${setSQLStringValue(Longitude)}, ${setSQLStringValue(Latitude)}, ${setSQLDateTime(EndEventDate)}, ${setSQLStringValue(EventCategoryUkeyId)}, ${setSQLStringValue(Tagline1)}, ${setSQLStringValue(Tagline2)}, ${setSQLNumberValue(UserBookingLimit)}, ${setSQLDateTime(BookingStartDate)}, ${setSQLDateTime(BookingEndDate)}, ${setSQLStringValue(EventStatus)}
+                )
+            `)
+        }  
 
         let addressValue = '';
         // INSERT multiple addresses
@@ -390,6 +593,8 @@ const RemoveEvent = async (req, res) => {
 
 module.exports = {
     EventList,
+    EventPermissionList,
+    fetchEvenPermissiontById,
     addEvent,
     RemoveEvent,
     fetchEventById
