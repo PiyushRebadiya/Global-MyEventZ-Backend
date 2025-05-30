@@ -27,9 +27,12 @@ const fetchUserMaster = async (req, res) => {
         if(AppleUserId){
             whereConditions.push(`UM.AppleUserId = ${setSQLBooleanValue(AppleUserId)}`);
         }
-        if(StartDate && EndDate){
-            whereConditions.push(`UM.EntryDate >= ${setSQLDateTime(StartDate)} and UM.EntryDate <= ${setSQLDateTime(EndDate)}`);
+        if (StartDate && EndDate) {
+            const nextEndDate = new Date(EndDate);
+            nextEndDate.setDate(nextEndDate.getDate() + 1); // Add one day
+            whereConditions.push(`UM.EntryDate >= ${setSQLDateTime(StartDate)} AND UM.EntryDate < ${setSQLDateTime(nextEndDate)}`);
         }
+
         
         const whereString = whereConditions.length > 0 ? `WHERE ${whereConditions.join(' AND ')}` : '';
         const getUserList = {
@@ -177,7 +180,7 @@ const addOrUpdateUserMaster = async (req, res) => {
                     console.error('Error in background email task:', error);
                 }
             });
-            return res.status(200).send({...successMessage('Data inserted Successfully!'), verify: true, token, ...req.body});
+            return res.status(200).send({...successMessage('Data inserted Successfully!'), verify: true, token, ...req.body, ProfiilePic });
         } else if (flag === 'U') {
             if (!UserUkeyId) return res.status(200).send(errorMessage("UserUkeyId is required"));
             const userMaster = await pool.query(`SELECT * FROM UserMaster WHERE UserUkeyId = '${UserUkeyId}'`);
@@ -196,7 +199,7 @@ const addOrUpdateUserMaster = async (req, res) => {
             } catch (error) {
                 console.log('error :>> ', error);
             }
-            return res.status(200).send({...successMessage('Data updated Successfully!'), verify: true, ...req.body});
+            return res.status(200).send({...successMessage('Data updated Successfully!'), verify: true, ...req.body, ProfiilePic });
         }
     } catch (error) {
         if (ProfiilePic) deleteImage("./media/User/" + req?.files?.ProfiilePic?.[0]?.filename);

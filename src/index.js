@@ -10,7 +10,7 @@ const { autoVerifyCarousel, autoUpdateEvent, autoUpdateCoupon } = require('./con
 const cron = require('node-cron');
 // const { sendNotificationOnSetTime } = require('./controllers/globleAutoSentNotification');
 const path = require('path');
-const { sendNotificationOnSetTime } = require('./common/notification');
+const { sendNotificationOnSetTime, autoSendEventReview } = require('./common/notification');
 // const { sendNotificationOnSetTime } = require('./controller/globleAutoSentNotification');
 
 // Connect to the database
@@ -28,6 +28,15 @@ app.use(bodyParser.json());
 app.use(express.json())
 app.use(cors());
 
+// Middleware to disable caching for all GET requests
+app.use((req, res, next) => {
+  if (req.method === 'GET') {
+    res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+    res.setHeader('Pragma', 'no-cache');
+    res.setHeader('Expires', '0');
+  }
+  next(); // Pass control to the next middleware/route
+});
 // app.use('/', express.static(`./media/carousel`));
 // app.use('/', express.static(`./media/sentNotification`));
 // app.use('/', express.static(`./media/userInfo`));
@@ -55,12 +64,10 @@ app.get('/', async (req, res) => {
     res.sendFile(path.join(__dirname, 'pages/home', 'index.html'));
 });
 
-cron.schedule('15 0 * * *', () => {
-    console.log('Running Auto Task' + new Date());
-    autoVerifyCarousel();
-    autoUpdateEvent();
-    autoUpdateCoupon();
-});
+// cron.schedule('58 13 * * *', () => {
+//     console.log('Running Auto Task ' + new Date());
+// });
+
 
 // call for new DB Entry
 // setTimeout(() => {
@@ -71,6 +78,9 @@ setInterval(() => {
     sendNotificationOnSetTime()
 }, 300000);
 
+cron.schedule('0 15 * * *', () => {
+    autoSendEventReview();
+});
 // let i = 0
 
 // routes.stack.map(()=>{

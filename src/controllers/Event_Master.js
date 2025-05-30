@@ -5,7 +5,7 @@ const moment = require("moment");
 
 const EventList = async (req, res) => {
     try {
-        const { EventUkeyId, IsActive, OrganizerUkeyId, EventCategoryUkeyId } = req.query;
+        const { EventUkeyId, IsActive, OrganizerUkeyId, EventCategoryUkeyId, Search, StartEventDate, EndEventDate } = req.query;
         let whereConditions = [];
 
         // Build the WHERE clause based on the Status
@@ -16,10 +16,20 @@ const EventList = async (req, res) => {
             whereConditions.push(`em.OrganizerUkeyId = '${OrganizerUkeyId}'`); // Specify alias 'em' for EventMaster
         }
         if (EventCategoryUkeyId) {
-            whereConditions.push(`em.EventCategoryUkeyId = ${setSQLStringValue(EventCategoryUkeyId)}`); // Specify alias 'em' for EventMaster
+            const multipleEventCategory = EventCategoryUkeyId.split(',').map((i) => `'${i}'`).join(',');
+            whereConditions.push(`em.EventCategoryUkeyId IN (${multipleEventCategory})`); // Specify alias 'em' for EventMaster
         }
         if (IsActive) {
             whereConditions.push(`em.IsActive = ${setSQLBooleanValue(IsActive)}`); // Specify alias 'em' for EventMaster
+        }
+        if (Search) {
+            whereConditions.push(`em.EventName LIKE '%${Search}%'`);
+        }
+        if (StartEventDate) {
+            whereConditions.push(`em.StartEventDate >= ${setSQLDateTime(StartEventDate)}`);
+        }
+        if (EndEventDate) {
+            whereConditions.push(`em.EndEventDate <= ${setSQLDateTime(EndEventDate)}`);
         }
 
         // Combine the WHERE conditions into a single string
@@ -41,7 +51,7 @@ const EventList = async (req, res) => {
             ecm.CategoryName AS EventCategoryName,
             pgm.GatewayName,
             (
-                SELECT du.FileName, du.Label, du.docukeyid
+                SELECT du.FileName, du.Label, du.docukeyid, du.EventUkeyId, du.OrganizerUkeyId, du.Category
                 FROM DocumentUpload du 
                 WHERE du.UkeyId = em.EventUkeyId
                 FOR JSON PATH
@@ -126,7 +136,7 @@ const fetchEventById = async (req, res)=> {
             ecm.CategoryName AS EventCategoryName,
             pgm.GatewayName,
             (
-                SELECT du.FileName, du.Label, du.docukeyid
+                SELECT du.FileName, du.Label, du.docukeyid, du.EventUkeyId, du.OrganizerUkeyId, du.Category
                 FROM DocumentUpload du 
                 WHERE du.UkeyId = em.EventUkeyId
                 FOR JSON PATH
@@ -178,7 +188,7 @@ const addEvent = async (req, res) => {
     const { flag, Event, Addresses } = req.body;
     const {
         EventUkeyId, OrganizerUkeyId, EventName, Alias, StartEventDate, EventDetails, IsActive = false, TicketLimit,
-        EventCode = generateCODE(EventName), Location, PaymentGateway, Longitude, Latitude, EndEventDate, EventCategoryUkeyId, Tagline1, Tagline2, UserBookingLimit, BookingStartDate, BookingEndDate
+        EventCode = generateCODE(EventName), Location, PaymentGateway, Longitude, Latitude, EndEventDate, EventCategoryUkeyId, Tagline1, Tagline2, UserBookingLimit, BookingStartDate, BookingEndDate, EventStatus
     } = Event;
 
     let transaction;
@@ -213,9 +223,9 @@ const addEvent = async (req, res) => {
         // INSERT into EventMaster
         await transaction.request().query(`
             INSERT INTO EventMaster (
-                EventUkeyId, OrganizerUkeyId, EventName, Alias, StartEventDate, EventCode, EventDetails, IsActive, IpAddress, HostName, EntryDate, flag, TicketLimit, Location, PaymentGateway, UserName, UserID, AddressUkeyId, Longitude, Latitude, EndEventDate, EventCategoryUkeyId, Tagline1, Tagline2, UserBookingLimit, BookingStartDate, BookingEndDate 
+                EventUkeyId, OrganizerUkeyId, EventName, Alias, StartEventDate, EventCode, EventDetails, IsActive, IpAddress, HostName, EntryDate, flag, TicketLimit, Location, PaymentGateway, UserName, UserID, AddressUkeyId, Longitude, Latitude, EndEventDate, EventCategoryUkeyId, Tagline1, Tagline2, UserBookingLimit, BookingStartDate, BookingEndDate, EventStatus
             ) VALUES (
-                ${setSQLStringValue(EventUkeyId)}, ${setSQLStringValue(OrganizerUkeyId)}, ${setSQLStringValue(EventName)}, ${setSQLStringValue(Alias)}, ${setSQLDateTime(StartEventDate)}, ${setSQLStringValue(EventCode)}, ${setSQLStringValue(EventDetails)}, ${setSQLBooleanValue(IsActive)}, '${IPAddress}', '${ServerName}', '${EntryTime}', '${flag}', ${setSQLNumberValue(TicketLimit)}, ${setSQLStringValue(Location)}, ${setSQLStringValue(PaymentGateway)}, ${setSQLStringValue(req.user.FirstName)}, ${setSQLNumberValue(req.user.UserId)}, ${setSQLStringValue(primaryAddress.AddressUkeyId)}, ${setSQLStringValue(Longitude)}, ${setSQLStringValue(Latitude)}, ${setSQLDateTime(EndEventDate)}, ${setSQLStringValue(EventCategoryUkeyId)}, ${setSQLStringValue(Tagline1)}, ${setSQLStringValue(Tagline2)}, ${setSQLNumberValue(UserBookingLimit)}, ${setSQLDateTime(BookingStartDate)}, ${setSQLDateTime(BookingEndDate)}
+                ${setSQLStringValue(EventUkeyId)}, ${setSQLStringValue(OrganizerUkeyId)}, ${setSQLStringValue(EventName)}, ${setSQLStringValue(Alias)}, ${setSQLDateTime(StartEventDate)}, ${setSQLStringValue(EventCode)}, ${setSQLStringValue(EventDetails)}, ${setSQLBooleanValue(IsActive)}, '${IPAddress}', '${ServerName}', '${EntryTime}', '${flag}', ${setSQLNumberValue(TicketLimit)}, ${setSQLStringValue(Location)}, ${setSQLStringValue(PaymentGateway)}, ${setSQLStringValue(req.user.FirstName)}, ${setSQLNumberValue(req.user.UserId)}, ${setSQLStringValue(primaryAddress.AddressUkeyId)}, ${setSQLStringValue(Longitude)}, ${setSQLStringValue(Latitude)}, ${setSQLDateTime(EndEventDate)}, ${setSQLStringValue(EventCategoryUkeyId)}, ${setSQLStringValue(Tagline1)}, ${setSQLStringValue(Tagline2)}, ${setSQLNumberValue(UserBookingLimit)}, ${setSQLDateTime(BookingStartDate)}, ${setSQLDateTime(BookingEndDate)}, ${setSQLStringValue(EventStatus)}
             );
         `);
 
@@ -265,7 +275,7 @@ const addEvent = async (req, res) => {
                     [GlobalMyEventZ].[dbo].[UserMaster]
                 WHERE 
                     [Email] IS NOT NULL
-                    AND LTRIM(RTRIM([Email])) <> '' AND IsActive = 1
+                    AND LTRIM(RTRIM([Email])) <> '' AND IsActive = 1 AND UserUkeyId = '9CC5-AA2025-121c6a8e-17e1-4207-bc22-dd784cd17132-W'
             )
             SELECT 
                 [UserId],

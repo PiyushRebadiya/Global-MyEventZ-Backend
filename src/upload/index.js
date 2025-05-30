@@ -1,6 +1,5 @@
 const multer = require('multer');
 const fs = require('fs');
-// const path = require('path');
 
 const SpeakerStorage = multer.diskStorage({
     destination: function (req, file, cb) {
@@ -158,6 +157,22 @@ const DocumentUploadUpload = multer({ storage: documentUploadStorage }).fields([
     { name: 'FileName', maxCount: 100 },
 ]);
 
+const documentUploadStorageV2 = multer.diskStorage({
+    destination: async function (req, file, cb) {
+        await fs.mkdirSync(`./media/DocumentUpload/${req?.body?.OrganizerUkeyId}`, { recursive: true });
+        await fs.mkdirSync(`./media/DocumentUpload/${req?.body?.OrganizerUkeyId}/${req?.body?.EventUkeyId}`, { recursive: true });
+        await fs.mkdirSync(`./media/DocumentUpload/${req?.body?.OrganizerUkeyId}/${req?.body?.EventUkeyId}/${req?.body?.Category}`, { recursive: true });
+        cb(null, `./media/DocumentUpload/${req?.body?.OrganizerUkeyId}/${req?.body?.EventUkeyId}/${req?.body?.Category}/`);
+    },
+    filename: function (req, file, cb) {
+        cb(null, Date.now() + '_' + file.originalname);
+    }
+});
+
+const DocumentUploadUploadV2 = multer({ storage: documentUploadStorageV2 }).fields([
+    { name: 'FileName', maxCount: 100 },
+]);
+
 const ReminderStorage = multer.diskStorage({
     destination: function (req, file, cb) {
         cb(null, `./media/Reminder`);
@@ -195,5 +210,6 @@ module.exports = {
     OrginizerUpload,
     DocumentUploadUpload,
     ReminderUpload,
-    ContectUpload
+    ContectUpload,
+    DocumentUploadUploadV2
 }

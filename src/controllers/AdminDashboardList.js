@@ -1,5 +1,6 @@
 const { errorMessage, successMessage, checkKeysAndRequireValues, generateCODE, setSQLBooleanValue, getCommonKeys, generateJWTT, generateUUID, setSQLStringValue, setSQLNumberValue, getCommonAPIResponse, setSQLDateTime } = require("../common/main");
 const {pool} = require('../sql/connectToDatabase');
+const { ticketViewUpload } = require("../upload");
 
 const AdminDashboardList = async (req, res) => {
     try {
@@ -65,48 +66,54 @@ const AdminDashboardList = async (req, res) => {
         `);
 
         const TotalTicketsBooked = await pool.request().query(`
-            SELECT 
-                COUNT(BD.BookingUkeyID) AS TotalTicketsBooked, 
-                TCM.Category, TCM.TicketLimits
-            FROM 
-                TicketCategoryMaster TCM WITH (NOLOCK)
-            LEFT JOIN 
-                Bookingdetails BD WITH (NOLOCK) ON BD.TicketCateUkeyId = TCM.TicketCateUkeyId
-            LEFT JOIN 
-                Bookingmast BM WITH (NOLOCK) ON BD.BookingUkeyID = BM.BookingUkeyID
-            WHERE 
-                BM.EventUkeyId = ${setSQLStringValue(EventUkeyId)} 
+        SELECT 
+            COUNT(BD.BookingUkeyID) AS TotalTicketsBooked, 
+            TCM.Category, 
+            TCM.TicketLimits, 
+            TCM.PaidLimit, 
+            TCM.UnPaidLimit
+        FROM 
+            TicketCategoryMaster TCM WITH (NOLOCK)
+        LEFT JOIN 
+            Bookingdetails BD WITH (NOLOCK) ON BD.TicketCateUkeyId = TCM.TicketCateUkeyId
+        LEFT JOIN 
+            Bookingmast BM WITH (NOLOCK) ON BD.BookingUkeyID = BM.BookingUkeyID
+        WHERE 
+            BM.EventUkeyId = ${setSQLStringValue(EventUkeyId)} 
+            AND BM.OrganizerUkeyId = ${setSQLStringValue(OrganizerUkeyId)}
+            ${StartDate && EndDate ? `AND CONVERT(DATE, BD.EntryDate) BETWEEN '${StartDate}' AND '${EndDate}'` : ''}
+        GROUP BY 
+            TCM.Category, TCM.TicketLimits, TCM.PaidLimit, TCM.UnPaidLimit
+    
+        UNION ALL
+    
+        SELECT 
+            0 AS TotalTicketsBooked, 
+            TCM.Category, 
+            TCM.TicketLimits, 
+            TCM.PaidLimit, 
+            TCM.UnPaidLimit
+        FROM 
+            TicketCategoryMaster TCM WITH (NOLOCK)
+        WHERE 
+            TCM.TicketCateUkeyId IN (
+                SELECT DISTINCT BD.TicketCateUkeyId 
+                FROM Bookingdetails BD WITH (NOLOCK)
+                LEFT JOIN Bookingmast BM WITH (NOLOCK) ON BD.BookingUkeyID = BM.BookingUkeyID
+                WHERE BM.EventUkeyId = ${setSQLStringValue(EventUkeyId)}
                 AND BM.OrganizerUkeyId = ${setSQLStringValue(OrganizerUkeyId)}
+            )
+            AND NOT EXISTS (
+                SELECT 1 
+                FROM Bookingdetails BD WITH (NOLOCK)
+                LEFT JOIN Bookingmast BM WITH (NOLOCK) ON BD.BookingUkeyID = BM.BookingUkeyID
+                WHERE BM.EventUkeyId = ${setSQLStringValue(EventUkeyId)}
+                AND BM.OrganizerUkeyId = ${setSQLStringValue(OrganizerUkeyId)}
+                AND BD.TicketCateUkeyId = TCM.TicketCateUkeyId
                 ${StartDate && EndDate ? `AND CONVERT(DATE, BD.EntryDate) BETWEEN '${StartDate}' AND '${EndDate}'` : ''}
-            GROUP BY 
-                TCM.Category, TCM.TicketLimits
-        
-            UNION ALL
-        
-            SELECT 
-                0 AS TotalTicketsBooked, 
-                TCM.Category, TCM.TicketLimits
-            FROM 
-                TicketCategoryMaster TCM WITH (NOLOCK)
-            WHERE 
-                TCM.TicketCateUkeyId IN (
-                    SELECT DISTINCT BD.TicketCateUkeyId 
-                    FROM Bookingdetails BD WITH (NOLOCK)
-                    LEFT JOIN Bookingmast BM WITH (NOLOCK) ON BD.BookingUkeyID = BM.BookingUkeyID
-                    WHERE BM.EventUkeyId = ${setSQLStringValue(EventUkeyId)}
-                    AND BM.OrganizerUkeyId = ${setSQLStringValue(OrganizerUkeyId)}
-                )
-                AND NOT EXISTS (
-                    SELECT 1 
-                    FROM Bookingdetails BD WITH (NOLOCK)
-                    LEFT JOIN Bookingmast BM WITH (NOLOCK) ON BD.BookingUkeyID = BM.BookingUkeyID
-                    WHERE BM.EventUkeyId = ${setSQLStringValue(EventUkeyId)}
-                    AND BM.OrganizerUkeyId = ${setSQLStringValue(OrganizerUkeyId)}
-                    AND BD.TicketCateUkeyId = TCM.TicketCateUkeyId
-                    ${StartDate && EndDate ? `AND CONVERT(DATE, BD.EntryDate) BETWEEN '${StartDate}' AND '${EndDate}'` : ''}
-                )
+            )
         `);
-
+    
         return res.status(200).json({
             TotalEvents: totalEvents?.recordset[0]?.TotalEvents,
             TotalUsers: totalUsers?.recordset[0]?.totalUsers,
@@ -395,16 +402,17 @@ const CustomeReport = async (req, res) => {
         let whereConditions = [];
         let {TicketCateUkeyId} = req.query
         TicketCateUkeyId = TicketCateUkeyId?.split(',')
-
-        TicketCateUkeyId.forEach((element, i) => {
-            TicketCateUkeyId[i] = `'${element}'`
-        });
+        if(TicketCateUkeyId){
+            TicketCateUkeyId?.forEach((element, i) => {
+                TicketCateUkeyId[i] = `'${element}'`
+            });
+        }
 
         if (OrganizerUkeyId) {
-            whereConditions.push(`bm.OrganizerUkeyId = ${setSQLStringValue(OrganizerUkeyId)}`);
+            whereConditions.push(`tcm.OrganizerUkeyId = ${setSQLStringValue(OrganizerUkeyId)}`);
         }
         if (EventUkeyId) {
-            whereConditions.push(`bm.EventUkeyId = ${setSQLStringValue(EventUkeyId)}`);
+            whereConditions.push(`tcm.EventUkeyId = ${setSQLStringValue(EventUkeyId)}`);
         }
         if (VerifiedByUkeyId) {
             whereConditions.push(`bd.VerifiedByUkeyId = ${setSQLStringValue(VerifiedByUkeyId)}`);
@@ -420,27 +428,28 @@ const CustomeReport = async (req, res) => {
 
         const TransactionReport = {
             getQuery: `
-            SELECT 
-                oum.FirstName AS verifierName,
-                tcm.Category AS EventCategoryName,
-                bd.TicketCateUkeyId,
-                COUNT(*) AS VerifiedCount
-            FROM Bookingdetails bd
-            LEFT JOIN OrgUserMaster oum ON oum.UserUkeyId = bd.VerifiedByUkeyId
-            LEFT JOIN TicketCategoryMaster tcm ON tcm.TicketCateUkeyId = bd.TicketCateUkeyId
+                SELECT 
+                    oum.FirstName AS verifierName,
+                    tcm.Category AS EventCategoryName,
+                    bd.TicketCateUkeyId,
+                    COUNT(*) AS VerifiedCount
+                FROM Bookingdetails bd
+                LEFT JOIN OrgUserMaster oum ON oum.UserUkeyId = bd.VerifiedByUkeyId
+                LEFT JOIN TicketCategoryMaster tcm ON tcm.TicketCateUkeyId = bd.TicketCateUkeyId
                 ${whereString}
                 GROUP BY 
-                oum.FirstName,
-                tcm.Category,
-                bd.TicketCateUkeyId
-            ORDER BY 
-                verifierName,
-                EventCategoryName
+                    oum.FirstName,
+                    tcm.Category,
+                    bd.TicketCateUkeyId
+                ORDER BY 
+                    verifierName,
+                    EventCategoryName
             `,
             countQuery: `
-                select count(*) AS totalCount from Bookingdetails bd
-                left join TicketCategoryMaster tcm on tcm.TicketCateUkeyId = bd.TicketCateUkeyId
-                left join OrgUserMaster oum on oum.UserUkeyId = bd.VerifiedByUkeyId
+                SELECT COUNT(*) AS totalCount
+                FROM Bookingdetails bd
+                LEFT JOIN OrgUserMaster oum ON oum.UserUkeyId = bd.VerifiedByUkeyId
+                LEFT JOIN TicketCategoryMaster tcm ON tcm.TicketCateUkeyId = bd.TicketCateUkeyId
                 ${whereString}
             `,
         };

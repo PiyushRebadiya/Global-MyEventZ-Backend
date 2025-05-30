@@ -86,10 +86,9 @@ const sentNotificationOnSetTime = async (req) => {
 }
 
 const sendNotificationInBackground = async (req, res) => {
-  const { Title, Description, LinkType, Link, NotificationTopic, Image } = req.body;
+  const { Title, Description, LinkType, Link, NotificationToken, Image } = req.body;
 
-  // Ensure required fields are present
-  const missingKeys = checkKeysAndRequireValues(['Title', 'Description', 'NotificationTopic'], req.body);
+  const missingKeys = checkKeysAndRequireValues(['Title', 'Description', 'NotificationToken'], req.body)
   if (missingKeys.length !== 0) {
     return res.status(400).send(errorMessage(`${missingKeys} is required`));
   }
@@ -100,7 +99,7 @@ const sendNotificationInBackground = async (req, res) => {
 
   const message = {
     message: {
-      topic: NotificationTopic, // 🔹 Send to topic instead of individual token
+      token: NotificationToken,
       notification: {
         title: Title,
         body: Description,

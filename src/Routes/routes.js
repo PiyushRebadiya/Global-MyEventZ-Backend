@@ -53,11 +53,12 @@ const SubscriberMaster = require('../controllers/subscriberMaster');
 const RatingMasterController = require('../controllers/RatingMaster');
 const DisclaimerMasterController = require('../controllers/DisclaimerMaster');
 const EmailsLogsAPIController = require('../controllers/EmailsLogsAPI.js');
+const firebaseSentNotification = require('../controllers/firebaseSentNotification');
 // const carouselController = require('../controllers/carousel');
 
 const auth = require("../middleware/auth");
 
-const { UserUpload, OrginizerUpload, DocumentUploadUpload, ReminderUpload, ContectUpload} = require('../upload/index');
+const { UserUpload, OrginizerUpload, DocumentUploadUpload, ReminderUpload, ContectUpload, DocumentUploadUploadV2} = require('../upload/index');
 
 //#region User Master
 router.get("/fetchUserMaster", auth, UserMasterController.fetchUserMaster)
@@ -117,7 +118,7 @@ router.delete('/delete_event_category', auth, EventCategoryNasterController.Remo
 //#endregion
 
 //#region SPEAKER APIs
-router.get('/fetch_speaker_master', auth, SpeakerMasterController.FetchSpeakerMasterDetails);
+router.get('/fetch_speaker_master', SpeakerMasterController.FetchSpeakerMasterDetails);
 router.get('/fetch_speaker_master_mob', SpeakerMasterController.FetchSpeakerMasterDetails);
 router.post('/speaker_master', auth, SpeakerMasterController.SpeakerMaster);
 router.delete('/delete_speaker_master', auth, SpeakerMasterController.RemoveSpeaker);
@@ -167,8 +168,10 @@ router.put('/razorpay/credentials', auth, RazorpayController.updateRazorpayCrede
 //#region DOCUMENT UPLOAD MASTER
 router.get('/list_document', auth, DocumentUploadController.FetchDocumentUploadDetails);
 router.post('/document_upload_master', auth, DocumentUploadUpload, DocumentUploadController.DocumentUpload);
+router.post('/document_upload_master_V2', auth, DocumentUploadUploadV2, DocumentUploadController.DocumentUpload);
 router.put('/document_status_update', auth, DocumentUploadController.updateIsActiveStatusOfDocument);
 router.delete('/delete_document', auth, DocumentUploadController.RemoveDocumnet);
+router.delete('/delete_document_V2', auth, DocumentUploadController.RemoveDocumnetV2);
 //#endregion
 
 //#region NEW BOOKING TICKET APIs
@@ -251,7 +254,7 @@ router.delete('/delete_pricing', auth, PricingMasterController.RemovePricing);
 //#endregion
 
 //#region Whats New
-router.get('/fetch_whats_new', auth, whatsnewcontroller.Fetchwhatsnew);
+router.get('/fetch_whats_new', whatsnewcontroller.Fetchwhatsnew);
 router.post('/whats_new_master', auth, whatsnewcontroller.whatsnew);
 router.delete('/delete_whats_new', auth, whatsnewcontroller.removewhatsnew);
 //#endregion
@@ -262,6 +265,7 @@ router.delete('/delete_whats_new', auth, whatsnewcontroller.removewhatsnew);
 
 //#region Subscriber master
 router.get('/fetch_subscriber', SubscriberMaster.fetchSubscriberlist);
+router.get('/fetch_subscriber_Count', SubscriberMaster.subscriberCount);
 router.post('/subscriber_master', auth, SubscriberMaster.SubscriberMaster);
 //#endregion
 
@@ -279,5 +283,9 @@ router.delete('/delete_disclaimer_master', auth, DisclaimerMasterController.Remo
 
 //#region Email Logs
 router.get('/fetch_email_logs', auth, EmailsLogsAPIController.fetchEmailLogs);
+//#endregion
+
+//#Background Notification
+router.post('/send_notification_in_background', auth, firebaseSentNotification.sendNotificationInBackground);
 //#endregion
 module.exports = router;

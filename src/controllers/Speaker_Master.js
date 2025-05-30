@@ -23,7 +23,7 @@ const FetchSpeakerMasterDetails = async (req, res) => {
             getQuery: `
                 SELECT SM.*, 
                     (SELECT JSON_QUERY(
-                        (SELECT FileName, Label , DocUkeyId
+                        (SELECT FileName, Label , DocUkeyId, EventUkeyId, OrganizerUkeyId, Category
                         FROM DocumentUpload 
                         WHERE UkeyId = SM.SpeakerUkeyId 
                         FOR JSON PATH)

@@ -81,6 +81,55 @@ const addInnerNotification = async (notification) => {
     const result = await pool.query(insertQuery);
     await autoVerifyNotification();
 };
+
+const autoSendEventReview = async () => {
+    try {
+        // let EventReviewArr = [];
+        const eventReviewQuery = `SELECT
+                                em.OrganizerUkeyId,
+                                em.EventUkeyId,
+                                    em.EndEventDate,
+                                    em.EventName,
+                                    du.FileName
+                                FROM EventMaster em 
+                                OUTER APPLY (
+                                    SELECT TOP 1 du.FileName
+                                    FROM DocumentUpload du
+                                    WHERE du.UkeyId = em.EventUkeyId
+                                ) du
+                                WHERE CAST(em.EndEventDate AS DATE) = CAST(DATEADD(DAY, -1, GETDATE()) AS DATE)`;
+        // WHERE CAST(em.EndEventDate AS DATE) = CAST(DATEADD(DAY, -1, GETDATE()) AS DATE)`;
+        const eventReview = await pool.query(eventReviewQuery);
+        if (eventReview.recordset.length > 0) {
+            for (const event of eventReview.recordset) {
+                const { OrganizerUkeyId, EventUkeyId, EventName, FileName } = event;
+                let usersToken = [];
+                const userTokenQuery = `select DISTINCT um.NotificationToken from Bookingmast as bm left join UserMaster um on um.UserUkeyId = bm.UserUkeyID where bm.EventUkeyId = ${setSQLStringValue(EventUkeyId)} AND bm.OrganizerUkeyId = ${setSQLStringValue(OrganizerUkeyId)} AND bm.IsVerify = 1 AND um.NotificationToken != '' AND um.NotificationToken is not null`;
+                const userToken = await pool.query(userTokenQuery);
+                if (userToken.recordset.length > 0) {
+                    usersToken = userToken.recordset;
+                }
+                if (usersToken.length > 0) {
+                    for (const user of usersToken) {
+                        await sentNotificationOnSetTime({
+                            body: {
+                                Title: EventName,
+                                Description: `Please review the event and share your rating!`,
+                                NotificationToken: user.NotificationToken,
+                                Image: FileName,
+                                LinkType: 'App',
+                                Link: `/EventRatingScreen?EventUkeyId=${EventUkeyId}&OrganizerUkeyId=${OrganizerUkeyId}`,
+                            }
+                        });
+                    }
+                }
+            }
+        }
+    } catch (error) {
+        console.log('autoSendEventReview error', error);
+    }
+}
 module.exports = {
-    sendNotificationOnSetTime
+    sendNotificationOnSetTime,
+    autoSendEventReview
 }
