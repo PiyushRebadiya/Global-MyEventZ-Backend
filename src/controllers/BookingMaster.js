@@ -245,7 +245,7 @@ const BookingMaster = async (req, res) => {
 
                             const responseTicketBookingEnglish = await sendEmailUserTickets(
                                 Email, FullName, EventName,
-                                moment(StartEventDate).format("dddd, MMMM Do YYYY"),
+                                moment.utc(StartEventDate).format("dddd, MMMM Do YYYY"),
                                 address, ticketReport, Mobile1, Mobile2, OrganizerName
                             );
 
@@ -259,7 +259,7 @@ const BookingMaster = async (req, res) => {
 
                             const responseTicketBookingHindi = await sendEmailUserTicketsHindi(
                                 Email, FullName, EventName,
-                                moment(StartEventDate).format("dddd, MMMM Do YYYY"),
+                                moment.utc(StartEventDate).format("dddd, MMMM Do YYYY"),
                                 address, ticketReport, Mobile1, Mobile2, OrganizerName
                             );
 
