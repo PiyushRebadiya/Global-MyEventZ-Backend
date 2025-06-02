@@ -323,13 +323,55 @@ const fetchEvenPermissiontById = async (req, res)=> {
                 WHERE du.UkeyId = em.EventUkeyId
                 FOR JSON PATH
             ) AS FileNames,
-			 (
+             (
                 SELECT pgm.ShortName, pgm.GatewayName, pgm.ConvenienceFee, pgm.GST, pgm.DonationAmt, pgm.AdditionalCharges, pgm.IsActive, pgm.KeyId, pgm.SecretKey
                 FROM PaymentGatewayMaster pgm 
                 WHERE em.PaymentGateway = pgm.GatewayUkeyId
                 FOR JSON PATH
             ) AS PaymentGatewayDetails
         FROM EventMasterPermission em 
+        LEFT JOIN AddressMaster am ON am.EventUkeyId = em.EventUkeyId 
+        LEFT JOIN OrganizerMaster om ON om.OrganizerUkeyId = em.OrganizerUkeyId
+        LEFT JOIN EventCategoryMaster ecm on em.EventCategoryUkeyId = ecm.EventCategoryUkeyId
+        LEFT JOIN PaymentGatewayMaster pgm on em.PaymentGateway = pgm.GatewayUkeyId
+                ${whereString} 
+                ORDER BY em.EntryDate DESC
+            `,
+            countQuery: `
+                SELECT COUNT(*) AS totalCount 
+                FROM EventMasterPermission em 
+                ${whereString}
+            `,
+        };
+
+        const masterquer = {
+            getQuery: `
+            SELECT 
+            em.*, 
+            am.Address1, 
+            am.Address2, 
+            am.Pincode, 
+            am.StateName,
+            am.StateCode, 
+            am.CityName, 
+            am.IsPrimaryAddress, 
+            am.IsActive AS IsActiveAddress, 
+            om.OrganizerName, 
+            ecm.CategoryName AS EventCategoryName,
+            pgm.GatewayName,
+            (
+                SELECT du.FileName, du.Label, du.docukeyid, du.EventUkeyId, du.OrganizerUkeyId, du.Category
+                FROM DocumentUpload du 
+                WHERE du.UkeyId = em.EventUkeyId
+                FOR JSON PATH
+            ) AS FileNames,
+             (
+                SELECT pgm.ShortName, pgm.GatewayName, pgm.ConvenienceFee, pgm.GST, pgm.DonationAmt, pgm.AdditionalCharges, pgm.IsActive, pgm.KeyId, pgm.SecretKey
+                FROM PaymentGatewayMaster pgm 
+                WHERE em.PaymentGateway = pgm.GatewayUkeyId
+                FOR JSON PATH
+            ) AS PaymentGatewayDetails
+        FROM EventMaster em 
         LEFT JOIN AddressMaster am ON am.EventUkeyId = em.EventUkeyId 
         LEFT JOIN OrganizerMaster om ON om.OrganizerUkeyId = em.OrganizerUkeyId
         LEFT JOIN EventCategoryMaster ecm on em.EventCategoryUkeyId = ecm.EventCategoryUkeyId
@@ -346,6 +388,8 @@ const fetchEvenPermissiontById = async (req, res)=> {
 
         const result = await getCommonAPIResponse(req, res, getUserList);
 
+        const masterResult = await getCommonAPIResponse(req, res, masterquer);
+
         result.data?.forEach(event => {
             if(event.FileNames){
                 event.FileNames = JSON.parse(event?.FileNames)
@@ -359,7 +403,20 @@ const fetchEvenPermissiontById = async (req, res)=> {
             }
         });
 
-        return res.json(result);
+        masterResult.data?.forEach(event => {
+            if(event.FileNames){
+                event.FileNames = JSON.parse(event?.FileNames)
+            } else {
+                event.FileNames = []
+            }
+            if(event.PaymentGatewayDetails){
+                event.PaymentGatewayDetails = JSON.parse(event?.PaymentGatewayDetails)
+            } else {
+                event.PaymentGatewayDetails = []
+            }
+        });
+
+        return res.json({ NewEntry : result.data, OldEntry : masterResult.data});
 
     }catch(error){
         return res.status(500).json(errorMessage(error.message))
