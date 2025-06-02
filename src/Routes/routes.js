@@ -90,6 +90,7 @@ router.post('/organizer_login', UserController.Loginorganizer);
 router.post('/login_with_mobile_and_role', UserController.loginWithMobileAndRole);
 router.post('/organizer_login_with_email', UserController.Loginorganizerwithemail);
 router.post('/organizer_signup', UserController.AddOrginizer);
+router.post('/organizer_transfer', UserController.transferOrganizer);
 router.post('/forget_passwrod', UserController.ForgetPasswordForOrganizer);
 router.put('/update_organizer', auth, OrginizerUpload, UserController.updateOrginizer);
 
