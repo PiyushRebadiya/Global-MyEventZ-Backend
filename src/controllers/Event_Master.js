@@ -212,6 +212,7 @@ const EventPermissionList = async (req, res) => {
         if (EndEventDate) {
             whereConditions.push(`em.EndEventDate <= ${setSQLDateTime(EndEventDate)}`);
         }
+        whereConditions.push(`em.EventStatus = 'INPROGRESS'`);
 
         // Combine the WHERE conditions into a single string
         const whereString = whereConditions.length > 0 ? `WHERE ${whereConditions.join(' AND ')}` : '';
@@ -253,7 +254,7 @@ const EventPermissionList = async (req, res) => {
             `,
             countQuery: `
                 SELECT COUNT(*) AS totalCount 
-                FROM EventMaster em 
+                FROM EventMasterPermission em 
                 ${whereString}
             `,
         };

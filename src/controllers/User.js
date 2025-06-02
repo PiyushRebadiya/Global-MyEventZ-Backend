@@ -1,6 +1,9 @@
 const { errorMessage, successMessage, checkKeysAndRequireValues, generateCODE, setSQLBooleanValue, getCommonKeys, generateJWTT, generateUUID, setSQLStringValue, setSQLNumberValue, setSQLDateTime, deleteImage, getCommonAPIResponse, CommonLogFun } = require("../common/main");
 const {pool} = require('../sql/connectToDatabase');
 const { sendOrganizerRegisterMail } = require("./sendEmail");
+// const fs = require('fs');
+const path = require('path');
+const fs = require('fs-extra'); // <--- use fs-extra
 
 //#region fetch Orginizer
 const fetchOrganizer = async (req, res) => {
@@ -533,7 +536,103 @@ const verifyOrganizerEmail = async (req, res) => {
     }
 }
 
-//#endregion
+//#endregion transfer organizer
+const transferOrganizer = async (req, res) => {
+  try {
+    const { FromOrganizerUkeyId, ToOrganizerUkeyId, IsDelete, IsEvents, IsSpeaker,IsTicketCategory, IsGallery, IsCoupon, IsSponsor, IsSponsorCatMaster, IsCarousel, IsBooking, IsContactSetting, IsOrgUser, IsReminder, IsTermCondition, IsSubscriber, IsDisclaimer } = req.body;
+
+    const missingKeys = checkKeysAndRequireValues(['FromOrganizerUkeyId', 'ToOrganizerUkeyId', 'IsDelete'], req.body);
+    
+    if (missingKeys.length > 0) {
+      return res.status(400).json(errorMessage(`${missingKeys.join(', ')} is Required`));
+    }
+
+    if(IsEvents){
+        await pool.request().query(`update EventMaster set OrganizerUkeyId = ${setSQLStringValue(ToOrganizerUkeyId)} where OrganizerUkeyId = ${setSQLStringValue(FromOrganizerUkeyId)}`)
+
+        await pool.request().query(`update AddressMaster set OrganizerUkeyId = ${setSQLStringValue(ToOrganizerUkeyId)} where OrganizerUkeyId = ${setSQLStringValue(FromOrganizerUkeyId)}`)
+
+        await pool.request().query(`update DocumentUpload set OrganizerUkeyId = ${setSQLStringValue(ToOrganizerUkeyId)} where OrganizerUkeyId = ${setSQLStringValue(FromOrganizerUkeyId)} and Category = 'Event'`)
+    }
+    if(IsSpeaker){
+        await pool.request().query(`update SpeakerMaster set OrganizerUkeyId = ${setSQLStringValue(ToOrganizerUkeyId)} where OrganizerUkeyId = ${setSQLStringValue(FromOrganizerUkeyId)}`)
+
+        await pool.request().query(`update DocumentUpload set OrganizerUkeyId = ${setSQLStringValue(ToOrganizerUkeyId)} where OrganizerUkeyId = ${setSQLStringValue(FromOrganizerUkeyId)} and Category = 'Speaker'`)
+    }
+    if(IsTicketCategory){
+        await pool.request().query(`update TicketCategoryMaster set OrganizerUkeyId = ${setSQLStringValue(ToOrganizerUkeyId)} where OrganizerUkeyId = ${setSQLStringValue(FromOrganizerUkeyId)}`)
+    }
+    if(IsCoupon){
+        await pool.request().query(`update CouponMaster set OrganizerUkeyId = ${setSQLStringValue(ToOrganizerUkeyId)} where OrganizerUkeyId = ${setSQLStringValue(FromOrganizerUkeyId)}`)
+    }
+    if(IsSponsorCatMaster){
+        await pool.request().query(`update SponsorCatMaster set OrganizerUkeyId = ${setSQLStringValue(ToOrganizerUkeyId)} where OrganizerUkeyId = ${setSQLStringValue(FromOrganizerUkeyId)}`)
+    }
+    if(IsSponsor){
+        await pool.request().query(`update SponsorMaster set OrganizerUkeyId = ${setSQLStringValue(ToOrganizerUkeyId)} where OrganizerUkeyId = ${setSQLStringValue(FromOrganizerUkeyId)}`)
+
+        await pool.request().query(`update DocumentUpload set OrganizerUkeyId = ${setSQLStringValue(ToOrganizerUkeyId)} where OrganizerUkeyId = ${setSQLStringValue(FromOrganizerUkeyId)} and Category = 'Sponser'`)
+    }
+    if(IsCarousel){
+        await pool.request().query(`update Carousel set OrganizerUkeyId = ${setSQLStringValue(ToOrganizerUkeyId)} where OrganizerUkeyId = ${setSQLStringValue(FromOrganizerUkeyId)}`)
+
+        await pool.request().query(`update DocumentUpload set OrganizerUkeyId = ${setSQLStringValue(ToOrganizerUkeyId)} where OrganizerUkeyId = ${setSQLStringValue(FromOrganizerUkeyId)} and Category = 'Carousel'`)
+    }
+    if(IsContactSetting){
+        await pool.request().query(`update EventContactSetting set OrganizerUkeyId = ${setSQLStringValue(ToOrganizerUkeyId)} where OrganizerUkeyId = ${setSQLStringValue(FromOrganizerUkeyId)}`)
+    }
+    if(IsOrgUser){
+        await pool.request().query(`update OrgUserMaster set OrganizerUkeyId = ${setSQLStringValue(ToOrganizerUkeyId)} where OrganizerUkeyId = ${setSQLStringValue(FromOrganizerUkeyId)}`)
+    }
+    if(IsReminder){
+        await pool.request().query(`update ReminderMaster set OrganizerUkeyId = ${setSQLStringValue(ToOrganizerUkeyId)} where OrganizerUkeyId = ${setSQLStringValue(FromOrganizerUkeyId)}`)
+    }
+    if(IsTermCondition){
+        await pool.request().query(`update Org_TermsCondi set OrganizerUkeyId = ${setSQLStringValue(ToOrganizerUkeyId)} where OrganizerUkeyId = ${setSQLStringValue(FromOrganizerUkeyId)}`)
+    }
+    if(IsSubscriber){
+        await pool.request().query(`update SubscriberMaster set OrganizerUkeyId = ${setSQLStringValue(ToOrganizerUkeyId)} where OrganizerUkeyId = ${setSQLStringValue(FromOrganizerUkeyId)}`)
+    }
+    if(IsDisclaimer){
+        await pool.request().query(`update DisclaimerMaster set OrganizerUkeyId = ${setSQLStringValue(ToOrganizerUkeyId)} where OrganizerUkeyId = ${setSQLStringValue(FromOrganizerUkeyId)}`)
+    }
+    if(IsBooking){
+        await pool.request().query(`update Bookingmast set OrganizerUkeyId = ${setSQLStringValue(ToOrganizerUkeyId)} where OrganizerUkeyId = ${setSQLStringValue(FromOrganizerUkeyId)}`)
+    }
+    if(IsGallery){
+        await pool.request().query(`update DocumentUpload set OrganizerUkeyId = ${setSQLStringValue(ToOrganizerUkeyId)} where OrganizerUkeyId = ${setSQLStringValue(FromOrganizerUkeyId)} and Category = 'Gallery'`)
+
+        const baseDir = path.join(__dirname, '../../media/DocumentUpload');
+        const oldPath = path.join(baseDir, FromOrganizerUkeyId);
+        const newPath = path.join(baseDir, ToOrganizerUkeyId);
+    
+        if (!fs.existsSync(oldPath)) {
+          return res.status(400).json(errorMessage('Source folder does not exist.'));
+        }
+    
+        if (fs.existsSync(newPath)) {
+          return res.status(400).json(errorMessage('Destination folder already exists.'));
+        }
+    
+        // Step 1: Copy folder contents
+        await fs.copy(oldPath, newPath);
+    
+        // Step 2: Remove original folder (if IsDelete is true)
+        await fs.remove(oldPath);    
+    }
+    
+    if (IsDelete) {
+        await pool.request().query(`delete from OrganizerMaster where OrganizerUkeyId = ${setSQLStringValue(FromOrganizerUkeyId)}`)
+    }
+
+    return res.status(200).json(successMessage('Organizer transferred successfully.'));
+
+  } catch (error) {
+    console.error('Organizer transfer error:', error);
+    return res.status(500).json(errorMessage(error.message));
+  }
+};
+  //#endregion
 
 module.exports = {
     AddOrginizer,
@@ -544,5 +643,6 @@ module.exports = {
     ForgetPasswordForOrganizer,
     Loginorganizerwithemail,
     verifyOrganizerEmail,
-    loginWithMobileAndRole
+    loginWithMobileAndRole,
+    transferOrganizer
 }
