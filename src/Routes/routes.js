@@ -54,6 +54,7 @@ const RatingMasterController = require('../controllers/RatingMaster');
 const DisclaimerMasterController = require('../controllers/DisclaimerMaster');
 const EmailsLogsAPIController = require('../controllers/EmailsLogsAPI.js');
 const firebaseSentNotification = require('../controllers/firebaseSentNotification');
+const UserDevicesLoginController = require('../controllers/User_Devices_Login.js');
 // const carouselController = require('../controllers/carousel');
 
 const auth = require("../middleware/auth");
@@ -289,5 +290,12 @@ router.get('/fetch_email_logs', auth, EmailsLogsAPIController.fetchEmailLogs);
 
 //#Background Notification
 router.post('/send_notification_in_background', auth, firebaseSentNotification.sendNotificationInBackground);
-//#endregion
+//#
+
+//#region User Devices Login
+router.get('/fetch_user_devices_login', auth, UserDevicesLoginController.GetUserTokenDeviceList);
+router.post('/add_user_devices_login', UserDevicesLoginController.AddUserDevicesLogin);
+router.post('/log_out_user_devices_login', auth, UserDevicesLoginController.LogOutUserDevicesLogin);
+//endregion
+
 module.exports = router;

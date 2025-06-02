@@ -17,9 +17,17 @@ const sendNotificationOnSetTime = async () => {
         `);
 
         // Fetch users with active status
-        const users = await pool.query(`
-            SELECT NotificationToken FROM UserMaster WHERE IsLogin = 1 AND IsActive = 1
-        `);
+        const users = await pool.query(`SELECT DISTINCT NotificationToken
+                                        FROM user_devices
+                                        WHERE 
+                                        Log_In = 1 
+                                        AND Log_Out = 0 
+                                        AND DeviceType = 'Android' 
+                                        AND NotificationToken IS NOT NULL 
+                                        AND NotificationToken <> ''`);
+        // const users = await pool.query(`
+        //     SELECT NotificationToken FROM UserMaster WHERE IsLogin = 1 AND IsActive = 1
+        // `);
 
         // Iterate through notifications
         for (const notification of Notifications.recordset) {
@@ -104,7 +112,23 @@ const autoSendEventReview = async () => {
             for (const event of eventReview.recordset) {
                 const { OrganizerUkeyId, EventUkeyId, EventName, FileName } = event;
                 let usersToken = [];
-                const userTokenQuery = `select DISTINCT um.NotificationToken from Bookingmast as bm left join UserMaster um on um.UserUkeyId = bm.UserUkeyID where bm.EventUkeyId = ${setSQLStringValue(EventUkeyId)} AND bm.OrganizerUkeyId = ${setSQLStringValue(OrganizerUkeyId)} AND bm.IsVerify = 1 AND um.NotificationToken != '' AND um.NotificationToken is not null`;
+                const userTokenQuery = `SELECT DISTINCT NotificationToken 
+                                        FROM user_devices 
+                                        WHERE 
+                                        UserUkeyId IN (
+                                            SELECT um.UserUkeyId
+                                            FROM Bookingmast bm
+                                            JOIN UserMaster um ON um.UserUkeyId = bm.UserUkeyID
+                                            WHERE 
+                                            bm.EventUkeyId = '${setSQLStringValue(EventUkeyId)}'
+                                            AND bm.OrganizerUkeyId = '${setSQLStringValue(OrganizerUkeyId)}'
+                                            AND bm.IsVerify = 1
+                                        )
+                                        AND DeviceType = 'Android'
+                                        AND Log_In = 1
+                                        AND Log_Out = 0
+                                        AND NotificationToken IS NOT NULL AND NotificationToken <> ''`;
+                // const userTokenQuery = `select DISTINCT um.NotificationToken from Bookingmast as bm left join UserMaster um on um.UserUkeyId = bm.UserUkeyID where bm.EventUkeyId = ${setSQLStringValue(EventUkeyId)} AND bm.OrganizerUkeyId = ${setSQLStringValue(OrganizerUkeyId)} AND bm.IsVerify = 1 AND um.NotificationToken != '' AND um.NotificationToken is not null`;
                 const userToken = await pool.query(userTokenQuery);
                 if (userToken.recordset.length > 0) {
                     usersToken = userToken.recordset;

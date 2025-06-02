@@ -215,6 +215,7 @@ const deleteUserMaster = async (req, res) => {
         const userMaster = await pool.query(`SELECT * FROM UserMaster WHERE UserUkeyId = '${UserUkeyId}'`);
         if (!userMaster?.recordset?.length) return res.status(200).send(errorMessage("User not found"));
         const deleteQuery = `DELETE FROM UserMaster WHERE UserUkeyId = '${UserUkeyId}'`;
+        const deleteDeviceQuery = `DELETE FROM user_devices WHERE UserUkeyId = '${UserUkeyId}'`;
         try {
             const oldImg = userMaster?.recordset?.[0]?.ProfiilePic;
             if(oldImg) await deleteImage('./media/User/' + oldImg);
@@ -222,6 +223,7 @@ const deleteUserMaster = async (req, res) => {
             console.log('error :>> ', error);
         }
         await pool.query(deleteQuery);
+        await pool.query(deleteDeviceQuery);
         return res.status(200).send(successMessage("User deleted successfully"));
     } catch (error) {
         return res.status(400).send(errorMessage(error?.message));
@@ -248,7 +250,8 @@ const verifyHandler = async (req, res) => {
         const decoded = jwt.verify(token, SECRET_KEY);
         return res.status(200).send({...successMessage('Data inserted Successfully!'), verify: true, token, ...userMaster?.recordset?.[0]});
     } catch (error) {
-        return res.status(400).send(errorMessage("Invalid or expired token"));
+        console.log('Verify Handler Error :', error);
+        return res.status(400).send(errorMessage(error?.message || "Something went wrong! Please try again later."));
     }
 }
 
