@@ -212,7 +212,6 @@ const EventPermissionList = async (req, res) => {
         if (EndEventDate) {
             whereConditions.push(`em.EndEventDate <= ${setSQLDateTime(EndEventDate)}`);
         }
-        whereConditions.push(`em.EventStatus = 'INPROGRESS'`);
 
         // Combine the WHERE conditions into a single string
         const whereString = whereConditions.length > 0 ? `WHERE ${whereConditions.join(' AND ')}` : '';
@@ -254,7 +253,7 @@ const EventPermissionList = async (req, res) => {
             `,
             countQuery: `
                 SELECT COUNT(*) AS totalCount 
-                FROM EventMasterPermission em 
+                FROM EventMaster em 
                 ${whereString}
             `,
         };
@@ -323,55 +322,13 @@ const fetchEvenPermissiontById = async (req, res)=> {
                 WHERE du.UkeyId = em.EventUkeyId
                 FOR JSON PATH
             ) AS FileNames,
-             (
+			 (
                 SELECT pgm.ShortName, pgm.GatewayName, pgm.ConvenienceFee, pgm.GST, pgm.DonationAmt, pgm.AdditionalCharges, pgm.IsActive, pgm.KeyId, pgm.SecretKey
                 FROM PaymentGatewayMaster pgm 
                 WHERE em.PaymentGateway = pgm.GatewayUkeyId
                 FOR JSON PATH
             ) AS PaymentGatewayDetails
         FROM EventMasterPermission em 
-        LEFT JOIN AddressMaster am ON am.EventUkeyId = em.EventUkeyId 
-        LEFT JOIN OrganizerMaster om ON om.OrganizerUkeyId = em.OrganizerUkeyId
-        LEFT JOIN EventCategoryMaster ecm on em.EventCategoryUkeyId = ecm.EventCategoryUkeyId
-        LEFT JOIN PaymentGatewayMaster pgm on em.PaymentGateway = pgm.GatewayUkeyId
-                ${whereString} 
-                ORDER BY em.EntryDate DESC
-            `,
-            countQuery: `
-                SELECT COUNT(*) AS totalCount 
-                FROM EventMasterPermission em 
-                ${whereString}
-            `,
-        };
-
-        const masterquer = {
-            getQuery: `
-            SELECT 
-            em.*, 
-            am.Address1, 
-            am.Address2, 
-            am.Pincode, 
-            am.StateName,
-            am.StateCode, 
-            am.CityName, 
-            am.IsPrimaryAddress, 
-            am.IsActive AS IsActiveAddress, 
-            om.OrganizerName, 
-            ecm.CategoryName AS EventCategoryName,
-            pgm.GatewayName,
-            (
-                SELECT du.FileName, du.Label, du.docukeyid, du.EventUkeyId, du.OrganizerUkeyId, du.Category
-                FROM DocumentUpload du 
-                WHERE du.UkeyId = em.EventUkeyId
-                FOR JSON PATH
-            ) AS FileNames,
-             (
-                SELECT pgm.ShortName, pgm.GatewayName, pgm.ConvenienceFee, pgm.GST, pgm.DonationAmt, pgm.AdditionalCharges, pgm.IsActive, pgm.KeyId, pgm.SecretKey
-                FROM PaymentGatewayMaster pgm 
-                WHERE em.PaymentGateway = pgm.GatewayUkeyId
-                FOR JSON PATH
-            ) AS PaymentGatewayDetails
-        FROM EventMaster em 
         LEFT JOIN AddressMaster am ON am.EventUkeyId = em.EventUkeyId 
         LEFT JOIN OrganizerMaster om ON om.OrganizerUkeyId = em.OrganizerUkeyId
         LEFT JOIN EventCategoryMaster ecm on em.EventCategoryUkeyId = ecm.EventCategoryUkeyId
@@ -388,8 +345,6 @@ const fetchEvenPermissiontById = async (req, res)=> {
 
         const result = await getCommonAPIResponse(req, res, getUserList);
 
-        const masterResult = await getCommonAPIResponse(req, res, masterquer);
-
         result.data?.forEach(event => {
             if(event.FileNames){
                 event.FileNames = JSON.parse(event?.FileNames)
@@ -403,20 +358,7 @@ const fetchEvenPermissiontById = async (req, res)=> {
             }
         });
 
-        masterResult.data?.forEach(event => {
-            if(event.FileNames){
-                event.FileNames = JSON.parse(event?.FileNames)
-            } else {
-                event.FileNames = []
-            }
-            if(event.PaymentGatewayDetails){
-                event.PaymentGatewayDetails = JSON.parse(event?.PaymentGatewayDetails)
-            } else {
-                event.PaymentGatewayDetails = []
-            }
-        });
-
-        return res.json({ NewEntry : result.data, OldEntry : masterResult.data});
+        return res.json(result);
 
     }catch(error){
         return res.status(500).json(errorMessage(error.message))
@@ -480,6 +422,7 @@ const addEvent = async (req, res) => {
             `);
         }
 
+        if(flag === 'A' || (flag === 'U' && EventStatus !== 'PUBLISHED')){
             await transaction.request().query(`
                 INSERT INTO EventMasterPermission (
                     EventUkeyId, OrganizerUkeyId, EventName, Alias, StartEventDate, EventCode, EventDetails, IsActive, IpAddress, HostName, EntryDate, flag, TicketLimit, Location, PaymentGateway, UserName, UserID, AddressUkeyId, Longitude, Latitude, EndEventDate, EventCategoryUkeyId, Tagline1, Tagline2, UserBookingLimit, BookingStartDate, BookingEndDate, EventStatus
@@ -487,6 +430,7 @@ const addEvent = async (req, res) => {
                     ${setSQLStringValue(EventUkeyId)}, ${setSQLStringValue(OrganizerUkeyId)}, ${setSQLStringValue(EventName)}, ${setSQLStringValue(Alias)}, ${setSQLDateTime(StartEventDate)}, ${setSQLStringValue(EventCode)}, ${setSQLStringValue(EventDetails)}, ${setSQLBooleanValue(IsActive)}, '${IPAddress}', '${ServerName}', '${EntryTime}', '${flag}', ${setSQLNumberValue(TicketLimit)}, ${setSQLStringValue(Location)}, ${setSQLStringValue(PaymentGateway)}, ${setSQLStringValue(req.user.FirstName)}, ${setSQLNumberValue(req.user.UserId)}, ${setSQLStringValue(primaryAddress.AddressUkeyId)}, ${setSQLStringValue(Longitude)}, ${setSQLStringValue(Latitude)}, ${setSQLDateTime(EndEventDate)}, ${setSQLStringValue(EventCategoryUkeyId)}, ${setSQLStringValue(Tagline1)}, ${setSQLStringValue(Tagline2)}, ${setSQLNumberValue(UserBookingLimit)}, ${setSQLDateTime(BookingStartDate)}, ${setSQLDateTime(BookingEndDate)}, ${setSQLStringValue(EventStatus)}
                 )
             `)
+        }  
 
         let addressValue = '';
         // INSERT multiple addresses
