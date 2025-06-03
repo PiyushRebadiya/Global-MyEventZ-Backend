@@ -212,6 +212,7 @@ const EventPermissionList = async (req, res) => {
         if (EndEventDate) {
             whereConditions.push(`em.EndEventDate <= ${setSQLDateTime(EndEventDate)}`);
         }
+        whereConditions.push(`em.EventStatus = 'INPROGRESS'`);
 
         // Combine the WHERE conditions into a single string
         const whereString = whereConditions.length > 0 ? `WHERE ${whereConditions.join(' AND ')}` : '';
@@ -253,7 +254,7 @@ const EventPermissionList = async (req, res) => {
             `,
             countQuery: `
                 SELECT COUNT(*) AS totalCount 
-                FROM EventMaster em 
+                FROM EventMasterPermission em 
                 ${whereString}
             `,
         };
@@ -322,7 +323,7 @@ const fetchEvenPermissiontById = async (req, res)=> {
                 WHERE du.UkeyId = em.EventUkeyId
                 FOR JSON PATH
             ) AS FileNames,
-			 (
+             (
                 SELECT pgm.ShortName, pgm.GatewayName, pgm.ConvenienceFee, pgm.GST, pgm.DonationAmt, pgm.AdditionalCharges, pgm.IsActive, pgm.KeyId, pgm.SecretKey
                 FROM PaymentGatewayMaster pgm 
                 WHERE em.PaymentGateway = pgm.GatewayUkeyId
@@ -387,7 +388,22 @@ const fetchEvenPermissiontById = async (req, res)=> {
 
         const result = await getCommonAPIResponse(req, res, getUserList);
 
+        const masterResult = await getCommonAPIResponse(req, res, masterquer);
+
         result.data?.forEach(event => {
+            if(event.FileNames){
+                event.FileNames = JSON.parse(event?.FileNames)
+            } else {
+                event.FileNames = []
+            }
+            if(event.PaymentGatewayDetails){
+                event.PaymentGatewayDetails = JSON.parse(event?.PaymentGatewayDetails)
+            } else {
+                event.PaymentGatewayDetails = []
+            }
+        });
+
+        masterResult.data?.forEach(event => {
             if(event.FileNames){
                 event.FileNames = JSON.parse(event?.FileNames)
             } else {
