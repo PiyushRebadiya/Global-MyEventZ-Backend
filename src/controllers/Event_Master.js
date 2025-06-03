@@ -304,7 +304,7 @@ const fetchEvenPermissiontById = async (req, res)=> {
 
         const getUserList = {
             getQuery: `
-            SELECT 
+            SELECT top 1
             em.*, 
             am.Address1, 
             am.Address2, 
@@ -455,7 +455,7 @@ const addEvent = async (req, res) => {
         if (flag === 'U') {
             let query = ` update EventMasterPermission set flag = 'D' where EventUkeyId = '${EventUkeyId}';`
             if (
-                flag === 'U' && EventStatus === 'PUBLISHED'
+                ((flag === 'U' && EventStatus === 'PUBLISHED') || (flag === 'U' && !IsActive && EventStatus === 'PENDING'))
             ) {
                 query += `
                     DELETE FROM AddressMaster WHERE EventUkeyId = '${EventUkeyId}';
@@ -468,7 +468,7 @@ const addEvent = async (req, res) => {
 
         if (
             flag === 'A' ||
-            (flag === 'U' && EventStatus === 'PUBLISHED')
+            ((flag === 'U' && EventStatus === 'PUBLISHED') || (flag === 'U' && !IsActive && EventStatus === 'PENDING'))
         ) {
             // INSERT into EventMaster
             await transaction.request().query(`
