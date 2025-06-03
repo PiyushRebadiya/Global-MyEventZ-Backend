@@ -400,7 +400,7 @@ const fetchEvenPermissiontById = async (req, res)=> {
             }
         });
 
-        return res.json(result);
+        return res.json({ NewEntry : result.data, OldEntry : masterResult.data});
 
     }catch(error){
         return res.status(500).json(errorMessage(error.message))
