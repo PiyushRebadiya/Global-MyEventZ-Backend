@@ -245,7 +245,7 @@ const EventPermissionList = async (req, res) => {
                 FOR JSON PATH
             ) AS PaymentGatewayDetails
         FROM EventMasterPermission em 
-        LEFT JOIN AddressMaster am ON am.EventUkeyId = em.EventUkeyId 
+        LEFT JOIN AddressMaster am ON am.AddressUkeyID = em.AddressUkeyID 
         LEFT JOIN OrganizerMaster om ON om.OrganizerUkeyId = em.OrganizerUkeyId
         LEFT JOIN EventCategoryMaster ecm on em.EventCategoryUkeyId = ecm.EventCategoryUkeyId
         LEFT JOIN PaymentGatewayMaster pgm on em.PaymentGateway = pgm.GatewayUkeyId
@@ -330,7 +330,7 @@ const fetchEvenPermissiontById = async (req, res)=> {
                 FOR JSON PATH
             ) AS PaymentGatewayDetails
         FROM EventMasterPermission em 
-        LEFT JOIN AddressMaster am ON am.EventUkeyId = em.EventUkeyId 
+        LEFT JOIN AddressMaster am ON am.AddressUkeyID = em.AddressUkeyID 
         LEFT JOIN OrganizerMaster om ON om.OrganizerUkeyId = em.OrganizerUkeyId
         LEFT JOIN EventCategoryMaster ecm on em.EventCategoryUkeyId = ecm.EventCategoryUkeyId
         LEFT JOIN PaymentGatewayMaster pgm on em.PaymentGateway = pgm.GatewayUkeyId
@@ -372,7 +372,7 @@ const fetchEvenPermissiontById = async (req, res)=> {
                 FOR JSON PATH
             ) AS PaymentGatewayDetails
         FROM EventMaster em 
-        LEFT JOIN AddressMaster am ON am.EventUkeyId = em.EventUkeyId 
+        LEFT JOIN AddressMaster am ON am.AddressUkeyID = em.AddressUkeyID 
         LEFT JOIN OrganizerMaster om ON om.OrganizerUkeyId = em.OrganizerUkeyId
         LEFT JOIN EventCategoryMaster ecm on em.EventCategoryUkeyId = ecm.EventCategoryUkeyId
         LEFT JOIN PaymentGatewayMaster pgm on em.PaymentGateway = pgm.GatewayUkeyId
