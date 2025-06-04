@@ -318,7 +318,7 @@ const RemoveBookings = async (req, res) => {
 
 const VerifyTicket = async (req, res)=> {
     try{
-        const {BookingUkeyID, EventUkeyId, OrganizerUkeyId, UserUkeyID, IsWhatsapp = null, IsVerify = true, BookingCode = '', VerifiedByUkeyId = ''} = req.query;
+        const {BookingUkeyID, EventUkeyId, OrganizerUkeyId, UserUkeyID, IsWhatsapp = null, IsVerify = true, BookingCode = '', VerifiedByUkeyId = '', VerifyMode = ''} = req.query;
         const missingKeys = checkKeysAndRequireValues(['BookingUkeyID', 'EventUkeyId', 'OrganizerUkeyId', 'UserUkeyID'], req.query);
         if (missingKeys.length > 0) {
             return res.status(400).json(errorMessage(`${missingKeys.join(', ')} is Required`));
@@ -332,7 +332,7 @@ const VerifyTicket = async (req, res)=> {
 
         const result = await pool.request().query(`
             exec SP_VerifyTicket
-            @BookingUkeyID = ${setSQLStringValue(BookingUkeyID)}, @EventUkeyId = ${setSQLStringValue(EventUkeyId)}, @OrganizerUkeyId = ${setSQLStringValue(OrganizerUkeyId)}, @UserUkeyID = ${setSQLStringValue(UserUkeyID)}, @IsWhatsapp = ${setSQLBooleanValue(IsWhatsapp )}, @IsVerify = ${setSQLBooleanValue(IsVerify)}, @BookingCode = ${setSQLStringValue(BookingCode)}, @VerifiedByUkeyId = ${setSQLStringValue(VerifiedByUkeyId)}
+            @BookingUkeyID = ${setSQLStringValue(BookingUkeyID)}, @EventUkeyId = ${setSQLStringValue(EventUkeyId)}, @OrganizerUkeyId = ${setSQLStringValue(OrganizerUkeyId)}, @UserUkeyID = ${setSQLStringValue(UserUkeyID)}, @IsWhatsapp = ${setSQLBooleanValue(IsWhatsapp )}, @IsVerify = ${setSQLBooleanValue(IsVerify)}, @BookingCode = ${setSQLStringValue(BookingCode)}, @VerifiedByUkeyId = ${setSQLStringValue(VerifiedByUkeyId)}, @VerifyMode = ${setSQLStringValue(VerifyMode)}
         `)
         
         return res.status(200).json({...successMessage('Ticket Verifed successfully.'), verify : true});
