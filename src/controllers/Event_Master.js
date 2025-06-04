@@ -454,15 +454,12 @@ const addEvent = async (req, res) => {
 
         if (flag === 'U') {
             let query = ` update EventMasterPermission set flag = 'D' where EventUkeyId = '${EventUkeyId}';`
-            if (
-                ((flag === 'U' && EventStatus === 'PUBLISHED') || (flag === 'U' && !IsActive && EventStatus === 'PENDING'))
-            ) {
+            if ((flag === 'U' && EventStatus === 'PUBLISHED') || (flag === 'U' && !IsActive && EventStatus === 'PENDING')) {
                 query += `
                     DELETE FROM AddressMaster WHERE EventUkeyId = '${EventUkeyId}';
                     DELETE FROM EventMaster WHERE EventUkeyId = '${EventUkeyId}';
                 `
             }
-    
             await transaction.request().query(query);
         }
 
@@ -480,6 +477,7 @@ const addEvent = async (req, res) => {
             `);
         }
 
+        // if(flag === 'A' || (flag === 'U' && EventStatus !== 'PUBLISHED')){
             await transaction.request().query(`
                 INSERT INTO EventMasterPermission (
                     EventUkeyId, OrganizerUkeyId, EventName, Alias, StartEventDate, EventCode, EventDetails, IsActive, IpAddress, HostName, EntryDate, flag, TicketLimit, Location, PaymentGateway, UserName, UserID, AddressUkeyId, Longitude, Latitude, EndEventDate, EventCategoryUkeyId, Tagline1, Tagline2, UserBookingLimit, BookingStartDate, BookingEndDate, EventStatus
@@ -487,28 +485,32 @@ const addEvent = async (req, res) => {
                     ${setSQLStringValue(EventUkeyId)}, ${setSQLStringValue(OrganizerUkeyId)}, ${setSQLStringValue(EventName)}, ${setSQLStringValue(Alias)}, ${setSQLDateTime(StartEventDate)}, ${setSQLStringValue(EventCode)}, ${setSQLStringValue(EventDetails)}, ${setSQLBooleanValue(IsActive)}, '${IPAddress}', '${ServerName}', '${EntryTime}', '${flag}', ${setSQLNumberValue(TicketLimit)}, ${setSQLStringValue(Location)}, ${setSQLStringValue(PaymentGateway)}, ${setSQLStringValue(req.user.FirstName)}, ${setSQLNumberValue(req.user.UserId)}, ${setSQLStringValue(primaryAddress.AddressUkeyId)}, ${setSQLStringValue(Longitude)}, ${setSQLStringValue(Latitude)}, ${setSQLDateTime(EndEventDate)}, ${setSQLStringValue(EventCategoryUkeyId)}, ${setSQLStringValue(Tagline1)}, ${setSQLStringValue(Tagline2)}, ${setSQLNumberValue(UserBookingLimit)}, ${setSQLDateTime(BookingStartDate)}, ${setSQLDateTime(BookingEndDate)}, ${setSQLStringValue(EventStatus)}
                 )
             `)
+        // }  
 
         let addressValue = '';
         // INSERT multiple addresses
-        if (Addresses && Addresses.length > 0) {
-            for (const address of Addresses) {
-                if (!address || typeof address !== "object") continue; // Skip invalid entries
+        if(flag === 'A' || ((flag === 'U' && EventStatus === 'PUBLISHED') || (flag === 'U' && !IsActive && EventStatus === 'PENDING'))){
 
-                const {
-                    AddressUkeyId, Alias, Address1, Address2, Pincode, StateCode, StateName, CityName, CountryName, IsPrimaryAddress, IsActive
-                } = address;
-
-                await transaction.request().query(`
-                    INSERT INTO AddressMaster (
-                        AddressUkeyID, EventUkeyId, OrganizerUkeyId, Alias, Address1, Address2, Pincode, StateCode, 
-                        StateName, CityName, CountryName, IsPrimaryAddress, IsActive, flag, 
-                        IpAddress, HostName, EntryDate, UsrName, UsreID
-                    ) VALUES (
-                        ${setSQLStringValue(AddressUkeyId)}, ${setSQLStringValue(EventUkeyId)}, ${setSQLStringValue(OrganizerUkeyId)}, ${setSQLStringValue(Alias)}, ${setSQLStringValue(Address1)}, ${setSQLStringValue(Address2)}, ${setSQLNumberValue(Pincode)}, ${setSQLNumberValue(StateCode)}, ${setSQLStringValue(StateName)}, 
-                        ${setSQLStringValue(CityName)}, ${setSQLStringValue(CountryName)}, ${setSQLBooleanValue(IsPrimaryAddress)}, ${setSQLBooleanValue(IsActive)}, ${setSQLStringValue(flag)}, ${setSQLStringValue(IPAddress)}, ${setSQLStringValue(ServerName)}, ${setSQLStringValue(EntryTime)}, ${setSQLStringValue(req.user.FirstName)}, ${setSQLNumberValue(req.user.UserId)}
-                    );
-                `);
-                addressValue = [Address1, Address2, CityName, StateName, Pincode].filter(Boolean).join(', ');
+            if (Addresses && Addresses.length > 0) {
+                for (const address of Addresses) {
+                    if (!address || typeof address !== "object") continue; // Skip invalid entries
+    
+                    const {
+                        AddressUkeyId, Alias, Address1, Address2, Pincode, StateCode, StateName, CityName, CountryName, IsPrimaryAddress, IsActive
+                    } = address;
+    
+                    await transaction.request().query(`
+                        INSERT INTO AddressMaster (
+                            AddressUkeyID, EventUkeyId, OrganizerUkeyId, Alias, Address1, Address2, Pincode, StateCode, 
+                            StateName, CityName, CountryName, IsPrimaryAddress, IsActive, flag, 
+                            IpAddress, HostName, EntryDate, UsrName, UsreID
+                        ) VALUES (
+                            ${setSQLStringValue(AddressUkeyId)}, ${setSQLStringValue(EventUkeyId)}, ${setSQLStringValue(OrganizerUkeyId)}, ${setSQLStringValue(Alias)}, ${setSQLStringValue(Address1)}, ${setSQLStringValue(Address2)}, ${setSQLNumberValue(Pincode)}, ${setSQLNumberValue(StateCode)}, ${setSQLStringValue(StateName)}, 
+                            ${setSQLStringValue(CityName)}, ${setSQLStringValue(CountryName)}, ${setSQLBooleanValue(IsPrimaryAddress)}, ${setSQLBooleanValue(IsActive)}, ${setSQLStringValue(flag)}, ${setSQLStringValue(IPAddress)}, ${setSQLStringValue(ServerName)}, ${setSQLStringValue(EntryTime)}, ${setSQLStringValue(req.user.FirstName)}, ${setSQLNumberValue(req.user.UserId)}
+                        );
+                    `);
+                    addressValue = [Address1, Address2, CityName, StateName, Pincode].filter(Boolean).join(', ');
+                }
             }
         }
 
