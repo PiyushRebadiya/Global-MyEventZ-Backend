@@ -359,39 +359,51 @@ const fetchEvenPermissiontById = async (req, res)=> {
 
         const masterquer = {
             getQuery: `
-            SELECT 
-            em.*, 
-            am.Address1, 
-            am.Address2, 
-            am.Pincode, 
-            am.StateName,
-            am.StateCode, 
-            am.CityName, 
-            am.IsPrimaryAddress, 
-            am.IsActive AS IsActiveAddress, 
-            om.OrganizerName, 
-            ecm.CategoryName AS EventCategoryName,
-            pgm.GatewayName,
-            (
-                SELECT du.FileName, du.Label, du.docukeyid, du.EventUkeyId, du.OrganizerUkeyId, du.Category
-                FROM DocumentUpload du 
-                WHERE du.UkeyId = em.EventUkeyId
-                FOR JSON PATH
-            ) AS FileNames,
-             (
-                SELECT pgm.ShortName, pgm.GatewayName, pgm.ConvenienceFee, pgm.GST, pgm.DonationAmt, pgm.AdditionalCharges, pgm.IsActive, pgm.KeyId, pgm.SecretKey
-                FROM PaymentGatewayMaster pgm 
-                WHERE em.PaymentGateway = pgm.GatewayUkeyId
-                FOR JSON PATH
-            ) AS PaymentGatewayDetails
-        FROM EventMaster em 
-        LEFT JOIN AddressMaster am ON am.AddressUkeyID = em.AddressUkeyID 
-        LEFT JOIN OrganizerMaster om ON om.OrganizerUkeyId = em.OrganizerUkeyId
-        LEFT JOIN EventCategoryMaster ecm on em.EventCategoryUkeyId = ecm.EventCategoryUkeyId
-        LEFT JOIN PaymentGatewayMaster pgm on em.PaymentGateway = pgm.GatewayUkeyId
-                ${whereString} 
-                ORDER BY em.EntryDate DESC
-            `,
+            WITH RankedEvents AS (
+                SELECT
+                    em.*,
+                    am.Address1,
+                    am.Address2,
+                    am.Pincode,
+                    am.StateName,
+                    am.StateCode,
+                    am.CityName,
+                    am.IsPrimaryAddress,
+                    am.IsActive AS IsActiveAddress,
+                    om.OrganizerName,
+                    ecm.CategoryName AS EventCategoryName,
+                    pgm.GatewayName,
+                    -- Latest EventMasterPermission status
+                    emp.EventStatus AS PermissionStatus,
+                    (
+                        SELECT du.FileName, du.Label, du.docukeyid, du.EventUkeyId, du.OrganizerUkeyId, du.Category
+                        FROM DocumentUpload du
+                        WHERE du.UkeyId = em.EventUkeyId
+                        FOR JSON PATH
+                    ) AS FileNames,
+                    (
+                        SELECT pgm.ShortName, pgm.GatewayName, pgm.ConvenienceFee, pgm.GST, pgm.DonationAmt, pgm.AdditionalCharges, pgm.IsActive, pgm.KeyId, pgm.SecretKey
+                        FROM PaymentGatewayMaster pgm
+                        WHERE em.PaymentGateway = pgm.GatewayUkeyId
+                        FOR JSON PATH
+                    ) AS PaymentGatewayDetails,
+                    ROW_NUMBER() OVER (PARTITION BY em.EventUkeyId ORDER BY em.EntryDate DESC) AS rn
+                FROM EventMaster em
+                LEFT JOIN AddressMaster am ON am.EventUkeyId = em.EventUkeyId
+                LEFT JOIN OrganizerMaster om ON om.OrganizerUkeyId = em.OrganizerUkeyId
+                LEFT JOIN EventCategoryMaster ecm ON em.EventCategoryUkeyId = ecm.EventCategoryUkeyId
+                LEFT JOIN PaymentGatewayMaster pgm ON em.PaymentGateway = pgm.GatewayUkeyId
+                OUTER APPLY (
+                    SELECT TOP 1 emp.EventStatus
+                    FROM EventMasterPermission emp
+                    WHERE emp.EventUkeyId = em.EventUkeyId
+                    ORDER BY emp.EntryDate DESC
+                ) emp ${whereString}
+            )
+            SELECT *
+            FROM RankedEvents
+            WHERE rn = 1
+            ORDER BY EntryDate desc`,
             countQuery: `
                 SELECT COUNT(*) AS totalCount 
                 FROM EventMaster em 
