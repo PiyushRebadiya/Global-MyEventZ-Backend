@@ -51,8 +51,24 @@ const OrgTermCond = async(req, res)=>{
         const deleteQuery = `
             DELETE FROM Org_TermsCondi WHERE TermsUkeyId = ${setSQLStringValue(TermsUkeyId)}
         `
+        const IsActiveQuery = `UPDATE Org_TermsCondi
+                    SET IsActive = CASE 
+                        WHEN TermsUkeyId = ${setSQLStringValue(TermsUkeyId)} THEN 1
+                        ELSE 0
+                    END
+                    WHERE EventUkeyId = ${setSQLStringValue(EventUkeyId)}
+                    AND OrganizerUkeyId = ${setSQLStringValue(OrganizerUkeyId)}
+                    `
         if(flag == 'A'){
             const result = await pool.request().query(insertQuery);
+
+            if(setSQLBooleanValue(IsActive)){
+                try {
+                    await pool.request().query(IsActiveQuery);
+                } catch (error) {
+                    console.log('Error in setting IsActive for Organizer Terms and Conditions:', error);
+                }
+            }
 
             if(result.rowsAffected[0] === 0){
                 return res.status(400).json({...errorMessage('Not created Organizer terms and condtion'),})
@@ -67,6 +83,14 @@ const OrgTermCond = async(req, res)=>{
 
             if(deleteResult.rowsAffected[0] === 0 && insertResult.rowsAffected[0] === 0){
                 return res.status(400).json({...errorMessage('Not updated organizer terms and conditions successfully.')})
+            }
+
+            if(setSQLBooleanValue(IsActive)){
+                try {
+                    await pool.request().query(IsActiveQuery);
+                } catch (error) {
+                    console.log('Error in setting IsActive for Organizer Terms and Conditions:', error);
+                }
             }
 
             return res.status(200).json({...successMessage('Successfully updated organizer terms and conditions..'), ...req.body});
