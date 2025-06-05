@@ -364,6 +364,47 @@ const verifyTicketOnBookingDetailsUKkeyId = async (req, res) => {
     }
 }
 
+const TicketLimit = async( req, res)=> {
+    try{
+        const {
+            EventUkeyid, UserUkeyid, TicketRequest
+        } = req.query;
+        // Get booking limit for the event
+        const EventBookingUserLimit = await pool.request().query(`
+            SELECT UserBookingLimit
+            FROM EventMaster
+            WHERE EventUkeyId = ${setSQLStringValue(EventUkeyid)}
+        `);
+        // Get user's mobile
+        const BookingUkeyuid = await pool.request().query(`
+            SELECT BookingUkeyID
+            FROM Bookingmast
+            WHERE UserUkeyId = ${setSQLStringValue(UserUkeyid)}
+            and EventUkeyId = ${setSQLStringValue(EventUkeyid)}
+        `);
+        // Total booked tickets by this mobile number (excluding current booking in update)
+        const BookedTicketCount = await pool.request().query( `
+            SELECT COUNT(*) AS BookiedTicketCount
+            FROM BookingDetails
+            WHERE BookingUkeyID = ${setSQLStringValue(BookingUkeyuid?.recordset?.[0]?.BookingUkeyID)}
+        `);
+        const totalBookedByUser = BookedTicketCount?.recordset?.[0]?.BookiedTicketCount || 0;
+        const maxAllowed = EventBookingUserLimit?.recordset?.[0]?.UserBookingLimit || 0;
+        // New ticket count in current request
+        const totalAfterThisBooking = Number(totalBookedByUser) + Number(TicketRequest);
+        console.log(totalAfterThisBooking, totalBookedByUser, TicketRequest);
+        if (totalAfterThisBooking > maxAllowed) {
+            return res.status(400).json({...errorMessage(
+                `On this Mobile Number Booking limit exceeded. You can book only ${maxAllowed} ticket${maxAllowed > 1 ? 's' : ''} for this event on this Mobile Number.`
+            ),verify : false});
+        }
+        return res.json({...successMessage('You can Go for Booking Now'),verify : true});
+    }catch(error){
+        console.error('Error fetching bookings:', error);
+        return res.status(500).send(errorMessage(error?.message));
+    }
+}
+
 module.exports = {
     fetchBookings,
     fetchBookingInfoById,
@@ -371,4 +412,5 @@ module.exports = {
     RemoveBookings,
     VerifyTicket,
     verifyTicketOnBookingDetailsUKkeyId,
+    TicketLimit,
 }
