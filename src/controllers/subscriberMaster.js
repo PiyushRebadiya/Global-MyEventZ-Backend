@@ -25,6 +25,8 @@ const fetchSubscriberlist = async (req, res)=>{
         if(IsEmail){
             whereConditions.push(`sm.IsEmail = ${setSQLBooleanValue(IsEmail)}`);
         }
+        whereConditions.push(`em.IsActive = 1`);
+        whereConditions.push(`em.EventStatus = 'PUBLISHED'`);
         // Combine the WHERE conditions into a single string
         const whereString = whereConditions.length > 0 ? `WHERE ${whereConditions.join(' AND ')}` : '';
         const getUserList = {
