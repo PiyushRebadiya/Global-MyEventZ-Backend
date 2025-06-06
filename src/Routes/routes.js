@@ -193,6 +193,7 @@ router.get('/fetch_coupons', auth, CouponMasterController.FetchCoupons);
 router.post('/coupon_master', auth, CouponMasterController.CouponMaster);
 router.delete('/delete_coupon', auth, CouponMasterController.RemoveCoupon);
 
+router.get('/ticket_print', BookingController.ticketPrint);
 router.get('/verify_ticket', auth, BookingController.VerifyTicket);
 router.post('/multiple_ticket_verify', auth, BookingController.verifyTicketOnBookingDetailsUKkeyId);
 //#endregion

@@ -406,6 +406,21 @@ const TicketLimit = async( req, res)=> {
     }
 }
 
+const ticketPrint = async (req, res) => {
+    try{
+        const {BookingUkeyID} = req.query;
+
+        const result = await pool.request().query(`
+            exec TicketPrint @BookingUkeyID = ${setSQLStringValue(BookingUkeyID)}
+        `)
+
+        return res.status(200).json({data : result.recordset})
+    }catch(error){
+        console.error('Error ticket print :', error);
+        return res.status(500).send(errorMessage(error?.message));
+    }
+}
+
 module.exports = {
     fetchBookings,
     fetchBookingInfoById,
@@ -414,4 +429,5 @@ module.exports = {
     VerifyTicket,
     verifyTicketOnBookingDetailsUKkeyId,
     TicketLimit,
+    ticketPrint
 }
