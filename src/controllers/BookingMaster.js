@@ -344,7 +344,7 @@ const VerifyTicket = async (req, res)=> {
 
 const verifyTicketOnBookingDetailsUKkeyId = async (req, res) => {
     try{
-        const {BookingdetailUkeyIDs, VerifiedByUkeyId} = req.body;
+        const {BookingdetailUkeyIDs, VerifiedByUkeyId, VerifyMode} = req.body;
 
         const missingKeys = checkKeysAndRequireValues(['BookingdetailUkeyIDs', 'VerifiedByUkeyId'], req.body);
         if (missingKeys.length > 0) {
@@ -354,7 +354,7 @@ const verifyTicketOnBookingDetailsUKkeyId = async (req, res) => {
         const BookingdetailUkeyIDsArray = BookingdetailUkeyIDs?.split(',')
 
         for (const BookingdetailUkeyID of BookingdetailUkeyIDsArray) {
-            await pool.request().query(`update Bookingdetails set IsVerify = 1, VerifiedByUkeyId = ${setSQLStringValue(VerifiedByUkeyId)} where BookingdetailUkeyID = ${setSQLStringValue(BookingdetailUkeyID)}`)
+            await pool.request().query(`update Bookingdetails set IsVerify = 1, VerifiedByUkeyId = ${setSQLStringValue(VerifiedByUkeyId)}, VerifyMode = ${setSQLStringValue(VerifyMode)} where BookingdetailUkeyID = ${setSQLStringValue(BookingdetailUkeyID)}`)
         }
 
         return res.status(200).json({...successMessage('Ticket Verifed successfully.')});
