@@ -7,10 +7,10 @@ const SuperAdminDashoardList = async (req, res) => {
             select COUNT(*) as TotalOrganizers from OrgUserMaster where Role = 'Admin'
         `) 
         const totalEvents = await pool.request().query(`
-            select COUNT(*) as TotalEvents from EventMaster
+            select COUNT(*) as TotalEvents from EventMaster where where flag <> 'D'
         `)
         const totalUsers = await pool.request().query(`
-            select COUNT(*) as totalUsers from UserMaster
+            select COUNT(*) as totalUsers from UserMaster where where flag <> 'D'
         `)
         
         return res.status(200).json({

@@ -14,7 +14,7 @@ const AdminDashboardList = async (req, res) => {
         const totalEvents = await pool.request().query(`
             SELECT COUNT(*) AS TotalEvents 
             FROM EventMaster WITH (NOLOCK) 
-            WHERE OrganizerUkeyId = ${setSQLStringValue(OrganizerUkeyId)}
+            WHERE OrganizerUkeyId = ${setSQLStringValue(OrganizerUkeyId)} and flag <> 'D'
         `);
 
         const totalUsers = await pool.request().query(`
@@ -22,6 +22,7 @@ const AdminDashboardList = async (req, res) => {
             FROM Bookingmast WITH (NOLOCK) 
             WHERE EventUkeyId = ${setSQLStringValue(EventUkeyId)} 
             AND OrganizerUkeyId = ${setSQLStringValue(OrganizerUkeyId)} 
+            AND flag <> 'D'
             ${StartDate && EndDate ? `AND CONVERT(DATE, EntryDate) BETWEEN '${StartDate}' AND '${EndDate}'` : ''}
         `);
 
@@ -30,6 +31,7 @@ const AdminDashboardList = async (req, res) => {
             FROM Bookingmast WITH (NOLOCK) 
             WHERE EventUkeyId = ${setSQLStringValue(EventUkeyId)} 
             AND OrganizerUkeyId = ${setSQLStringValue(OrganizerUkeyId)} 
+            AND flag <> 'D'
             ${StartDate && EndDate ? `AND CONVERT(DATE, EntryDate) BETWEEN '${StartDate}' AND '${EndDate}'` : ''}
         `);
 
@@ -38,6 +40,7 @@ const AdminDashboardList = async (req, res) => {
             FROM Bookingmast WITH (NOLOCK) 
             WHERE EventUkeyId = ${setSQLStringValue(EventUkeyId)} 
             AND OrganizerUkeyId = ${setSQLStringValue(OrganizerUkeyId)} 
+            AND flag <> 'D'
             ${StartDate && EndDate ? `AND CONVERT(DATE, EntryDate) BETWEEN '${StartDate}' AND '${EndDate}'` : ''}
         `);
 
@@ -46,6 +49,7 @@ const AdminDashboardList = async (req, res) => {
             FROM Bookingmast WITH (NOLOCK) 
             WHERE EventUkeyId = ${setSQLStringValue(EventUkeyId)} 
             AND OrganizerUkeyId = ${setSQLStringValue(OrganizerUkeyId)} 
+            AND flag <> 'D'
             ${StartDate && EndDate ? `AND CONVERT(DATE, EntryDate) BETWEEN '${StartDate}' AND '${EndDate}'` : ''}
         `);
 
@@ -54,6 +58,7 @@ const AdminDashboardList = async (req, res) => {
             FROM Bookingmast WITH (NOLOCK) 
             WHERE EventUkeyId = ${setSQLStringValue(EventUkeyId)} 
             AND OrganizerUkeyId = ${setSQLStringValue(OrganizerUkeyId)} 
+            AND flag <> 'D'
             ${StartDate && EndDate ? `AND CONVERT(DATE, EntryDate) BETWEEN '${StartDate}' AND '${EndDate}'` : ''}
         `);
 
@@ -62,6 +67,7 @@ const AdminDashboardList = async (req, res) => {
             FROM Bookingmast WITH (NOLOCK) 
             WHERE EventUkeyId = ${setSQLStringValue(EventUkeyId)} 
             AND OrganizerUkeyId = ${setSQLStringValue(OrganizerUkeyId)} 
+            AND flag <> 'D'
             ${StartDate && EndDate ? `AND CONVERT(DATE, EntryDate) BETWEEN '${StartDate}' AND '${EndDate}'` : ''}
         `);
 
@@ -81,6 +87,7 @@ const AdminDashboardList = async (req, res) => {
         WHERE 
             BM.EventUkeyId = ${setSQLStringValue(EventUkeyId)} 
             AND BM.OrganizerUkeyId = ${setSQLStringValue(OrganizerUkeyId)}
+            AND TCM.flag <> 'D'
             ${StartDate && EndDate ? `AND CONVERT(DATE, BD.EntryDate) BETWEEN '${StartDate}' AND '${EndDate}'` : ''}
         GROUP BY 
             TCM.Category, TCM.TicketLimits, TCM.PaidLimit, TCM.UnPaidLimit
@@ -112,6 +119,7 @@ const AdminDashboardList = async (req, res) => {
                 AND BD.TicketCateUkeyId = TCM.TicketCateUkeyId
                 ${StartDate && EndDate ? `AND CONVERT(DATE, BD.EntryDate) BETWEEN '${StartDate}' AND '${EndDate}'` : ''}
             )
+            AND TCM.flag <> 'D'
         `);
     
         return res.status(200).json({
@@ -182,7 +190,7 @@ const TicketRegisterReport = async (req, res) => {
         if (BookingUkeyID) {
             whereConditions.push(`BD.BookingUkeyID = ${setSQLStringValue(BookingUkeyID)}`);
         }
-
+        whereConditions.push(`BD.flag <> 'D'`);
         const whereString = whereConditions.length > 0 ? `WHERE ${whereConditions.join(' AND ')}` : '';
         const getAutoSentNotificationList = {
             getQuery: `
@@ -225,6 +233,7 @@ const TransactionReport = async (req, res)=> {
             whereConditions.push(`${StartDate && EndDate ? ` CONVERT(DATE, BookingDate) BETWEEN '${StartDate}' AND '${EndDate}'` : ''}`);
         }
         whereConditions.push(`IsPayment = 1`);
+        whereConditions.push(`flag <> 'D'`);
 
         const whereString = whereConditions.length > 0 ? `WHERE ${whereConditions.join(' AND ')}` : '';
         const TransactionReport = {
@@ -260,6 +269,7 @@ const TicketVerifyReport = async (req, res) => {
         if (VerifiedByUkeyId) {
             whereConditions.push(`bd.VerifiedByUkeyId = ${setSQLStringValue(VerifiedByUkeyId)}`);
         }
+        whereConditions.push(`bd.flag <> 'D'`);
         
         const whereString = whereConditions.length > 0 ? `WHERE ${whereConditions.join(' AND ')}` : '';
 
@@ -355,7 +365,7 @@ const TicketVerifyReportByTicketCategory = async (req, res) => {
             whereConditions.push(`tcm.TicketCateUkeyId = ${setSQLStringValue(TicketCateUkeyId)}`);
         }
         whereConditions.push(`bd.IsVerify = 1`);
-
+        whereConditions.push(`bd.flag <> 'D'`);
         
         const whereString = whereConditions.length > 0 ? `WHERE ${whereConditions.join(' AND ')}` : '';
 
@@ -423,6 +433,7 @@ const CustomeReport = async (req, res) => {
         if (IsVerify) {
             whereConditions.push(`bd.IsVerify = ${setSQLBooleanValue(IsVerify)}`);
         }
+        whereConditions.push(`bd.flag <> 'D'`);
         
         const whereString = whereConditions.length > 0 ? `WHERE ${whereConditions.join(' AND ')}` : '';
 
@@ -474,6 +485,7 @@ const dashboardVolunteerCount = async (req, res) => {
         }
         
         whereConditions.push(`Role = 'Volunteer'`);
+        // whereConditions.push(`flag <> 'D'`);
         const whereString = whereConditions.length > 0 ? `WHERE ${whereConditions.join(' AND ')}` : '';
 
         const TransactionReport = {
