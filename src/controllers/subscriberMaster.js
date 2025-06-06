@@ -44,7 +44,12 @@ const fetchSubscriberlist = async (req, res)=>{
             left join UserMaster um on sm.UserUkeyId = um.UserUkeyId 
             left join EventCategoryMaster ecm on em.EventCategoryUkeyId = ecm.EventCategoryUkeyId
             ${whereString} ORDER BY sm.EntryDate DESC`,
-            countQuery: `SELECT COUNT(Id) AS totalCount FROM SubscriberMaster sm ${whereString}`,
+            countQuery: `SELECT COUNT(Id) AS totalCount FROM SubscriberMaster sm
+            left join EventMaster em on sm.EventUkeyId = em.EventUkeyId
+            left join OrganizerMaster om on sm.OrganizerUkeyId = om.OrganizerUkeyId
+            left join UserMaster um on sm.UserUkeyId = um.UserUkeyId 
+            left join EventCategoryMaster ecm on em.EventCategoryUkeyId = ecm.EventCategoryUkeyId
+            ${whereString}`,
         };
 
         const result = await getCommonAPIResponse(req, res, getUserList);
