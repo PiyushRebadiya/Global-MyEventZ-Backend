@@ -13,6 +13,7 @@ const FetchPricing = async (req, res) => {
         if (IsActive) {
             whereConditions.push(`pm.IsActive = ${setSQLStringValue(IsActive)}`);
         }
+        whereConditions.push(`pm.flag <> 'D'`);
 
         // Combine the WHERE conditions into a single string
         const whereString = whereConditions.length > 0 ? `WHERE ${whereConditions.join(' AND ')}` : '';
@@ -130,7 +131,7 @@ const RemovePricing = async (req, res) => {
         }
 
         const deleteQuery = `
-            DELETE FROM PriceMaster WHERE PriceUkeyId = ${setSQLStringValue(PriceUkeyId)};
+            update PriceMaster set flag = 'D' WHERE PriceUkeyId = ${setSQLStringValue(PriceUkeyId)};
         `;
         const deleteResult = await pool.request().query(deleteQuery);
 

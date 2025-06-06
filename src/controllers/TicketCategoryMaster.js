@@ -22,6 +22,8 @@ const FetchTicketCategory = async(req, res)=>{
         if(IsUser){
             whereConditions.push(`IsUser = ${setSQLBooleanValue(IsUser)}`);
         }
+        whereConditions.push(`flag <> 'D'`);
+
         // Combine the WHERE conditions into a single string
         const whereString = whereConditions.length > 0 ? `WHERE ${whereConditions.join(' AND ')}` : '';
         const getUserList = {
@@ -125,7 +127,7 @@ const RemoveTicketCategory = async(req, res)=>{
         }
 
         const query = `
-            DELETE FROM TicketCategoryMaster WHERE TicketCateUkeyId = ${setSQLStringValue(TicketCateUkeyId)} and EventUkeyId = ${setSQLStringValue(EventUkeyId)}
+            update TicketCategoryMaster set flag = 'D' WHERE TicketCateUkeyId = ${setSQLStringValue(TicketCateUkeyId)} and EventUkeyId = ${setSQLStringValue(EventUkeyId)}
         `
 
         const result = await pool.request().query(query);

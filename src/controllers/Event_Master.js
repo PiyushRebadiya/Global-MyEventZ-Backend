@@ -31,7 +31,7 @@ const EventList = async (req, res) => {
         if (EndEventDate) {
             whereConditions.push(`em.EndEventDate <= ${setSQLDateTime(EndEventDate)}`);
         }
-
+        whereConditions.push(`em.flag <> 'D'`);
         // Combine the WHERE conditions into a single string
         const whereString = whereConditions.length > 0 ? `WHERE ${whereConditions.join(' AND ')}` : '';
 
@@ -128,7 +128,7 @@ const fetchEventById = async (req, res)=> {
         if (OrganizerUkeyId) {
             whereConditions.push(`em.OrganizerUkeyId = '${OrganizerUkeyId}'`); // Specify alias 'em' for EventMaster
         }
-
+        whereConditions.push(`em.flag <> 'D'`);
         // Combine the WHERE conditions into a single string
         const whereString = whereConditions.length > 0 ? `WHERE ${whereConditions.join(' AND ')}` : '';
 
@@ -669,8 +669,8 @@ const RemoveEvent = async (req, res) => {
         }
 
         const query = `
-            DELETE FROM EventMaster WHERE EventUkeyId = ${setSQLStringValue(EventUkeyId)} and OrganizerUkeyId = ${setSQLStringValue(OrganizerUkeyId)}
-            DELETE FROM AddressMaster WHERE EventUkeyId = ${setSQLStringValue(EventUkeyId)} and OrganizerUkeyId = ${setSQLStringValue(OrganizerUkeyId)}
+            update EventMaster set flag = 'D' and OrganizerUkeyId = ${setSQLStringValue(OrganizerUkeyId)}
+            update AddressMaster set flag = 'D' WHERE EventUkeyId = ${setSQLStringValue(EventUkeyId)} and OrganizerUkeyId = ${setSQLStringValue(OrganizerUkeyId)}
         `
     
         const result = await pool.request().query(query);

@@ -18,7 +18,7 @@ const FetchSponsorMasterDetails = async (req, res) => {
         if (SponsorCatUkeyId) {
             whereConditions.push(`SM.SponsorCatUkeyId = ${setSQLStringValue(SponsorCatUkeyId)}`);
         }
-        
+        whereConditions.push(`SM.flag <> 'D' `);
         const whereString = whereConditions.length > 0 ? `WHERE ${whereConditions.join(' AND ')}` : '';
 
         const getUserList = {
@@ -161,7 +161,7 @@ const RemoveSponsor = async (req, res) => {
         }
 
         const deleteQuery = `
-            DELETE FROM SponsorMaster WHERE SponsorUkeyId = ${setSQLStringValue(SponsorUkeyId)} AND OrganizerUkeyId = ${setSQLStringValue(OrganizerUkeyId)};
+            update SponsorMaster set flag = 'D' WHERE SponsorUkeyId = ${setSQLStringValue(SponsorUkeyId)} AND OrganizerUkeyId = ${setSQLStringValue(OrganizerUkeyId)};
         `;
         const deleteResult = await pool.request().query(deleteQuery);
 

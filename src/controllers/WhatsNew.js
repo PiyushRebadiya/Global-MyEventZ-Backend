@@ -16,6 +16,7 @@ const Fetchwhatsnew = async (req, res) => {
         if (DeviceType) {
             whereConditions.push(`DeviceType = ${setSQLStringValue(DeviceType)}`);
         }
+        whereConditions.push(`Flag <> 'D'`);
 
         // Combine the WHERE conditions into a single string
         const whereString = whereConditions.length > 0 ? `WHERE ${whereConditions.join(' AND ')}` : '';
@@ -103,7 +104,7 @@ const removewhatsnew = async (req, res) => {
         }
 
         const deleteQuery = `
-            DELETE FROM WhatsNew WHERE UkeyId = ${setSQLStringValue(UkeyId)};
+            update WhatsNew set Flag = 'D' WHERE UkeyId = ${setSQLStringValue(UkeyId)};
         `;
         const deleteResult = await pool.request().query(deleteQuery);
 

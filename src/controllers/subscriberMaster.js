@@ -27,6 +27,7 @@ const fetchSubscriberlist = async (req, res)=>{
         }
         whereConditions.push(`em.IsActive = 1`);
         whereConditions.push(`em.EventStatus = 'PUBLISHED'`);
+        whereConditions.push(`sm.flag <> 'D'`);
         // Combine the WHERE conditions into a single string
         const whereString = whereConditions.length > 0 ? `WHERE ${whereConditions.join(' AND ')}` : '';
         const getUserList = {
@@ -173,7 +174,7 @@ const RemoveSubscriber = async (req, res) => {
         }
 
         const query = `
-            DELETE FROM SubscriberMaster WHERE SubscriberUkeyId = '${SubscriberUkeyId}'
+            update SubscriberMaster set flag = 'D' WHERE SubscriberUkeyId = '${SubscriberUkeyId}'
         `
     
         const result = await pool.request().query(query);

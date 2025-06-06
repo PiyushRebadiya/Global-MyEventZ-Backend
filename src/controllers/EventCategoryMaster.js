@@ -17,6 +17,8 @@ const fetchEventCategory = async (req, res) => {
         if (IsActive) {
             whereConditions.push(`IsActive = ${setSQLBooleanValue(IsActive)}`);
         }
+        whereConditions.push(`flag <> 'D'`);
+
         const whereString = whereConditions.length > 0 ? `WHERE ${whereConditions.join(' AND ')}` : '';
         const queries = {
             getQuery: `SELECT * FROM EventCategoryMaster ${whereString} ORDER BY EntryDate DESC`,
@@ -96,7 +98,7 @@ const RemoveEventCategory = async (req, res) => {
         }
 
         const query = `
-            DELETE FROM EventCategoryMaster WHERE EventCategoryUkeyId = ${setSQLStringValue(EventCategoryUkeyId)}
+        update EventCategoryMaster set flag = 'D' WHERE EventCategoryUkeyId = ${setSQLStringValue(EventCategoryUkeyId)}
         `;
 
         const result = await pool.request().query(query);

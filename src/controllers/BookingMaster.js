@@ -33,6 +33,7 @@ const fetchBookings = async (req, res) => {
         if (IsVerify) {
             whereConditions.push(`IsVerify = ${setSQLBooleanValue(IsVerify)}`);
         }
+        whereConditions.push(`flag <> 'D'`);
 
         // Combine the WHERE conditions into a single string
         const whereString = whereConditions.length > 0 ? `WHERE ${whereConditions.join(' AND ')}` : '';
@@ -299,8 +300,8 @@ const RemoveBookings = async (req, res) => {
 
         // Execute the DELETE query
         const deleteQuery = `
-            DELETE FROM Bookingmast WHERE BookingUkeyID = ${setSQLStringValue(BookingUkeyID)} AND EventUkeyId = ${setSQLStringValue(EventUkeyId)} and OrganizerUkeyId = ${setSQLStringValue(OrganizerUkeyId)};
-            DELETE FROM Bookingdetails WHERE BookingUkeyID = ${setSQLStringValue(BookingUkeyID)};
+            update Bookingmast set flag = 'D' WHERE BookingUkeyID = ${setSQLStringValue(BookingUkeyID)} AND EventUkeyId = ${setSQLStringValue(EventUkeyId)} and OrganizerUkeyId = ${setSQLStringValue(OrganizerUkeyId)};
+            update Bookingdetails set flag = 'D' WHERE BookingUkeyID = ${setSQLStringValue(BookingUkeyID)};
         `;
         const deleteResult = await pool.request().query(deleteQuery);
 

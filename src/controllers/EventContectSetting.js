@@ -16,6 +16,7 @@ const fetchEventContectSetting = async(req, res)=>{
         if (OrganizerUkeyId) {
             whereConditions.push(`OrganizerUkeyId = ${setSQLStringValue(OrganizerUkeyId)}`);
         }
+        whereConditions.push(`flag <> 'D'`);
         // Combine the WHERE conditions into a single string
         const whereString = whereConditions.length > 0 ? `WHERE ${whereConditions.join(' AND ')}` : '';
         const getUserList = {
@@ -92,7 +93,7 @@ const RemoveEventContectSetting = async(req, res)=>{
         }
 
         const query = `
-            DELETE FROM EventContactSetting WHERE EventContectSetUkeyId = ${setSQLStringValue(EventContectSetUkeyId)} and OrganizerUkeyId = ${setSQLStringValue(OrganizerUkeyId)}
+        update EventContactSetting set flag = 'D' WHERE EventContectSetUkeyId = ${setSQLStringValue(EventContectSetUkeyId)} and OrganizerUkeyId = ${setSQLStringValue(OrganizerUkeyId)}
         `
 
         const result = await pool.request().query(query);

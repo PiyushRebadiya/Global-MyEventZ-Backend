@@ -19,6 +19,7 @@ const fetchOrgTermCond = async(req, res)=>{
         if (IsActive) {
             whereConditions.push(`IsActive = ${setSQLBooleanValue(IsActive)}`);
         }
+        whereConditions.push(`flag <> 'D'`);
         // Combine the WHERE conditions into a single string
         const whereString = whereConditions.length > 0 ? `WHERE ${whereConditions.join(' AND ')}` : '';
         const getUserList = {
@@ -119,7 +120,7 @@ const RemoveOrgTermCond = async(req, res)=>{
         }
 
         const query = `
-            DELETE FROM Org_TermsCondi WHERE TermsUkeyId = ${setSQLStringValue(TermsUkeyId)} and OrganizerUkeyId = ${setSQLStringValue(OrganizerUkeyId)}
+            update Org_TermsCondi set flag = 'D' WHERE TermsUkeyId = ${setSQLStringValue(TermsUkeyId)} and OrganizerUkeyId = ${setSQLStringValue(OrganizerUkeyId)}
         `
 
         const result = await pool.request().query(query);

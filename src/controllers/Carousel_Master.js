@@ -20,6 +20,7 @@ const fetchCarouselList = async (req, res) => {
         if (OrganizerUkeyId) {
             whereConditions.push(`cc.OrganizerUkeyId = ${setSQLStringValue(OrganizerUkeyId)}`);
         }
+        whereConditions.push(`cc.flag <> 'D'`);
         // Combine the WHERE conditions into a single string
         const whereString = whereConditions.length > 0 ? `WHERE ${whereConditions.join(' AND ')}` : '';
         const getCarouselList = {
@@ -135,7 +136,7 @@ const RemoveCarousel = async (req, res) => {
         }
 
         const deleteQuery = `
-            DELETE FROM Carousel WHERE CarouselUkeyId = ${setSQLStringValue(CarouselUkeyId)} and EventUkeyId = ${setSQLStringValue(EventUkeyId)} and OrganizerUkeyId = ${setSQLStringValue(OrganizerUkeyId)}
+            update Carousel set flag = 'D' WHERE CarouselUkeyId = ${setSQLStringValue(CarouselUkeyId)} and EventUkeyId = ${setSQLStringValue(EventUkeyId)} and OrganizerUkeyId = ${setSQLStringValue(OrganizerUkeyId)}
         `;
         const deleteResult = await pool.request().query(deleteQuery);
 
