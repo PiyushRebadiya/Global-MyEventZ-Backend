@@ -669,7 +669,7 @@ const RemoveEvent = async (req, res) => {
         }
 
         const query = `
-            update EventMaster set flag = 'D' and OrganizerUkeyId = ${setSQLStringValue(OrganizerUkeyId)}
+            update EventMaster set flag = 'D' WHERE EventUkeyId = ${setSQLStringValue(EventUkeyId)} and OrganizerUkeyId = ${setSQLStringValue(OrganizerUkeyId)}
             update AddressMaster set flag = 'D' WHERE EventUkeyId = ${setSQLStringValue(EventUkeyId)} and OrganizerUkeyId = ${setSQLStringValue(OrganizerUkeyId)}
         `
     
