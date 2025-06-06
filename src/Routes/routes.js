@@ -185,6 +185,7 @@ router.delete('/delete_ticket_category', auth, TicketCategoryController.RemoveTi
 
 router.get('/fetch_booking_master', auth, BookingController.fetchBookings);
 router.get('/fetch_booking_master_by_id', auth, BookingController.fetchBookingInfoById);
+router.get('/TicketLimitValidation', auth, BookingController.TicketLimit);
 router.post('/booking_master', auth, BookingController.BookingMaster);
 router.delete('/delete_bookings', auth, BookingController.RemoveBookings);
 

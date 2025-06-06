@@ -51,8 +51,23 @@ const Disclaimer = async(req, res)=>{
         const deleteQuery = `
             DELETE FROM DisclaimerMaster WHERE DisclaimerUkeyId = ${setSQLStringValue(DisclaimerUkeyId)}
         `
+        const IsActiveQuery = `UPDATE DisclaimerMaster
+                    SET IsActive = CASE 
+                        WHEN DisclaimerUkeyId = ${setSQLStringValue(DisclaimerUkeyId)} THEN 1
+                        ELSE 0
+                    END
+                    WHERE EventUkeyId = ${setSQLStringValue(EventUkeyId)}
+                    AND OrganizerUkeyId = ${setSQLStringValue(OrganizerUkeyId)}
+                    `
         if(flag == 'A'){
             const result = await pool.request().query(insertQuery);
+            if(setSQLBooleanValue(IsActive)){
+                try {
+                    await pool.request().query(IsActiveQuery);
+                } catch (error) {
+                    console.log('Error updating IsActive status:', error);
+                }
+            }
 
             if(result.rowsAffected[0] === 0){
                 return res.status(400).json({...errorMessage('Not created Organizer terms and condtion'),})
@@ -67,6 +82,14 @@ const Disclaimer = async(req, res)=>{
 
             if(deleteResult.rowsAffected[0] === 0 && insertResult.rowsAffected[0] === 0){
                 return res.status(400).json({...errorMessage('Not updated Disclaimer successfully.')})
+            }
+
+            if(setSQLBooleanValue(IsActive)){
+                try {
+                    await pool.request().query(IsActiveQuery);
+                } catch (error) {
+                    console.log('Error updating IsActive status:', error);
+                }
             }
 
             return res.status(200).json({...successMessage('Successfully updated Disclaimer..'), ...req.body});
