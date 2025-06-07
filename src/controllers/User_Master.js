@@ -32,7 +32,7 @@ const fetchUserMaster = async (req, res) => {
             nextEndDate.setDate(nextEndDate.getDate() + 1); // Add one day
             whereConditions.push(`UM.EntryDate >= ${setSQLDateTime(StartDate)} AND UM.EntryDate < ${setSQLDateTime(nextEndDate)}`);
         }
-
+        whereConditions.push(`UM.flag <> 'D'`);
         
         const whereString = whereConditions.length > 0 ? `WHERE ${whereConditions.join(' AND ')}` : '';
         const getUserList = {
@@ -54,7 +54,7 @@ const VerifyUserMobileNumber = async (req, res) => {
             return res.status(200).json(errorMessage('Mobile1 is required'))
         }
 
-        const result = await pool.request().query(`select * from UserMaster where Mobile1 = ${setSQLStringValue(Mobile1)} and IsActive = 1`)
+        const result = await pool.request().query(`select * from UserMaster where Mobile1 = ${setSQLStringValue(Mobile1)} and IsActive = 1 and flag <> 'D'`)
 
         if(!result.recordset[0]){
             return res.status(200).json({...successMessage("there is no user register found with the given mobile number."), verify : false})
@@ -74,7 +74,7 @@ const VerifyUserEmail = async (req, res) => {
             return res.status(200).json(errorMessage('Email is required'))
         }
 
-        const result = await pool.request().query(`select * from UserMaster where Email = ${setSQLStringValue(Email)} and IsActive = 1`)
+        const result = await pool.request().query(`select * from UserMaster where Email = ${setSQLStringValue(Email)} and IsActive = 1 and flag <> 'D'`)
 
         if(!result.recordset[0]){
             return res.status(200).json({...successMessage("there is no user register found with the given Email ID."), verify : false})
@@ -95,7 +95,7 @@ const UserLoginWithEmail = async (req, res) => {
             return res.status(200).send(errorMessage(`Email or AppleUserId is required`));
         }
 
-        let query = "SELECT * FROM UserMaster WHERE IsActive = 1";
+        let query = "SELECT * FROM UserMaster WHERE IsActive = 1 AND flag <> 'D' ";
         if (Email) {
             query += ` AND Email = ${setSQLStringValue(Email)}`;
         } else if (AppleUserId) {
@@ -214,14 +214,14 @@ const deleteUserMaster = async (req, res) => {
         if (!UserUkeyId) return res.status(200).send(errorMessage("UserUkeyId is required"));
         const userMaster = await pool.query(`SELECT * FROM UserMaster WHERE UserUkeyId = '${UserUkeyId}'`);
         if (!userMaster?.recordset?.length) return res.status(200).send(errorMessage("User not found"));
-        const deleteQuery = `DELETE FROM UserMaster WHERE UserUkeyId = '${UserUkeyId}'`;
+        const deleteQuery = `update UserMaster set flag <> 'D' WHERE UserUkeyId = '${UserUkeyId}'`;
         const deleteDeviceQuery = `DELETE FROM user_devices WHERE UserUkeyId = '${UserUkeyId}'`;
-        try {
-            const oldImg = userMaster?.recordset?.[0]?.ProfiilePic;
-            if(oldImg) await deleteImage('./media/User/' + oldImg);
-        } catch (error) {
-            console.log('error :>> ', error);
-        }
+        // try {
+        //     const oldImg = userMaster?.recordset?.[0]?.ProfiilePic;
+        //     if(oldImg) await deleteImage('./media/User/' + oldImg);
+        // } catch (error) {
+        //     console.log('error :>> ', error);
+        // }
         await pool.query(deleteQuery);
         await pool.query(deleteDeviceQuery);
         return res.status(200).send(successMessage("User deleted successfully"));
@@ -236,7 +236,7 @@ const verifyHandler = async (req, res) => {
         if (!Mobile1) return res.status(200).send(errorMessage("Mobile1 is required"));
 
         // user mobile check if OTP implemented
-        const userMaster = await pool.query(`SELECT * FROM UserMaster WHERE Mobile1 = '${Mobile1}'`);
+        const userMaster = await pool.query(`SELECT * FROM UserMaster WHERE Mobile1 = '${Mobile1}' and flag <> 'D'`);
         if (!userMaster?.recordset?.length) return res.status(200).send(errorMessage("there is no user register found with the given mobile number"));
         
         if (!userMaster?.recordset?.[0]?.IsActive) return res.status(200).send(errorMessage("This account is inactive. To activate it, please contact customer support at +91-9040016789."));

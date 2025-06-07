@@ -11,6 +11,7 @@ const FetchOrgUserMasterDetails = async (req, res) => {
         if (EventUkeyId) whereConditions.push(`EventUkeyId = ${setSQLStringValue(EventUkeyId)}`);
         if (Role) whereConditions.push(`Role = ${setSQLStringValue(Role)}`);
         if (IsActive) whereConditions.push(`IsActive = ${setSQLBooleanValue(IsActive)}`);
+        whereConditions.push(`flag <> 'D'`);
 
         const whereString = whereConditions.length > 0 ? `WHERE ${whereConditions.join(" AND ")}` : "";
 
@@ -48,7 +49,7 @@ const OrgUserMaster = async (req, res) => {
         // }
 
         const AdminUserCount = await pool.request().query(`
-            select COUNT(*) AS AdminUserCount from OrgUserMaster where OrganizerUkeyId = ${setSQLStringValue(OrganizerUkeyId)} and EventUkeyId = ${setSQLStringValue(EventUkeyId)} and Role <> 'Admin'
+            select COUNT(*) AS AdminUserCount from OrgUserMaster where OrganizerUkeyId = ${setSQLStringValue(OrganizerUkeyId)} and EventUkeyId = ${setSQLStringValue(EventUkeyId)} and Role <> 'Admin' and flag <> 'D'
         `)
 
         if(AdminUserCount?.recordset?.[0]?.AdminUserCount >= 50){
@@ -173,19 +174,19 @@ const RemoveOrgUser = async (req, res) => {
         }
 
         // Fetch old image path before deletion
-        const oldImgResult = await pool.request().query(
-            `SELECT Image FROM OrgUserMaster WHERE UserUkeyId = ${setSQLStringValue(UserUkeyId)} and OrganizerUkeyId = ${setSQLStringValue(OrganizerUkeyId)};`
-        );
-        const oldImg = oldImgResult.recordset?.[0]?.Image;
+        // const oldImgResult = await pool.request().query(
+        //     `SELECT Image FROM OrgUserMaster WHERE UserUkeyId = ${setSQLStringValue(UserUkeyId)} and OrganizerUkeyId = ${setSQLStringValue(OrganizerUkeyId)};`
+        // );
+        // const oldImg = oldImgResult.recordset?.[0]?.Image;
 
         // Delete user from OrgUserMaster
-        const deleteQuery = `DELETE FROM OrgUserMaster WHERE UserUkeyId = ${setSQLStringValue(UserUkeyId)} and OrganizerUkeyId = ${setSQLStringValue(OrganizerUkeyId)};`;
+        const deleteQuery = `update OrgUserMaster set flag = 'D' WHERE UserUkeyId = ${setSQLStringValue(UserUkeyId)} and OrganizerUkeyId = ${setSQLStringValue(OrganizerUkeyId)};`;
         const deleteResult = await pool.request().query(deleteQuery);
 
         if (deleteResult.rowsAffected[0] === 0) {
             return res.status(400).json(errorMessage('No User Deleted.'));
         }
-        if (oldImg) deleteImage('./media/Organizer/' + oldImg);; // Delete image only after successful DB deletion
+        // if (oldImg) deleteImage('./media/Organizer/' + oldImg);; // Delete image only after successful DB deletion
 
         return res.status(200).json({...successMessage('User Deleted Successfully.'), ...req.query });
     } catch (error) {

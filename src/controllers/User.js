@@ -20,6 +20,7 @@ const fetchOrganizer = async (req, res) => {
         if(OrganizerUkeyId){
             whereConditions.push(`OM.OrganizerUkeyId = ${setSQLStringValue(OrganizerUkeyId)}`);
         }
+        whereConditions.push(`OM.flag = 'D'`);
         const whereString = whereConditions.length > 0 ? `WHERE ${whereConditions.join(' AND ')}` : '';
         const getUserList = {
             getQuery: `SELECT * FROM OrgUserMaster AS OM ${whereString} ORDER BY UserId DESC`,
@@ -42,7 +43,7 @@ const VerifyOrganizerMobileNumber = async (req, res) => {
         }
 
         const result = await pool.request().query(`select om.*,em.EventName from OrgUserMaster om left join EventMaster em on em.EventUkeyId = om.EventUkeyId
-        where om.Mobile1 = ${setSQLStringValue(Mobile1)} and om.IsActive = 1`)
+        where om.Mobile1 = ${setSQLStringValue(Mobile1)} and om.IsActive = 1 and om.flag <> 'D'`)
 
         if(!result.recordset[0]){
             return res.status(200).json({...successMessage("there is no user register found with the given mobile number."), verify : false })
@@ -236,7 +237,7 @@ const Loginorganizer = async (req, res) => {
         SELECT om.*, em.EventName 
         FROM OrgUserMaster om 
         LEFT JOIN EventMaster em ON em.EventUkeyId = om.EventUkeyId
-        WHERE om.IsActive = 1
+        WHERE om.IsActive = 1 and oum.flag <> 'D'
         `;
 
         // Add EventUkeyId condition if provided
@@ -312,7 +313,7 @@ const loginWithMobileAndRole = async (req, res) => {
         ) AS FileNames from OrgUserMaster oum 
         left join  OrganizerMaster om on om.OrganizerUkeyId = oum.OrganizerUkeyId
         left join EventMaster em on em.EventUkeyId = oum.EventUkeyId     
-        LEFT JOIN AddressMaster am ON am.EventUkeyId = em.EventUkeyId where oum.Role = ${setSQLStringValue(Role)}`
+        LEFT JOIN AddressMaster am ON am.EventUkeyId = em.EventUkeyId where oum.Role = ${setSQLStringValue(Role)} and oum.flag <> 'D'`
 
         if (Email) {
             query += ` AND oum.Email = ${setSQLStringValue(Email)}`;
@@ -373,7 +374,7 @@ const Loginorganizerwithemail = async (req, res) => {
         const result = await pool.request().query(`
 
         select om.*,em.EventName from OrgUserMaster om left join EventMaster em on em.EventUkeyId=om.EventUkeyId
-        where (om.Email = ${setSQLStringValue(Email)} ${conditionOfAppleUserId}) AND om.IsActive = 1
+        where (om.Email = ${setSQLStringValue(Email)} ${conditionOfAppleUserId}) AND om.IsActive = 1 and om.flag <> 'D' 
         `);
 
         if(result.rowsAffected[0] === 0){
@@ -523,7 +524,7 @@ const verifyOrganizerEmail = async (req, res) => {
             return res.status(400).json({...errorMessage('Email or AppleUserId is needed.')});
         }
 
-        const result = await pool.request().query(`select * from OrgUserMaster where (Email = ${setSQLStringValue(Email)} or AppleUserId = ${setSQLStringValue(AppleUserId)})`)
+        const result = await pool.request().query(`select * from OrgUserMaster where (Email = ${setSQLStringValue(Email)} or AppleUserId = ${setSQLStringValue(AppleUserId)}) and flag <> 'D'`)
 
         if(result.recordset?.length > 0){
             return res.status(200).json({...errorMessage('already account exist of given Id')});

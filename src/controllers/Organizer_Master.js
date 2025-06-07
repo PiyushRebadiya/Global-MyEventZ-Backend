@@ -16,6 +16,7 @@ const FetchOrganizerDetails = async (req, res)=>{
         if(IsActive){
             whereConditions.push(`om.IsActive = ${setSQLBooleanValue(IsActive)}`);
         }
+        whereConditions.push(`om.flag <> 'D'`);
         // Combine the WHERE conditions into a single string
         const whereString = whereConditions.length > 0 ? `WHERE ${whereConditions.join(' AND ')}` : '';
         const getUserList = {
@@ -38,8 +39,9 @@ const fetchAllOrganizer = async (req, res) => {
     try{
         const getUserList = {
             getQuery: `SELECT * FROM OrganizerMaster 
+            where flag <> 'D'
             ORDER BY OrganizerId DESC`,
-            countQuery: `SELECT COUNT(*) AS totalCount FROM OrganizerMaster  `,
+            countQuery: `SELECT COUNT(*) AS totalCount FROM OrganizerMaster where flag <> 'D' `,
         };
         const result = await getCommonAPIResponse(req, res, getUserList);
         return res.json(result);
@@ -146,7 +148,7 @@ const OrginazerMaster = async (req, res) => {
 
 const RemoveOrginazer = async (req, res) => {
     try{
-        const {OrganizerUkeyId} = req.query;
+        const {OrganizerUkeyId, IsPermanentDelete = false} = req.query;
 
         const missingKeys = checkKeysAndRequireValues(['OrganizerUkeyId'], req.query);
 
@@ -165,21 +167,34 @@ const RemoveOrginazer = async (req, res) => {
         }
 
         const allDocument = await pool.request().query(`select * from DocumentUpload where OrganizerUkeyId = ${setSQLStringValue(OrganizerUkeyId)}`)
-
-        const query = `
-            DELETE FROM OrganizerMaster WHERE OrganizerUkeyId = ${setSQLStringValue(OrganizerUkeyId)}
-            DELETE FROM EventMaster WHERE OrganizerUkeyId = ${setSQLStringValue(OrganizerUkeyId)}
-            DELETE FROM AddressMaster WHERE OrganizerUkeyId = ${setSQLStringValue(OrganizerUkeyId)}
-            DELETE FROM OrgUserMaster WHERE OrganizerUkeyId = ${setSQLStringValue(OrganizerUkeyId)}
-            DELETE FROM Carousel WHERE OrganizerUkeyId = ${setSQLStringValue(OrganizerUkeyId)}
-            DELETE FROM SpeakerMaster WHERE OrganizerUkeyId = ${setSQLStringValue(OrganizerUkeyId)}
-            DELETE FROM SponsorCatMaster WHERE OrganizerUkeyId = ${setSQLStringValue(OrganizerUkeyId)}
-            DELETE FROM SponsorMaster WHERE OrganizerUkeyId = ${setSQLStringValue(OrganizerUkeyId)}
-            DELETE FROM DocumentUpload WHERE OrganizerUkeyId = ${setSQLStringValue(OrganizerUkeyId)}
-        `
-
-        for (const doc of allDocument.recordset) {
-            deleteImage('./media/DocumentUpload/' + doc);
+        let query
+        if(IsPermanentDelete){
+            query = `
+                DELETE FROM OrganizerMaster WHERE OrganizerUkeyId = ${setSQLStringValue(OrganizerUkeyId)}
+                DELETE FROM EventMaster WHERE OrganizerUkeyId = ${setSQLStringValue(OrganizerUkeyId)}
+                DELETE FROM AddressMaster WHERE OrganizerUkeyId = ${setSQLStringValue(OrganizerUkeyId)}
+                DELETE FROM OrgUserMaster WHERE OrganizerUkeyId = ${setSQLStringValue(OrganizerUkeyId)}
+                DELETE FROM Carousel WHERE OrganizerUkeyId = ${setSQLStringValue(OrganizerUkeyId)}
+                DELETE FROM SpeakerMaster WHERE OrganizerUkeyId = ${setSQLStringValue(OrganizerUkeyId)}
+                DELETE FROM SponsorCatMaster WHERE OrganizerUkeyId = ${setSQLStringValue(OrganizerUkeyId)}
+                DELETE FROM SponsorMaster WHERE OrganizerUkeyId = ${setSQLStringValue(OrganizerUkeyId)}
+                DELETE FROM DocumentUpload WHERE OrganizerUkeyId = ${setSQLStringValue(OrganizerUkeyId)}
+            `
+            for (const doc of allDocument.recordset) {
+                deleteImage('./media/DocumentUpload/' + doc);
+            }
+        }else {
+            query = `
+                update OrganizerMaster set flag = 'D' WHERE OrganizerUkeyId = ${setSQLStringValue(OrganizerUkeyId)}
+                update EventMaster set flag = 'D' WHERE OrganizerUkeyId = ${setSQLStringValue(OrganizerUkeyId)}
+                update AddressMaster set flag = 'D' WHERE OrganizerUkeyId = ${setSQLStringValue(OrganizerUkeyId)}
+                update OrgUserMaster set flag = 'D' WHERE OrganizerUkeyId = ${setSQLStringValue(OrganizerUkeyId)}
+                update Carousel set flag = 'D' WHERE OrganizerUkeyId = ${setSQLStringValue(OrganizerUkeyId)}
+                update SpeakerMaster set flag = 'D' WHERE OrganizerUkeyId = ${setSQLStringValue(OrganizerUkeyId)}
+                update SponsorCatMaster set flag = 'D' WHERE OrganizerUkeyId = ${setSQLStringValue(OrganizerUkeyId)}
+                update SponsorMaster set flag = 'D' WHERE OrganizerUkeyId = ${setSQLStringValue(OrganizerUkeyId)}
+                update DocumentUpload set flag = 'D' WHERE OrganizerUkeyId = ${setSQLStringValue(OrganizerUkeyId)}
+            `
         }
 
         const result = await pool.request().query(query);
