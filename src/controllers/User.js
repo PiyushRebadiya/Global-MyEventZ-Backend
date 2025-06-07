@@ -237,7 +237,7 @@ const Loginorganizer = async (req, res) => {
         SELECT om.*, em.EventName 
         FROM OrgUserMaster om 
         LEFT JOIN EventMaster em ON em.EventUkeyId = om.EventUkeyId
-        WHERE om.IsActive = 1 and oum.flag <> 'D'
+        WHERE om.IsActive = 1 and om.flag <> 'D'
         `;
 
         // Add EventUkeyId condition if provided
@@ -288,7 +288,7 @@ const Loginorganizer = async (req, res) => {
             EventName : result?.recordset?.[0]?.EventName
     });
     }catch(error){
-        console.log('Login User Error :', error);
+        console.log('Login User Error :', error.message);
         return res.status(500).json({...errorMessage(error)})
     }
 }
