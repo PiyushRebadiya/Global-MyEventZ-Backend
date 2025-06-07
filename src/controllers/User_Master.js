@@ -214,7 +214,7 @@ const deleteUserMaster = async (req, res) => {
         if (!UserUkeyId) return res.status(200).send(errorMessage("UserUkeyId is required"));
         const userMaster = await pool.query(`SELECT * FROM UserMaster WHERE UserUkeyId = '${UserUkeyId}'`);
         if (!userMaster?.recordset?.length) return res.status(200).send(errorMessage("User not found"));
-        const deleteQuery = `update UserMaster set flag <> 'D' WHERE UserUkeyId = '${UserUkeyId}'`;
+        const deleteQuery = `update UserMaster set flag = 'D' WHERE UserUkeyId = '${UserUkeyId}'`;
         const deleteDeviceQuery = `DELETE FROM user_devices WHERE UserUkeyId = '${UserUkeyId}'`;
         // try {
         //     const oldImg = userMaster?.recordset?.[0]?.ProfiilePic;
