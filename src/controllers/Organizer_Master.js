@@ -102,7 +102,7 @@ const OrginazerMaster = async (req, res) => {
             await pool.request().query(deleteQuery);
             const insertResult = await pool.request().query(insertQuery);
             const updatePassword = await pool.request().query(`
-                update OrgUserMaster set Password = ${setSQLStringValue(Password)}, Mobile1 = ${setSQLStringValue(Mobile1)}, Mobile2 = ${setSQLStringValue(Mobile2)}, Email = ${setSQLStringValue(Email)}, StateCode = ${setSQLStringValue(StateCode)}, StateName = ${setSQLStringValue(StateName)}, CityName = ${setSQLStringValue(City)}, Add1 = ${setSQLStringValue(Add1)}, Add2 = ${setSQLStringValue(Add2)}, FirstName = ${setSQLStringValue(OrganizerName)} where UserUkeyId = ${setSQLStringValue(UserUkeyId)}
+                update OrgUserMaster set Password = ${setSQLStringValue(Password)}, Mobile1 = ${setSQLStringValue(Mobile1)}, Mobile2 = ${setSQLStringValue(Mobile2)}, Email = ${setSQLStringValue(Email)}, StateCode = ${setSQLStringValue(StateCode)}, StateName = ${setSQLStringValue(StateName)}, CityName = ${setSQLStringValue(City)}, Add1 = ${setSQLStringValue(Add1)}, Add2 = ${setSQLStringValue(Add2)}, FirstName = ${setSQLStringValue(OrganizerName)}, flag = 'U' where UserUkeyId = ${setSQLStringValue(UserUkeyId)}
             `);
             if (!insertResult.rowsAffected[0]) return res.status(400).json(errorMessage("No Organizer Updated."));
 

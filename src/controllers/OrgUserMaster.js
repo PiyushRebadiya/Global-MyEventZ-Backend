@@ -59,11 +59,11 @@ const OrgUserMaster = async (req, res) => {
         let insertQuery = `
             INSERT INTO OrgUserMaster (
                 UserUkeyId, EventUkeyId, OrganizerUkeyId, Password, FirstName, Image, Mobile1, Mobile2, Add1, Add2,
-                StateCode, StateName, CityName, Pincode, DOB, Email, Gender, Role, IsActive, IpAddress, HostName, EntryDate
+                StateCode, StateName, CityName, Pincode, DOB, Email, Gender, Role, IsActive, IpAddress, HostName, EntryDate, flag
             ) VALUES (
                 N'${UserUkeyId}', N'${EventUkeyId}', N'${OrganizerUkeyId}', N'${Password}', N'${FirstName}', N'${Image}', N'${Mobile1}', N'${Mobile2}',
                 N'${Add1}', N'${Add2}', N'${StateCode}', N'${StateName}', N'${CityName}', ${setSQLNumberValue(Pincode)}, ${setSQLDateTime(DOB)},
-                N'${Email}', N'${Gender}', N'${Role}', ${setSQLBooleanValue(IsActive)}, N'${IPAddress}', N'${ServerName}', N'${EntryTime}'
+                N'${Email}', N'${Gender}', N'${Role}', ${setSQLBooleanValue(IsActive)}, N'${IPAddress}', N'${ServerName}', N'${EntryTime}', ${setSQLStringValue(flag)}
             );
         `;
 
